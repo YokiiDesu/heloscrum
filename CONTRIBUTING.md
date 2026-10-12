@@ -1,12 +1,12 @@
 # Contributing to HeloScrum
 
-Thanks for helping improve the alpha. Start with [setup](docs/GETTING_STARTED.md),
+Thanks for helping improve HeloScrum. Start with [setup](docs/GETTING_STARTED.md),
 then describe the problem and proposed scope in an issue before a large change.
 Small fixes can go directly to a pull request.
 
 ## Local development
 
-Use Node.js 22.12 or newer (Node 24 is the suggested starting point) and Git.
+Use Node.js 22.13 or newer (Node 24 is the suggested starting point) and Git.
 
 ```sh
 npm ci
@@ -38,3 +38,13 @@ submitted code and being accurate about what was tested. Contributions are under
 the project's Apache-2.0 license. Keep existing third-party notices intact.
 
 For security problems, follow [SECURITY.md](SECURITY.md) rather than a public issue.
+
+## Merging Changes
+
+`main` requires a pull request, resolved review conversations, and passing macOS,
+Linux, Windows, and secret-scanning checks. Branches must be up to date before
+merging. These requirements apply to administrators too; force pushes and branch
+deletion are disabled. Use squash or rebase merging to keep history linear.
+
+A separate approving reviewer is not required while the project has one maintainer.
+The maintainer can merge a pull request after its checks pass.

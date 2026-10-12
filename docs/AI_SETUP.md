@@ -9,7 +9,7 @@ It is not a separate installer or a provider-specific plugin.
 Read the current README, [Installation by OS](INSTALLATION.md), and
 [Desktop guide](DESKTOP.md) from this checkout. Detect the operating system,
 architecture, and shell before choosing commands. Explain the platform's actual
-support level: macOS desktop alpha, experimental Linux/WSL, or native Windows
+support level: macOS desktop, experimental Linux/WSL, or native Windows
 contributor checks. Don't turn a passing server test into a desktop-support claim.
 
 Locate an existing checkout first. Otherwise clone the public repository over

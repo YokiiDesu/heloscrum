@@ -5,10 +5,10 @@
 A local workspace for a team of coding agents. Project briefs and task plans connect
 persistent agent sessions, Git worktrees, code review, direct messages, and shared tools.
 
-## Public Alpha
+## Release
 
 HeloScrum is an independent, open-source project under Apache-2.0. This is a
-source-based **public alpha**, with the desktop workflow validated locally on
+source-based release, with the desktop workflow validated locally on
 macOS. Automated checks pass on macOS, Linux, and Windows; native Linux/WSL
 agent workflows remain experimental, and native Windows desktop support is not
 ready. Context management is experimental.
@@ -28,7 +28,7 @@ and [release status](docs/RELEASE_STATUS.md).
 
 | Platform | Prerequisites | Setup |
 | --- | --- | --- |
-| **macOS · Apple Silicon or Intel** | Git 2.28+ (Apple Command Line Tools), Terminal, internet access | Desktop alpha. Run the Bash installer below. It offers the missing runtime and provider tools. |
+| **macOS · Apple Silicon or Intel** | Git 2.28+ (Apple Command Line Tools), Terminal, internet access | Desktop app. Run the Bash installer below. It offers the missing runtime and provider tools. |
 | **Linux · ARM64 or x64** | Git 2.28+, Bash, curl, tar, a SHA-256 tool; X11/Wayland and GTK/NSS/GBM/XSS/ALSA for Electron | Experimental desktop. Use the same installer; it detects Linux and offers distro packages with your approval. |
 | **Windows · WSL 2** | WSL 2 with Ubuntu; WSLg for the desktop window | Experimental Linux route. Run the same installer **inside Ubuntu**, with the checkout in your Linux home directory. This is not native Windows validation. |
 | **Native Windows** | Node.js 22.13+, npm, Git 2.28+ for Windows; a native build toolchain if prebuilt modules are unavailable | Contributor/testing use only. There is no supported native Windows desktop installer yet. See the platform guide for the remaining terminal limitation. |

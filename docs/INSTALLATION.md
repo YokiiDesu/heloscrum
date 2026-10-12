@@ -43,7 +43,7 @@ bash scripts/setup-desktop.sh
 
 Answer the setup questions, complete your provider's login flow, and open the
 generated **HeloScrum** launcher. The default runtime/configuration location is
-`~/Library/Application Support/HeloScrum/`. This is a source-based desktop alpha,
+`~/Library/Application Support/HeloScrum/`. This is a source-based desktop installation,
 not a signed standalone `.dmg` installer.
 
 ## Linux

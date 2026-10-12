@@ -1,6 +1,6 @@
 # Your first HeloScrum workspace
 
-This alpha has real-agent usage evidence on macOS and passing Linux automated
+HeloScrum has real-agent usage evidence on macOS and passing Linux automated
 checks, including a clean Docker installation. Native Linux agent workflows are
 not yet validated. Windows's automated suite and server restart now pass, but
 the native desktop launcher remains unsupported; see [Platform Testing](PLATFORM_TESTING.md).

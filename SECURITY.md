@@ -1,7 +1,7 @@
 # Security
 
-HeloScrum is an early alpha for a trusted, local, single-user workstation.
-The currently published alpha is the supported security reporting target.
+HeloScrum is designed for a trusted, local, single-user workstation.
+The latest published release is the supported security reporting target.
 
 ## Report a vulnerability privately
 

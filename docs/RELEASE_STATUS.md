@@ -1,6 +1,6 @@
 # Release Status
 
-HeloScrum is a public, source-based alpha. The
+HeloScrum is free, open-source software distributed as a source-based release. The
 [repository](https://github.com/YokiiDesu/heloscrum) and
 [website](https://yokiidesu.github.io/heloscrum/) are available now.
 
@@ -26,7 +26,7 @@ restart. The [Mod guide](claude-activity.md#known-restart-issue-october-12-2026)
 contains the reproduction and recovery procedure. Treat restart persistence and
 successful prompt delivery as separate checks.
 
-A stable cross-platform release needs the native workflows in
+Broader platform support needs the native workflows in
 [Platform Testing](PLATFORM_TESTING.md), including authenticated agents, permission
 prompts, attachments, an independently reviewed change, and restart recovery.
 Report the exact candidate and platform when recording results.

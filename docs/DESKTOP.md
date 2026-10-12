@@ -142,7 +142,7 @@ The server runs in a **regular Node process** rather than Electron's Node runtim
 This preserves the native-module ABI used by `npm ci` for PTY and DuckDB. Electron
 dependencies have their own lockfile under `desktop/`; browser-only installations
 do not download Electron. Update the Electron pin and lockfile deliberately as
-Chromium security releases arrive. This alpha has no automatic updater.
+Chromium security releases arrive. HeloScrum currently has no automatic updater.
 
 ## Platforms and troubleshooting
 

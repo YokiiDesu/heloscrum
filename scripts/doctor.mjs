@@ -15,7 +15,7 @@ export async function diagnose({root = codeRoot, provider, env = process.env} = 
   const add = (name, status, detail) => checks.push({name, status, detail});
   const [major, minor] = process.versions.node.split('.').map(Number);
   add('Node.js', major > 22 || major === 22 && minor >= 13 ? 'pass' : 'fail', `${process.versions.node}; requires 22.13 or newer`);
-  add('Platform', process.platform === 'darwin' ? 'pass' : 'warn', process.platform === 'darwin' ? 'macOS; validated alpha platform' : `${process.platform}; native agent operation is not yet validated for this alpha`);
+  add('Platform', process.platform === 'darwin' ? 'pass' : 'warn', process.platform === 'darwin' ? 'macOS; validated desktop platform' : `${process.platform}; native agent operation is not yet validated on this platform`);
   async function executable(name, required, hint) {
     const override = env[`HELOSCRUM_${name.toUpperCase()}_BIN`];
     const binary = providerBinary(name);

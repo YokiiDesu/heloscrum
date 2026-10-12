@@ -1,7 +1,7 @@
 # Release Checklist
 
-HeloScrum is a public source alpha. A stable release requires the platform and
-provider evidence described in [Release Status](RELEASE_STATUS.md).
+HeloScrum publishes numbered releases. Document the platform and provider
+support described in [Release Status](RELEASE_STATUS.md) for each release.
 
 1. Prepare a clean candidate. Exclude runtime data, credentials, machine-specific
    paths, unrelated project material, generated output, and private development reports.
@@ -16,7 +16,8 @@ provider evidence described in [Release Status](RELEASE_STATUS.md).
 6. Check the app and website with keyboard input, narrow layouts, both themes,
    and reduced motion. Verify attachment previews and public tour links.
 7. Record the exact revision, platform, commands, outcomes, and limitations in
-   release notes. Publish a prerelease tag for an alpha after release approval.
+   release notes. After release approval, publish a version tag matching the root
+   and desktop package versions, then create its GitHub release.
 
 ## Website Deployment
 
