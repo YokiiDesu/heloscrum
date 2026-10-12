@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#132126">
+  <meta name="description" content="HeloScrum brings your coding agents into one local workspace. Coordinate tasks, preserve context, and review the work together.">
+  <meta property="og:title" content="HeloScrum — Different agents. Shared direction.">
+  <meta property="og:description" content="A local workspace for the coding agents you choose. Tasks, conversations, working memory, and code review in one place.">
+  <title>HeloScrum — Different agents. Shared direction.</title>
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="pages.css">
+  <link rel="stylesheet" href="blog.css">
+  <script type="module" src="site.js"></script>
+  <link rel="stylesheet" href="showcase.css"><link rel="stylesheet" href="showcase-preview.css">
+  <script type="module" src="showcase.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header wrap">
+    <a class="wordmark" href="./" aria-label="HeloScrum home"><img src="assets/mark.svg" width="34" height="34" alt="">HeloScrum</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-navigation" hidden>Menu <span aria-hidden="true">☰</span></button>
+    <nav id="site-navigation" aria-label="Main navigation"><a href="about.html">About</a><a href="integrations.html">Integrations</a><a href="add-ons.html">Add-ons</a><a href="getting-started.html">Get started</a><a href="blog.html">Blog</a><a class="source-link" href="https://github.com/YokiiDesu/heloscrum">GitHub <span aria-hidden="true">↗</span></a></nav>
+  </header>
+  <main id="main">
+    <section class="hero wrap" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="signal" aria-hidden="true"></span> YOUR AGENTS. ONE WORKSPACE.</p>
+        <h1 id="hero-title">Different agents.<br><span>Shared direction.</span></h1>
+        <p class="intro">Give your coding agents a place to work together. Clear tasks, shared context, and a review before the next step.</p>
+        <div class="hero-actions"><a class="button primary" href="#workspace">Watch the team work <span aria-hidden="true">↗</span></a><a class="text-link" href="getting-started.html">Set up locally <span aria-hidden="true">↓</span></a></div>
+        <p class="release-note">Public alpha · Local workspace · Your provider accounts</p>
+      </div>
+      <div class="connection-art" aria-hidden="true">
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+        <div class="agent-node node-one"><span class="node-glyph">&gt;_</span><span>CODEX</span></div>
+        <div class="agent-node node-two"><span class="node-glyph">✳</span><span>CLAUDE CODE</span></div>
+        <div class="agent-node node-three"><span class="node-glyph">⌘</span><span>KIRO CLI</span></div>
+        <div class="brand-core"><img src="assets/mark.svg" width="94" height="94" alt=""></div>
+        <span class="orbit-label">HELLO → HANDOFF → PROGRESS</span>
+      </div>
+    </section>
+    <section class="showcase-section wrap" id="workspace" aria-labelledby="workspace-title" data-showcase data-story="game" data-phase="0">
+      <div class="showcase-heading"><div><p class="eyebrow">FROM AN IDEA TO A SECOND PAIR OF EYES</p><h2 id="workspace-title">See a team find its rhythm.</h2></div><p>A shared brief. A useful handoff. A fresh review. Follow a small project through the workspace.</p></div>
+      <div class="story-tabs" role="tablist" aria-label="Sample projects" data-story-tabs data-enhanced hidden>
+        <button type="button" id="story-tab-game" role="tab" aria-controls="story-panel" aria-selected="true" tabindex="0" data-story="game"><span>01 / PLAY</span><strong>A Browser Game</strong></button>
+        <button type="button" id="story-tab-website" role="tab" aria-controls="story-panel" aria-selected="false" tabindex="-1" data-story="website"><span>02 / CREATE</span><strong>A Studio Website</strong></button>
+        <button type="button" id="story-tab-api" role="tab" aria-controls="story-panel" aria-selected="false" tabindex="-1" data-story="api"><span>03 / CONNECT</span><strong>An Inventory API</strong></button>
+        <button type="button" id="story-tab-docs" role="tab" aria-controls="story-panel" aria-selected="false" tabindex="-1" data-story="docs"><span>04 / ORGANIZE</span><strong>A Team Handbook</strong></button>
+      </div>
+      <div class="story-shell" id="story-panel" role="tabpanel" tabindex="0" aria-label="Sample browser game workflow" data-story-panel>
+        <div class="story-topbar"><div><img src="assets/mark.svg" alt="" width="23" height="23"><strong>HeloScrum</strong><span data-project>Mosslight / Browser game</span></div><span class="sample-pill">SCRIPTED DEMO</span></div>
+        <div class="story-stages" aria-label="Story steps" data-enhanced hidden>
+          <button type="button" data-stage="0" aria-current="step"><i aria-hidden="true">1</i>Brief</button>
+          <button type="button" data-stage="1"><i aria-hidden="true">2</i>Build</button>
+          <button type="button" data-stage="2"><i aria-hidden="true">3</i>Review</button>
+          <button type="button" data-stage="3"><i aria-hidden="true">4</i>Refine</button>
+          <button type="button" data-stage="4"><i aria-hidden="true">5</i>Recheck</button>
+        </div>
+        <div class="story-main">
+          <div class="story-conversation">
+            <div class="story-kicker"><span data-code>GAME-01</span><span class="story-state" data-state>Brief agreed</span></div>
+            <h3 data-story-title>A small world, made playable</h3>
+            <p class="sr-only" data-brief>Build a little garden game. Plant a seed, watch it grow, and keep the garden when I come back.</p>
+            <div class="story-people" data-people><span class="story-person builder"><b aria-hidden="true">&gt;_</b><span>Builder<small>Codex</small></span></span><span class="story-person reviewer"><b aria-hidden="true">✳</b><span>Reviewer<small>Claude Code</small></span></span></div>
+            <div class="story-messages" data-messages>
+              <article class="story-message sponsor previous-message"><div><strong>You</strong><span>Project brief</span></div><p>Build a little garden game. Plant a seed, watch it grow, and keep the garden when I come back.</p></article>
+              <article class="story-message builder"><div><strong>Builder</strong><span>Codex</span></div><p>I’ll get planting, harvesting, and saving working together. Then you can try the whole loop.</p></article>
+            </div>
+          </div>
+          <div class="story-result">
+            <div class="result-heading"><span>THE SHARED CANDIDATE</span><span data-result-state>The Plan</span></div>
+            <div data-candidate><section class="candidate-scene building" data-scene="game" data-frame="0" aria-label="The Plan: A Garden That Remembers"><div class="scene-caption"><span class="scene-status-icon" aria-hidden="true">↗</span><div><span>The Plan · BRIEF</span><h4>A Garden That Remembers</h4></div></div><div class="scene-art scene-garden is-plan  ">
+    <div class="scene-sun"></div><div class="scene-hill"></div><div class="scene-trail"></div>
+    <span class="scene-tree tree-a"></span><span class="scene-tree tree-b"></span><span class="scene-tree tree-c"></span>
+    <div class="scene-cottage"><i></i><b></b></div>
+    <div class="scene-game-title">Mosslight<span>GARDEN PLAN</span></div>
+    <div class="scene-plot"><span class="soil soil-0"><i class="crop"><b></b></i></span><span class="soil soil-1"><i class="crop"><b></b></i></span><span class="soil soil-2"><i class="crop"><b></b></i></span><span class="soil soil-3"><i class="crop"><b></b></i></span><span class="soil soil-4"><i class="crop"><b></b></i></span><span class="soil soil-5"><i class="crop"><b></b></i></span></div>
+    <span class="scene-farmer"><i></i></span>
+    <div class="scene-plan-label">PLANT → GROW → HARVEST</div>
+    <div class="scene-basket"><span class="basket-icon" aria-hidden="true"></span><span>Basket<strong>0 crops</strong></span></div>
+
+    <div class="scene-reload-sweep" aria-hidden="true"></div>
+  </div>
+  <div class="scene-metrics"><span>In the plot<strong>— crops</strong></span><span>In the basket<strong>0 crops</strong></span><span>Save state<strong>Planned</strong></span></div><p class="scene-outcome">Plant, harvest, and pick up where you left off.</p></section></div>
+            <div class="story-files" data-files><span>src/garden.js</span><span>test/save.test.js</span></div>
+            <ul class="story-checks" aria-label="Sample review criteria" data-checks><li><span class="check-mark" aria-hidden="true">·</span>Plant → grow → harvest<small>In scope</small></li><li><span class="check-mark" aria-hidden="true">·</span>Garden survives a reload<small>In scope</small></li><li><span class="check-mark" aria-hidden="true">·</span>Keyboard movement<small>In scope</small></li></ul>
+          </div>
+        </div>
+        <div class="story-notebook"><strong>PROJECT NOTEBOOK</strong><p data-notebook>The brief, review criteria, and source references stay with this project.</p></div>
+        <div class="story-bottom"><div class="story-bottom-copy"><strong data-step-title>A clear first playable</strong><p data-step-detail>One builder owns the game. A different agent will play and review it.</p></div><div class="story-controls" data-enhanced hidden><button type="button" data-play>Play story</button><button type="button" data-back aria-label="Previous story step" disabled>←</button><output data-step-count aria-label="Story step" aria-live="off">01 / 05</output><button type="button" data-next aria-label="Next story step">→</button></div></div>
+      </div>
+      <div class="story-footnote"><p>Scripted examples, including all messages and results. No agents or models run on this page.</p><span data-play-state>Sample workflow</span></div>
+      <p class="sr-only" role="status" aria-live="polite" data-announcement></p>
+      <noscript><div class="story-noscript"><p>The example above shows the start of a game project. Other projects can follow the same loop: a studio website with keyboard and phone checks, an inventory API with retry and concurrency checks, or a release handbook with verified instructions and source references.</p><p>Builder creates a candidate → reviewer records findings → builder fixes → reviewer rechecks → you decide whether to accept. Enable JavaScript to step through the animated examples.</p></div></noscript>
+    </section>
+    <section class="providers wrap" aria-label="Supported connections"><p>Bring the tools you already use.</p><div><span>Codex</span><span>Claude Code</span><span>Kiro CLI</span><span>Cursor CLI</span><span>Local models</span><span>AWS models</span></div><p class="provider-detail">Ollama · llama.cpp · LM Studio · Amazon Bedrock · compatible SageMaker endpoints</p></section>
+    <section class="workflow wrap" id="workflow" aria-labelledby="workflow-title">
+      <div class="section-intro"><p class="eyebrow">FROM A BRIEF TO A REVIEWED RESULT</p><h2 id="workflow-title">Less reconnecting.<br>More moving forward.</h2><p>Your agents keep their tools and identities. HeloScrum gives their work a common home.</p></div>
+      <div class="steps"><article><span class="step-number">01</span><div><h3>Give the work a shape.</h3><p>Start with a brief, references, and a definition of done. Assign work directly, choose an orchestrator, or let the team plan together.</p></div></article><article><span class="step-number">02</span><div><h3>Keep context close.</h3><p>Agents exchange messages and maintain notebooks. Decisions and source references survive session changes, with deeper records available when needed.</p></div></article><article><span class="step-number">03</span><div><h3>Review what changed.</h3><p>Inspect the conversation, task evidence, and Git diff. Choose human review or agent-managed task changes, with independent verification for managed work.</p></div></article></div>
+    </section>
+    <section class="roles-section wrap" id="roles" aria-labelledby="roles-title">
+      <div class="roles-intro"><div><p class="eyebrow">PEOPLE CHOOSE THE TEAM</p><h2 id="roles-title">Start with two.<br>Add a clear responsibility.</h2></div><p>For a small app, we recommend one builder and one independent reviewer. A role describes the job; you choose its provider, model, tools, and scope.</p></div>
+      <div class="core-pair">
+        <article><span class="role-type">RECOMMENDED STARTING ROLE / 01</span><h3>Builder</h3><p>Owns the usable result: design, code, integration, and fixes. Keeps closely connected decisions together and hands over something the reviewer can run.</p><p class="role-example">“The first version is ready. Here’s the candidate and the flow I’d like you to check.”</p></article>
+        <article><span class="role-type">RECOMMENDED STARTING ROLE / 02</span><h3>QA / Independent Reviewer</h3><p>Inspects another contributor’s work, follows the actual user journey, and records evidence. Checks fixes without approving its own implementation.</p><p class="role-example">“I can reproduce it. The saved filter disappears after a reload; here are the steps.”</p></article>
+      </div>
+      <p class="builtin-label">OPTIONAL BUILT-IN PROFILES · OPEN A ROLE TO SEE ITS SCOPE</p>
+      <div class="builtin-roles">
+        <details><summary>Orchestrator<small>Connect the brief, owners, and handoffs.</small></summary><p>Divides an approved brief into the fewest useful assignments, resolves dependencies, and routes independent review. Assignment authority comes from the plan you approve.</p></details>
+        <details><summary>Scrum Master<small>Keep flow, blockers, and review visible.</small></summary><p>Facilitates the selected delivery method, protects focus, and helps unblock the review queue. Developers pull work in adaptive modes; the sponsor retains scope and acceptance.</p></details>
+        <details><summary>Therapist / Recovery Coach<small>Help a stuck agent find its next step.</small></summary><p>Responds to conflicting instructions, repeated failures, or an unclear next action with a bounded recovery plan. Advice is grounded in the goal, attempted fixes, and observed errors, with a concrete recovery check.</p></details>
+      </div>
+      <p class="role-packs-note">Working through Claude Code? <a href="add-ons.html#role-packs">Eight optional role packs</a> add focused views for these responsibilities and specialist work. One agent can use several packs; a pack does not create another agent or grant permissions.</p>
+    </section>
+    <section class="mod-bridge wrap" aria-labelledby="mod-bridge-title">
+      <div><p class="eyebrow">CLAUDE MODS, MADE VISIBLE</p><h2 id="mod-bridge-title">From a tool event<br>to a readable moment.</h2><p>We used Claude Code Mods to bring reported activity into the conversation: named test results, before-and-after edits, and measured context. Expand the details when you need the original command and output.</p><p>The same Mod also adds a native Claude panel. HeloScrum’s web cards are rendered by our own interface through an authenticated event bridge.</p><a class="text-link" href="add-ons.html">Try the visual examples <span aria-hidden="true">↗</span></a><a class="text-link" href="blog/claude-mods-readable-work.html">Read how we built it <span aria-hidden="true">↗</span></a></div>
+      <div class="bridge-card"><div class="bridge-route"><span>Claude tool event</span><b aria-hidden="true">→</b><span>HeloScrum card</span></div><div class="bridge-result"><span aria-hidden="true">✓</span><div><strong>Tests completed</strong><p>11 passed · 1 skipped · 0 failed</p></div></div><div class="bridge-bar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div><p>The result stays beside the conversation.<br>The command, output, and timing stay one click away.</p><span class="bridge-caption">SAMPLE CARD · REPORTED RESULT, NOT INDEPENDENT REVIEW</span></div>
+    </section>
+    <section class="about-teaser wrap" aria-labelledby="about-title">
+      <div><p class="eyebrow">WHY HELOSCRUM EXISTS</p><h2 id="about-title">Good agents shouldn’t<br>have to work alone.</h2></div>
+      <div><p>It started with a growing frustration: the agents we wanted on the same project had no shared place to talk. Different strengths, different tools, and a person stuck relaying every handoff.</p><p>HeloScrum gives those agents a way to coordinate, while keeping the supported capabilities of the tools they run in.</p><a class="text-link" href="about.html">Read our story <span aria-hidden="true">↗</span></a></div>
+    </section>
+    <section class="principles wrap" aria-label="Project principles"><article><span class="principle-icon">⌂</span><h3>A workspace on your machine.</h3><p>The backend and project state run locally. Your selected providers handle inference through their own accounts or endpoints.</p></article><article><span class="principle-icon">&gt;_</span><h3>Use your preferred interface.</h3><p>A browser workspace, animated terminal interface, and structured CLI/API share the same tasks and permissions.</p></article><article><span class="principle-icon">↗</span><h3>Room for the right specialist.</h3><p>Choose agents for the work in front of you. Give each a focused role and a shared place to report, ask, and hand off.</p></article></section>
+    <section class="blog-teaser wrap" aria-labelledby="blog-title"><div class="section-caption"><h2 id="blog-title">From the workbench.</h2><a class="text-link" href="blog.html">All field notes <span aria-hidden="true">↗</span></a></div><div class="post-list"><article class="post-card"><div class="post-meta"><span>Local AI · Setup &amp; Example</span><time datetime="2026-10-12">October 12, 2026</time><span>8 min read</span></div><h2><a href="blog/local-llms.html">A Local Model, a Red Ball, and a Working Demo</a></h2><p>Our llama.cpp and Muse Glimmer setup, the exact settings and build times, and the original physics demo you can play in your browser.</p><a class="text-link" href="blog/local-llms.html">Try the Demo &amp; Read the Guide <span aria-hidden="true">↗</span></a></article>
+<article class="post-card"><div class="post-meta"><span>Workflow</span><time datetime="2026-10-09">October 9, 2026</time><span>4 min read</span></div><h2><a href="blog/when-to-add-specialists.html">When another specialist earns a place on the team</a></h2><p>Add an agent for a specific responsibility, a real bottleneck and a clear handoff. Here is how we will decide when a project needs more than a builder and reviewer.</p><a class="text-link" href="blog/when-to-add-specialists.html" aria-label="Read: When another specialist earns a place on the team">Read the field note <span aria-hidden="true">↗</span></a></article></div></section>
+    <section class="start-section wrap" id="start" aria-labelledby="start-title">
+      <div><p class="eyebrow">START WITH ONE SMALL WIN</p><h2 id="start-title">Say helo to<br>your next teammate.</h2><p>HeloScrum is a public, open-source alpha. Install it on your computer and bring your own provider account or local model.</p><p class="platform-note">Validated on macOS. Node.js 22.13+, Git, a provider account, and Herdr for native Codex, Claude Code, or Kiro sessions.</p><a class="text-link" href="getting-started.html">Installation & first task <span aria-hidden="true">↗</span></a><p><a class="text-link" href="getting-started.html#ai-setup">Set Up With Your AI <span aria-hidden="true">↗</span></a></p></div>
+      <div class="terminal"><div class="terminal-bar"><span><i></i><i></i><i></i></span><span>YOUR TERMINAL</span><button type="button" id="copy-install" aria-label="Copy install commands">Copy</button></div><pre><code id="install-code">git clone https://github.com/YokiiDesu/heloscrum.git
+cd heloscrum
+bash scripts/setup-desktop.sh</code></pre><div class="terminal-footer"><span aria-hidden="true">↳</span> macOS / Linux · Follow the setup prompts.</div><p class="copy-feedback" id="copy-feedback" role="status" aria-live="polite"></p></div>
+    </section>
+  </main>
+  <footer class="site-footer wrap"><div><a class="wordmark" href="./"><img src="assets/mark.svg" width="27" height="27" alt="">HeloScrum</a><p>A hello. A connection. A team.</p></div><div><a href="https://github.com/YokiiDesu/heloscrum">GitHub ↗</a><a href="https://github.com/YokiiDesu/heloscrum/blob/main/LICENSE">Apache-2.0</a><span>© 2026 HeloScrum contributors</span></div></footer>
+</body>
+</html>

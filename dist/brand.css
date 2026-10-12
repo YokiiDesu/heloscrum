@@ -1,0 +1,9 @@
+/* The original HeloScrum mark is separate from the Lucide interface icons. */
+.brand-mark.heloscrum-mark{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;flex:0 0 34px;padding:0;border-radius:10px;background:transparent;color:inherit;line-height:0}
+.heloscrum-mark img{display:block;width:100%;height:100%}
+.pack-brand>.heloscrum-wordmark{font-size:18px;font-weight:650;letter-spacing:-.55px;white-space:nowrap}
+.brand .heloscrum-wordmark{font-size:21px;letter-spacing:-.7px}
+.unified-shell .pack-brand{min-width:0;flex-shrink:1}
+.unified-shell .pack-brand>.shell-project{min-width:0}
+.boot-loading .brand-mark.heloscrum-mark{width:64px;height:64px;flex-basis:64px}
+@media(max-width:750px){.unified-shell .shell-project{flex:1;max-width:none}.pack-brand>.heloscrum-wordmark{font-size:17px}}

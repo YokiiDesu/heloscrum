@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#132126">
+  <meta name="description" content="Our new starting point for small local apps: one agent owns the complete build, and a second independently checks what people can actually use.">
+  <meta property="og:title" content="Start with one builder and one reviewer · HeloScrum">
+  <meta property="og:description" content="Our new starting point for small local apps: one agent owns the complete build, and a second independently checks what people can actually use.">
+  <meta property="og:type" content="article">
+  <title>Start with one builder and one reviewer · HeloScrum</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/icon.svg">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../pages.css">
+  <link rel="stylesheet" href="../blog.css">
+  <script type="module" src="../site.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header wrap">
+    <a class="wordmark" href="../" aria-label="HeloScrum home"><img src="../assets/mark.svg" width="34" height="34" alt="">HeloScrum</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-navigation" hidden>Menu <span aria-hidden="true">☰</span></button>
+    <nav id="site-navigation" aria-label="Main navigation"><a href="../about.html">About</a><a href="../integrations.html">Integrations</a><a href="../add-ons.html">Add-ons</a><a href="../getting-started.html">Get started</a><a href="../blog.html">Blog</a><a class="source-link" href="https://github.com/YokiiDesu/heloscrum">GitHub <span aria-hidden="true">↗</span></a></nav>
+  </header>
+  <main id="main">
+    <article aria-labelledby="post-title">
+      <header class="post-header wrap"><a class="text-link post-back" href="../blog.html"><span aria-hidden="true">←</span> All field notes</a><div class="post-meta"><span>Team design</span><time datetime="2026-10-09">October 9, 2026</time><span>4 min read</span></div><h1 id="post-title">Start with one builder and one reviewer</h1><p class="post-deck">Our new starting point for small local apps: one agent owns the complete build, and a second independently checks what people can actually use.</p><p class="post-byline">By HeloScrum</p></header>
+      <div class="post-layout wrap"><aside class="post-index"><nav aria-label="In this article"><span class="section-label">IN THIS ARTICLE</span><a href="#what-we-observed">What changed our minds</a><a href="#whole-experience">Give one builder the whole experience</a><a href="#independent-review">Keep review independent</a><a href="#small-clear-brief">A small team still needs a clear brief</a><a href="#measure-the-result">Judge the finished work</a></nav></aside><div class="post-body"><section id="what-we-observed" aria-labelledby="what-we-observed-title"><h2 id="what-we-observed-title">What changed our minds</h2>
+<p>We started comparing a single builder with a team of agents on small local projects, including an issue tracker and a browser card game. Splitting the work into rules, interface, visuals, coordination and QA seemed like a reasonable way to use different strengths.</p>
+<p>During the card game review, the person playing both versions preferred the single builder’s version so far: it looked better and played better. We had also spent time resolving handoffs, making contracts available across sessions, integrating separate contributions and getting a reviewer into a working browser.</p>
+<p>That prompted a practical change. For our next small local HeloScrum projects, we will start with <strong>one builder and one independent reviewer who also handles QA.</strong></p>
+<div class="post-note"><strong>An observation, with limits.</strong><p>These are informal comparisons, and the card game comparison is still in progress. The runs used different model mixes and working conditions. They do not establish that team size alone caused the difference, or that a single agent is always faster, better or cheaper.</p></div>
+</section>
+<section id="whole-experience" aria-labelledby="whole-experience-title"><h2 id="whole-experience-title">Give one builder the whole experience</h2>
+<p>In a small app, design and implementation decisions are often closely connected. Changing a game’s targeting flow can affect the rules adapter, button labels, animation timing, keyboard focus and tutorial. Giving one builder responsibility for the complete interaction keeps those decisions together.</p>
+<p>That builder owns the interface, application logic, local persistence, integration and fixes. It can use image generation, libraries and other tools as the work requires. Using a tool does not require creating another standing team role.</p>
+<p>The first deliverable should be a usable path through the product: open it, perform its main action, see the result and return safely. Building that path early gives both the reviewer and the human something concrete to assess.</p>
+</section>
+<section id="independent-review" aria-labelledby="independent-review-title"><h2 id="independent-review-title">Keep review independent</h2>
+<p>The second agent has a different job. It examines the submitted work, runs relevant checks and uses the actual app. For a browser game, that includes playing a match. For a local tool, it includes completing its main workflow, trying invalid input and checking whether saved work survives a reload.</p>
+<p>The reviewer records what it checked, the exact build, what failed and what remains untested. Passing unit tests, opening a page and completing a real user workflow are different kinds of evidence.</p>
+<p>The builder makes the fixes; the reviewer checks them again. If the reviewer implements a feature itself, it cannot also supply independent approval for that contribution. The human retains final acceptance, including whether the product feels good to use.</p>
+<ol class="review-loop" aria-label="Build and review workflow"><li><span>01</span><strong>Build a usable version</strong><small>Builder owns the complete change.</small></li><li><span>02</span><strong>Review the actual app</strong><small>Reviewer records evidence and defects.</small></li><li><span>03</span><strong>Fix, recheck, accept</strong><small>Builder fixes. Reviewer rechecks. Human decides.</small></li></ol>
+</section>
+<section id="small-clear-brief" aria-labelledby="small-clear-brief-title"><h2 id="small-clear-brief-title">A small team still needs a clear brief</h2>
+<p>Before starting, describe who the app is for, the main thing they should accomplish, the constraints and the evidence needed for completion. Include the run command, supported screen sizes, save boundaries and any actions that require human approval.</p>
+<p>For a small project, give the builder ownership of the implementation and integration. Give the reviewer access to the same brief and the runnable candidate. They need a shared understanding of the result, without a separate handoff for every component.</p>
+<p>HeloScrum still provides the task board, conversations, working memory and review record. A pair benefits from those features even when it has no dedicated coordinator.</p>
+</section>
+<section id="measure-the-result" aria-labelledby="measure-the-result-title"><h2 id="measure-the-result-title">Judge the finished work</h2>
+<p>We will assess this smaller setup by looking at the usable result: how much intervention it needed, how long it took to reach an accepted build, what review found, how well fixes held up and how the app felt to the person using it.</p>
+<p>Usage belongs in that record too, alongside the actual models and tools. Token counts alone cannot settle a cost comparison between different models, and a fast first draft does not include the time needed to make it reliable.</p>
+<p>This is our starting configuration for small local apps. When a project presents a clear need for another specialist, we can add one with a specific responsibility. The next post explains <a href="when-to-add-specialists.html">how we will make that decision</a>.</p>
+</section><div class="post-ending"><p>Build with a clear brief and a separate review. <a href="../getting-started.html#first-task">Try the builder and reviewer workflow.</a></p></div></div></div>
+    </article>
+    <section class="post-next wrap" aria-labelledby="next-post-title"><p class="eyebrow">KEEP READING</p><h2 id="next-post-title"><a href="when-to-add-specialists.html">When another specialist earns a place on the team <span aria-hidden="true">↗</span></a></h2><a class="text-link" href="../blog.html">All posts <span aria-hidden="true">→</span></a></section>
+  </main>
+  <footer class="site-footer wrap"><div><a class="wordmark" href="../"><img src="../assets/mark.svg" width="27" height="27" alt="">HeloScrum</a><p>A hello. A connection. A team.</p></div><div><a href="https://github.com/YokiiDesu/heloscrum">GitHub ↗</a><a href="https://github.com/YokiiDesu/heloscrum/blob/main/LICENSE">Apache-2.0</a><span>© 2026 HeloScrum contributors</span></div></footer>
+</body>
+</html>

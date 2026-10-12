@@ -1,0 +1,296 @@
+.app-preferences{max-width:800px;padding:6px 4px 24px}.app-preferences h3{font-size:24px;margin:0 0 9px}.app-preferences p{color:var(--muted);line-height:1.6}.app-preferences fieldset{border:1px solid var(--border);border-radius:12px;padding:20px;margin:26px 0}.app-preferences legend{font-size:16px;font-weight:650;padding:0 8px}.appearance-choices{--choice-accent:var(--nav-fill,#c4b5fd);--choice-fill:var(--nav-soft-fill,#343047);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.appearance-choices label{display:flex;align-items:flex-start;gap:10px;padding:16px;border:1px solid var(--border);border-radius:10px;cursor:pointer;margin:0;background:var(--surface)}.appearance-choices label:has(:checked){background:var(--choice-fill);border-color:var(--choice-accent);box-shadow:0 0 0 1px var(--choice-accent)}.appearance-choices input{width:auto;flex:none;margin-top:5px;accent-color:var(--choice-accent)}.appearance-choices label:has(:focus-visible){outline:2px solid var(--choice-accent);outline-offset:3px}.project-settings-dialog .appearance-choices input:focus{outline:none;border-color:var(--choice-accent);box-shadow:none}.appearance-choices strong,.appearance-choices small{display:block}.appearance-choices small{font-size:12px;line-height:1.6;color:var(--muted);margin-top:6px}.appearance-saved{font-size:12px}.native-terminal-screen .xterm{padding:0}.image-viewer button:focus-visible,.app-preferences :focus-visible{outline:2px solid var(--orange);outline-offset:3px}@media(max-width:700px){.appearance-choices{grid-template-columns:1fr}}
+
+/* Light mode uses surface roles instead of inverting dark background colors.
+   Mint supports the surfaces, logo orange marks actions, and indigo marks navigation. */
+:root[data-color-theme=light]{
+  --bg:#e8f0e9;--rail:#edf3ee;--panel:#fff;--surface:#fff;
+  --border:#cbd9cf;--line:var(--border);--text:#25332d;--muted:#52655a;--dim:#607268;
+  --surface-edge:#b9ccc0;--surface-inset:#edf3ee;
+  --surface-raised:linear-gradient(145deg,#fff 0%,#fdfffd 65%,#f2f7f4 100%);
+  --surface-header:linear-gradient(115deg,#fff 0%,#f2f8f3 65%,#eff2fa 100%);
+  --surface-lift:inset 0 1px 0 #fff,0 1px 2px #23443112,0 6px 18px #2344310a;
+  --orange:#a64b25;--green:#20745d;--red:#ae3e4b;
+  --brand-mint:#85d8c6;--brand-orange:#ffab76;
+  --accent:var(--orange);--accent-hover:#ffbd94;--accent-border:#c48155;
+  --accent-ink:#3d291e;--accent-soft-hover:#ffd4b6;
+  --control-fill:var(--brand-orange);--control-shadow:inset 0 1px 0 #ffffff66,0 2px 4px #65351624;
+  --nav-fill:#636995;--nav-hover:#545b86;--nav-ink:#fff;--nav-border:#515880;
+  --nav-soft-fill:#eef0fa;--nav-soft-border:#cbd0e5;--nav-soft-border-hover:#b8bfdc;
+  --nav-soft-hover:#e1e4f3;--nav-soft-ink:#42496f;
+  --nav-count-fill:oklch(from var(--light-hover) l c 280 / alpha);
+  --nav-count-ink:oklch(from var(--muted) l c 280 / alpha);
+  --nav-shadow:inset 0 1px 0 #ffffff35,0 2px 4px #363c6526;
+  --light-soft:#edf3ee;--light-hover:#e4eee6;--light-selected:#fff0e5;--light-success:#e8f5ee;
+  --light-code:#f8faf7;--light-blue:#edf5fc;--light-blue-ink:#295d82;
+  --light-mint:#f1f8f4;--light-mint-ink:#256850;
+  --light-amber:#fff7e9;--light-amber-ink:#85571c;
+  --light-rose:#fff0f1;--light-rose-ink:#a33a4b;
+  --focus-border:var(--accent);--focus-glow:0 0 0 3px #ffab7652;
+  --hover-glow:0 1px 4px #233e2e12;
+}
+
+/* The canvas carries the tint; reading surfaces stay bright and clearly edged. */
+:root[data-color-theme=light] .pack-shell{
+  background:radial-gradient(ellipse at 0 0,#f7faf2 0,transparent 60%),
+    radial-gradient(ellipse at 100% 0,#e5e9f5 0,transparent 55%),
+    linear-gradient(145deg,#eaf2ec,#e2ece5);
+}
+:root[data-color-theme=light] .loading-line{background-image:linear-gradient(90deg,var(--light-success) 20%,var(--brand-mint) 50%,var(--light-success) 80%)}
+:root[data-color-theme=light] :is(.pack-card,.overview-card,.pack-session,.pack-chat,
+  .project-settings-dialog,.agent-settings-dialog,.project-library-dialog,.work-dialog,
+  .pack-drawer,.resource-preview-dialog,.thread-conversation,.changes-panel,
+  .work-detail,.diff-content,.block-message,.library-session,.profile-card,
+  .registry-item,.project-agent-list article,.local-tool-list article){
+  background:var(--panel);color:var(--text);border-color:var(--border);
+}
+:root[data-color-theme=light] :is(.pack-topbar,.pack-footer,
+  .agent-card-head,.agent-card-foot,.drawer-heading,.library-header,
+  .project-settings-head,.work-dialog-head,.work-form-footer,.replies-heading,
+  .agent-tool-menu header,.agent-tool-menu footer,.project-resource-actions){
+  background:var(--panel);border-color:var(--border);
+}
+:root[data-color-theme=light] :is(.thread-sidebar,.library-sidebar,.work-directory,
+  .work-sections,.pack-chat.block-theme,.block-theme,.appearance-settings,
+  .file-list,.diff-toolbar,.context-transfer,.message-replies,.chat-filter-panel,
+  .repository-connection,.mcp-group,.mcp-connection-info,.project-resource-form fieldset,
+  .assignment-choices,.agent-availability,.work-plan-row,.work-method-detail details,
+  .work-method-detail section,.work-policy,.work-submit-review dl){
+  background:var(--light-soft);border-color:var(--border);
+}
+:root[data-color-theme=light] :is(.project-settings-tabs,.project-settings-context,
+  .thread-detail-head,.thread-composer,.agent-task-line,.work-detail-head,
+  .changes-heading,.changes-review-footer,.library-main,.library-project-actions,
+  .session-filters,.app-preferences fieldset){border-color:var(--border)}
+:root[data-color-theme=light] .project-settings-tabs{gap:8px;overflow-x:auto;flex-shrink:0}
+:root[data-color-theme=light] .project-settings-tabs button{padding:14px 16px;flex-shrink:0;white-space:nowrap}
+:root[data-color-theme=light] :is(dialog,.agent-tool-menu,.slash-command-list,#toast){
+  background:var(--panel);color:var(--text);border-color:var(--border);
+  box-shadow:0 16px 48px #213c2d24;
+}
+:root[data-color-theme=light] dialog::backdrop{background:#1d382b35}
+:root[data-color-theme=light] :is(.settings-empty,.work-empty,.empty-slot,.view-loading){background:var(--light-soft)}
+:root[data-color-theme=light] .view-loading{--load-base:#e5eee6;--load-shine:#f7fbf7}
+:root[data-color-theme=light] .load-placeholder-row{background:var(--panel);border-color:var(--border)}
+
+/* Solid navigation and action colors stand apart from the pale mint surfaces.
+   Softer selection fills are reserved for large lists and reading panels. */
+:root[data-color-theme=light] :is(input,select,textarea){color:var(--text);border-color:var(--border)}
+:root[data-color-theme=light] :is(input,select,textarea){background-color:var(--panel)}
+:root[data-color-theme=light] :is(input,textarea)::placeholder{color:var(--dim)}
+:root[data-color-theme=light] select:not([multiple]):not([size]){
+  background-color:var(--panel);color:var(--text);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2356685e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;background-size:16px;
+}
+:root[data-color-theme=light] select::picker(select),
+:root[data-color-theme=light] :is(select option,select optgroup){background:var(--panel);color:var(--text);border-color:var(--border)}
+:root[data-color-theme=light] select option:is(:checked,:hover,:focus){background:var(--light-selected);color:var(--accent)}
+:root[data-color-theme=light] :is(.workspace-tabs,.project-settings-tabs,.layout-switch,
+  .chat-theme-switch,.mode-toggle,.thread-filters,.segment,.pack-view-switch,
+  .settings-scope-filters,.session-filters,.work-filters,.work-sections,.schedule-nav,.history-tabs,.memory-tabs){
+  --focus-border:var(--nav-border);--focus-glow:0 0 0 3px #8991c74d;
+}
+:root[data-color-theme=light] :is(.layout-switch,.chat-theme-switch,.mode-toggle,
+  .segment,.pack-view-switch,.settings-scope-filters){background:var(--light-soft);border-color:var(--border)}
+:root[data-color-theme=light] :is(.layout-switch,.chat-theme-switch,.mode-toggle,
+  .thread-filters,.segment,.pack-view-switch,.settings-scope-filters,.session-filters,
+  .work-filters,.work-sections,.schedule-nav,.history-tabs,.memory-tabs) button{color:var(--muted);background:transparent}
+:root[data-color-theme=light] :is(.layout-switch,.chat-theme-switch,.mode-toggle,
+  .thread-filters,.segment,.pack-view-switch,.settings-scope-filters,.session-filters,
+  .work-filters,.work-sections,.schedule-nav,.history-tabs,.memory-tabs) button[aria-pressed=true]{
+  background:var(--nav-fill);color:var(--nav-ink);border-color:var(--nav-border);box-shadow:var(--nav-shadow);
+}
+:root[data-color-theme=light] :is(.work-filters,.session-filters,.work-sections,.schedule-nav) button[aria-pressed=true]>span{background:#0000001a;color:inherit}
+:root[data-color-theme=light] :is(.agent-tools-button,
+  .thread-status-controls button,.contact-refresh-row button,.tool-approval-bulk button,
+  .work-method-detail button,.work-message-card>button){background:var(--light-soft);color:var(--muted);border-color:var(--border)}
+/* The model trigger uses the same indigo action palette as workspace tools. */
+:root[data-color-theme=light] .agent-model-button{background:var(--nav-soft-fill);color:var(--nav-soft-ink);border-color:var(--nav-soft-border)}
+:root[data-color-theme=light] .agent-model-button .slot-effort{color:inherit}
+:root[data-color-theme=light] :is(.tab-count,.slot-tool-count,.work-resource-count,
+  .thread-filter-count,.work-sections button span,.session-filters button span){background:var(--light-hover);color:var(--muted);border-color:var(--border)}
+:root[data-color-theme=light] .pack-top-actions button>span{background:var(--nav-count-fill);color:var(--nav-count-ink);border-color:var(--nav-soft-border)}
+:root[data-color-theme=light] .pack-top-actions :is(.connection-label,[data-action=project-settings]>span){background:transparent;color:inherit}
+:root[data-color-theme=light] .threads-drawer .drawer-heading-actions button[data-thread-action=new]{background:var(--control-fill);color:var(--accent-ink);border-color:var(--accent-border);box-shadow:var(--control-shadow)}
+:root[data-color-theme=light] :is(.context-actions button,.thread-detail-head button,
+  .project-settings-tabs button,.work-task-title,.work-task-row>button){color:var(--muted)}
+:root[data-color-theme=light] .workspace-tabs [role=tab]{border:1px solid transparent;border-bottom-width:3px;border-radius:8px 8px 0 0}
+:root[data-color-theme=light] :is(.workspace-tabs [aria-selected=true],
+  .project-settings-tabs button[aria-pressed=true],.work-sections button[aria-pressed=true]){
+  color:var(--nav-ink);border-bottom-color:var(--nav-border);background:var(--nav-fill);box-shadow:inset 0 1px 0 #ffffff35;
+}
+/* Inactive workspace navigation shares the Needs Review highlight. */
+:root[data-color-theme=light] .workspace-tabs :is([role=tab][aria-selected=false],.review-attention){
+  background:var(--nav-soft-fill);color:var(--nav-soft-ink);border-color:var(--nav-soft-border);
+  --focus-border:var(--nav-border);--focus-glow:0 0 0 3px #8991c74d;
+}
+:root[data-color-theme=light] .workspace-tabs .review-attention{border:1px solid var(--nav-soft-border);border-radius:8px}
+:root[data-color-theme=light] .workspace-tabs [aria-selected=false] .tab-count{background:var(--nav-soft-hover);color:var(--nav-soft-ink);border-color:var(--nav-soft-border)}
+:root[data-color-theme=light] .review-attention::before{background:var(--nav-fill)}
+:root[data-color-theme=light] .review-attention.has-attention::before{background:var(--brand-orange)}
+:root[data-color-theme=light] .workspace-tabs [aria-selected=true] .tab-count{background:#0000001a;color:var(--nav-ink);border-color:#ffffff2b}
+:root[data-color-theme=light] :is(.agent-switcher-item,.library-project,.thread-item){background:var(--panel);border-color:var(--border);color:var(--text)}
+:root[data-color-theme=light] .agent-switcher-item[aria-pressed=true]{
+  background:var(--panel);border-color:var(--agent-border);box-shadow:inset 3px 0 var(--agent-color);
+}
+:root[data-color-theme=light] :is(.library-project[aria-pressed=true],.thread-item.selected,
+  .changes-files>button[aria-pressed=true],.file-row.chosen){
+  background:var(--light-selected);border-color:var(--accent);color:var(--text);
+}
+:root[data-color-theme=light] .appearance-choices label:has(:checked){background:var(--choice-fill);border-color:var(--choice-accent);box-shadow:0 0 0 1px var(--choice-accent)}
+:root[data-color-theme] .appearance-choices input[type=radio]{color:var(--choice-accent);accent-color:var(--choice-accent)}
+:root[data-color-theme=light] :is(input[type=radio],input[type=checkbox]){accent-color:var(--accent)}
+:root[data-color-theme=light] :is(.primary,button.primary,.agent-card-foot form button){
+  background:var(--brand-orange);color:var(--accent-ink);border-color:var(--accent-border);box-shadow:var(--control-shadow);
+}
+:root[data-color-theme=light] :is(.work-dialog,#panel-tasks,.project-settings-dialog) .primary{background:var(--brand-orange);color:var(--accent-ink);border-color:var(--accent-border);box-shadow:var(--control-shadow)}
+:root[data-color-theme=light] .agent-card-foot form{background:var(--panel);border-color:#b7c9bd}
+:root[data-color-theme=light] :is(.prompt-delivery-mode,.pack-card:has(.block-theme) .prompt-delivery-mode){background:transparent;color:var(--muted);border-color:var(--border)}
+:root[data-color-theme=light] :is(.prompt-delivery-mode,.pack-card:has(.block-theme) .prompt-delivery-mode)[aria-pressed=true]{background:var(--control-fill);color:var(--accent-ink);border-color:var(--accent-border);box-shadow:var(--control-shadow)}
+:root[data-color-theme=light] .chat-jump{background:#bed5e1;color:#183644;border-color:#7596a7;box-shadow:inset 0 1px 0 #ffffff80,0 3px 10px #253f5026}
+
+/* Tool types and authors keep distinct, low-contrast tints on a white chat. */
+:root[data-color-theme=light] :is(.chat-tool,.chat-tool:not(.block-tool),.block-tool,.block-activity){background:var(--light-mint);border-color:#ccdfd3;color:var(--text)}
+:root[data-color-theme=light] :is(.chat-tool:not(.block-tool).tool-edit,.block-tool.tool-edit){background:#eef8f0;border-color:#c4ddc9}
+:root[data-color-theme=light] :is(.chat-tool:not(.block-tool).tool-command,.block-tool.tool-command){background:var(--light-amber);border-color:#eadabd}
+:root[data-color-theme=light] :is(.tool-completed .tool-status,.tool-edit .tool-glyph,.tool-edit .block-icon){color:var(--light-mint-ink)}
+:root[data-color-theme=light] :is(.tool-failed .tool-status,.activity-failed){color:var(--light-rose-ink)}
+:root[data-color-theme=light] :is(.tool-command .tool-glyph,.tool-command .block-icon,.tool-running .tool-status){color:var(--light-amber-ink)}
+:root[data-color-theme=light] :is(.from-user,.block-theme .from-user,.dm-bubble,.human-avatar,
+  .thread-bubble.side-b,.block-conversations .thread-bubble.side-b,.work-message-card){background:var(--light-blue);border-color:#c9dceb}
+/* Brief metadata badges keep a faint blue tint and a readable dark label. */
+:root[data-color-theme=light] .work-message-meta>span{
+  background:color-mix(in srgb,var(--light-blue-ink) 10%,white);color:var(--light-blue-ink);
+  box-shadow:inset 0 0 0 1px #c9dceb;
+}
+:root[data-color-theme=light] :is(.thread-bubble,.block-state,.block-conversations .thread-bubble[data-agent-identity],
+  .message-replies .thread-bubble[data-agent-identity],.from-contact[data-agent-identity] .dm-bubble){
+  background:color-mix(in srgb,var(--agent-color,#79758c) 6%,white);
+  border-color:var(--agent-border,var(--border));
+}
+:root[data-color-theme=light] :is(.markdown pre,.code-block,.code-block pre,.work-file-text,
+  .block-tool pre,.chat-tool.tool-edit .tool-section pre,.tool-section pre.diff-preview,
+  .request-content>pre){background:var(--light-code);color:var(--text);border-color:var(--border)}
+:root[data-color-theme=light] :is(.code-block figcaption,.hunk-heading,.document-markdown th){background:var(--light-soft);color:var(--muted);border-color:var(--border)}
+:root[data-color-theme=light] :is(.diff-preview .diff-add,.code-line.add){background:#e7f5eb;color:#245e3a}
+:root[data-color-theme=light] :is(.diff-preview .diff-remove,.code-line.remove){background:#ffedf0;color:#9c344a}
+:root[data-color-theme=light] :is(.diff-preview .diff-hunk,.hunk-heading>code){color:var(--light-blue-ink)}
+:root[data-color-theme=light] .diff-preview .diff-meta{color:var(--muted)}
+:root[data-color-theme=light] .file-change{--file-color:var(--text)}
+:root[data-color-theme=light] :is(.file-added,.file-copied){--file-color:#245e3a}
+:root[data-color-theme=light] :is(.file-deleted,.file-conflict){--file-color:#9c344a}
+:root[data-color-theme=light] :is(.file-modified,.file-typechanged){--file-color:#85571c}
+:root[data-color-theme=light] .file-renamed{--file-color:var(--light-blue-ink)}
+:root[data-color-theme=light] :is(.markdown a,.document-markdown a,.thread-reply){color:var(--accent)}
+:root[data-color-theme=light] :is(.lifecycle-done,.state-recovering){background:#f1edf9;color:#68548d}
+:root[data-color-theme=light] :is(.state-focused,.lifecycle-working,.work-status-done,.work-status-completed,.review-status.reviewed){background:var(--light-success);color:var(--light-mint-ink)}
+:root[data-color-theme=light] :is(.slot-request,.pack-session .slot-request,.settings-wait,
+  .review-status,.work-status-needs_review,.schedule-warning,.repository-notice){background:var(--light-amber);color:var(--light-amber-ink);border-color:#eadabd}
+:root[data-color-theme=light] :is(.work-status-blocked,.state-stuck,.state-overloaded,.inline-error){background:var(--light-rose);color:var(--light-rose-ink)}
+
+/* Secondary workspace views use the same surface and selection hierarchy. */
+:root[data-color-theme=light] :is(.work-brief-card,.work-brief-card[aria-pressed=true]){color:var(--text)!important}
+:root[data-color-theme=light] .work-brief-card[aria-pressed=true]{background:var(--light-selected)!important}
+:root[data-color-theme=light] :is(.work-resource-list button,.work-resource-list a,.work-agent-picker label,
+  .work-method-choice,.work-attached>div,.schedule-notice,.calendar-agenda>p){background:var(--panel);border-color:var(--border);color:var(--text)}
+:root[data-color-theme=light] :is(.work-method-choice:has(:checked),.work-agent-picker label:has(:checked),.work-policy label:has(:checked)){background:var(--light-selected);border-color:var(--accent)}
+:root[data-color-theme=light] :is(.schedule-calendar,.schedule-reminders,.schedule-dates,.schedule-rules,.work-schedule-strip){background:var(--light-soft);border-color:var(--border);color:var(--text)}
+:root[data-color-theme=light] .calendar-grid{background:var(--border);border-color:var(--border)}
+:root[data-color-theme=light] .calendar-cell{background:var(--panel)}
+:root[data-color-theme=light] :is(.calendar-weekday,.calendar-cell.outside-month){background:var(--light-soft);color:var(--muted)}
+:root[data-color-theme=light] .calendar-cell.selected-day{background:var(--light-selected)}
+:root[data-color-theme=light] :is(.schedule-calendar button,.schedule-reminders button){background:var(--panel);color:var(--text);border-color:var(--border)}
+:root[data-color-theme=light] .calendar-event{background:var(--light-blue)!important;color:var(--light-blue-ink)!important}
+:root[data-color-theme=light] .calendar-event.kind-sprint{background:var(--light-success)!important;color:var(--light-mint-ink)!important}
+:root[data-color-theme=light] .calendar-event.kind-milestone{background:#f1edf9!important;color:#68548d!important}
+:root[data-color-theme=light] .calendar-more{color:var(--accent)!important}
+:root[data-color-theme=light] .calendar-agenda-item{background:var(--panel)!important}
+:root[data-color-theme=light] :is(.settings-mark,.work-dialog-mark,.work-empty-mark){background:var(--light-success);color:var(--light-mint-ink);border-color:#cce3d7}
+:root[data-color-theme=light] .profile-template-badge{background:#e7eeee;color:#1d3734;box-shadow:inset 0 0 0 1px #b4c8c5}
+:root[data-color-theme=light] :is(.native-terminal,.native-terminal-screen,.native-terminal .xterm){background:#f5f7f8}
+
+/* Raised panels, tinted header bands and recessed contents establish the layers. */
+:root[data-color-theme=light] :is(.pack-card,.overview-card,.work-detail,.changes-panel,
+  .profile-card,.schedule-calendar,.schedule-reminders,.memory-note){
+  background:var(--surface-raised);border-color:var(--surface-edge);box-shadow:var(--surface-lift);
+}
+:root[data-color-theme=light] :is(.pack-topbar,.agent-card-head,.project-settings-head,
+  .work-dialog-head,.drawer-heading,.work-detail-head,.changes-heading,.thread-detail-head){
+  background:var(--surface-header);border-color:var(--border);
+}
+:root[data-color-theme=light] .workspace-tabs{background:var(--nav-soft-fill);border-color:var(--nav-soft-border);box-shadow:0 1px 0 #ffffffb3}
+:root[data-color-theme=light] :is(.work-directory,.thread-sidebar,.library-sidebar){
+  background:linear-gradient(160deg,#f7fbf7,#e8f0ea);border-color:var(--surface-edge);box-shadow:inset 0 1px 0 #fff;
+}
+:root[data-color-theme=light] :is(.pack-chat.block-theme,.memory-body,.project-settings-body){background:var(--surface-inset)}
+:root[data-color-theme=light] .work-empty{background:transparent}
+:root[data-color-theme=light] :is(.block-message,.registry-item,.work-method-detail section){background:#ffffffeb;border-color:#c8d8cd;box-shadow:0 1px 0 #b8ccbf26}
+:root[data-color-theme=light] :is(.agent-card-foot,.thread-composer,.project-resource-actions){background:linear-gradient(#fff,#f5f9f6);border-color:#c4d4ca}
+:root[data-color-theme=light] :is(.project-settings-dialog,.work-dialog,.pack-drawer){border-color:#b2c8bb;box-shadow:inset 0 1px 0 #fff,0 16px 48px #183d2a2b}
+:root[data-color-theme=light] .work-progress{background:linear-gradient(120deg,#f1faf4,#deeee3);border-color:#b8d3c2;box-shadow:inset 0 1px 0 #fff}
+:root[data-color-theme=light] .work-progress :is(strong,strong span,small){color:var(--light-mint-ink)}
+:root[data-color-theme=light] .work-sections{border-color:var(--border);box-shadow:inset 0 1px 0 #fff}
+:root[data-color-theme=light] .work-audit>li:not(:last-child){border-bottom:1px solid #e0e9e3;margin-bottom:23px}
+:root[data-color-theme=light] .work-audit-dot{background:var(--nav-fill);box-shadow:0 0 0 4px #6369951c}
+:root[data-color-theme=light] .memory-confidence{background:#e7eeee;color:#1d3734;box-shadow:inset 0 0 0 1px #b4c8c5}
+:root[data-color-theme=light] .memory-confidence.confidence-assumption{background:#fff0de;color:#775020}
+:root[data-color-theme=light] .memory-confidence.confidence-verified{background:#e3f2e8;color:#245a3c}
+:root[data-color-theme=light] :is(.work-audit,.memory-note) .document-markdown{color:var(--text)}
+:root[data-color-theme=light] .memory-note-closed .document-markdown{color:var(--muted)}
+
+/* The command picker belongs to the app chrome, separate from ANSI terminal cells. */
+:root[data-color-theme=light] .native-terminal{color:var(--text)}
+:root[data-color-theme=light] .native-terminal-bar{background:var(--surface-header);border-color:var(--border)}
+:root[data-color-theme=light] .native-terminal-status{color:var(--muted)}
+:root[data-color-theme=light] .native-terminal-status:is([data-state=error],[data-state=closed]){color:var(--light-rose-ink)}
+:root[data-color-theme=light] .native-terminal-bar button{color:var(--nav-soft-ink)}
+:root[data-color-theme=light] .native-terminal-commands{
+  margin:8px 10px 10px;border:1px solid var(--surface-edge);border-radius:10px;
+  background:linear-gradient(130deg,#f9fcfa,#eaf2ed);box-shadow:inset 0 1px 0 #fff;
+}
+:root[data-color-theme=light] .native-command-picker summary{padding:11px 14px;color:var(--text)}
+:root[data-color-theme=light] .native-command-body{padding:0 14px 14px;color:var(--text)}
+:root[data-color-theme=light] .native-command-fields select{
+  display:block;padding:9px 38px 9px 11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  border-color:#b8cbbf;border-radius:7px;box-shadow:inset 0 1px 2px #254f3510;
+}
+:root[data-color-theme=light] .native-command-actions button{background:#fff;color:var(--text);border-color:#b8cbbf;border-radius:7px}
+:root[data-color-theme=light] .native-command-actions button[type=submit]{background:var(--brand-orange);color:var(--accent-ink);border-color:var(--accent-border);box-shadow:var(--control-shadow)}
+:root[data-color-theme=light] .native-command-actions a{color:var(--nav-soft-ink)}
+:root[data-color-theme=light] .native-command-body [data-impact]{color:var(--light-amber-ink)}
+:root[data-color-theme=light] .native-command-body [data-result]{color:var(--light-mint-ink)}
+:root[data-color-theme=light] .native-command-body [data-result][data-error=true]{color:var(--light-rose-ink)}
+
+@media(hover:hover) and (pointer:fine){
+  :root[data-color-theme=light] :is(button,select):not(:disabled):hover{background-color:var(--light-hover);color:var(--text);border-color:#a5bcae}
+  :root[data-color-theme=light] :is(.layout-switch,.chat-theme-switch,.mode-toggle,.segment,
+    .thread-filters,.session-filters,.work-filters,.schedule-nav,.pack-view-switch,
+    .settings-scope-filters,.history-tabs,.memory-tabs) button:not(:disabled):hover{background-color:var(--nav-soft-hover);color:var(--nav-soft-ink);border-color:var(--nav-border)}
+  :root[data-color-theme=light] .workspace-context>.context-actions>button:not(:disabled):hover{background-color:var(--nav-soft-hover);color:var(--nav-soft-ink);border-color:var(--nav-border)}
+  :root[data-color-theme=light] .project-settings-dialog button:not(:disabled):not(:where([aria-pressed],[role=tab])):hover{background-color:var(--accent-soft-hover);color:var(--accent-ink);border-color:var(--accent-border)}
+  :root[data-color-theme=light] :is(.prompt-delivery-mode,.pack-card:has(.block-theme) .prompt-delivery-mode):not(:disabled):hover{background:var(--accent-soft-hover);color:var(--accent-ink);border-color:var(--accent-border)}
+  :root[data-color-theme=light] :is(.primary,button.primary,.agent-card-foot form button):not(:disabled):hover,
+  :root[data-color-theme=light] :is(.work-dialog,#panel-tasks,.project-settings-dialog) .primary:not(:disabled):hover{
+    background:var(--accent-hover);color:var(--accent-ink);border-color:var(--accent-hover);
+  }
+  :root[data-color-theme=light] :is(.agent-switcher-item,.thread-item,.library-project):hover{background:var(--light-hover)}
+  :root[data-color-theme=light] :is(.workspace-tabs [role=tab],.project-settings-tabs button,.work-sections button):not(:disabled):hover{border-color:transparent;background:var(--nav-soft-hover);color:var(--nav-soft-ink)}
+  :root[data-color-theme=light] :is(.layout-switch,.chat-theme-switch,.mode-toggle,.segment,
+    .thread-filters,.session-filters,.work-filters,.schedule-nav,.pack-view-switch,.settings-scope-filters,.history-tabs,.memory-tabs) button[aria-pressed=true]:not(:disabled):hover,
+  :root[data-color-theme=light] :is(.workspace-tabs [aria-selected=true],.project-settings-tabs button[aria-pressed=true],.work-sections button[aria-pressed=true]):not(:disabled):hover{
+    background:var(--nav-hover);color:var(--nav-ink);border-color:var(--nav-border);
+  }
+  :root[data-color-theme=light] :is(.prompt-delivery-mode,.pack-card:has(.block-theme) .prompt-delivery-mode)[aria-pressed=true]:not(:disabled):hover{background:var(--accent-hover);color:var(--accent-ink);border-color:var(--accent-border)}
+  :root[data-color-theme=light] .workspace-tabs :is([role=tab][aria-selected=false],.review-attention):not(:disabled):hover{background:var(--nav-soft-hover);color:var(--nav-soft-ink);border-color:var(--nav-soft-border-hover)}
+  :root[data-color-theme=light] .chat-jump:not(:disabled):hover{background:#cce1eb;color:#183644;border-color:#668c9f;box-shadow:inset 0 1px 0 #ffffff80,0 4px 12px #253f502b}
+  :root[data-color-theme=light] .native-command-actions button[type=submit]:not(:disabled):hover{background:var(--accent-hover);color:var(--accent-ink);border-color:var(--accent-border)}
+  :root[data-color-theme=light] :is(.block-tool>summary,.mcp-group>summary):hover{background:var(--light-success);color:var(--text)}
+  :root[data-color-theme=light] .work-brief-card:hover{background:var(--light-hover)!important}
+}
+
+.sound-previews{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+
+.app-preferences .settings-check{display:flex;align-items:center;gap:9px}.app-preferences .settings-check input{width:auto;flex:none;margin:0}
+.app-tooltip:focus-visible{outline:2px solid var(--nav-border,#91b7eb);outline-offset:2px}
+:root[data-color-theme=light] .app-tooltip{background:linear-gradient(135deg,#fff,#f1f3fc);color:#343b5b;border-color:#bbc2dc;box-shadow:inset 0 1px 0 #fff,0 5px 18px #363c6526}
+:root[data-color-theme=light] .app-tooltip kbd{background:#e8ebf8;color:#42496f;border-color:#c4cae0;box-shadow:0 1px 0 #bdc4dc}

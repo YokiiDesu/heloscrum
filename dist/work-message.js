@@ -1,0 +1,5 @@
+import {libraryIcon} from './agent-appearance.js';
+import {messageContent} from './message-content.js';
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// Only recorded work metadata creates this card; never infer it from chat text.
+export function workMessage(brief,key=`brief:${brief.planId}`,instance=key,renderMarkdown=esc){return `<section class="work-message-card"><header>${libraryIcon('clipboard-list',18)}<span>PROJECT BRIEF</span></header><h3>${esc(brief.title)}</h3>${messageContent(renderMarkdown(brief.summary),key,instance)}<div class="work-message-meta"><span>${brief.taskCount} task${brief.taskCount===1?'':'s'}</span><span>${brief.resourceCount} resource${brief.resourceCount===1?'':'s'}</span><span>${brief.changePolicy==='review'?'Changes require review':'Agents manage tasks'}</span></div><button type="button" data-open-work="${esc(brief.planId)}" data-work-project="${esc(brief.project)}">Open task plan ${libraryIcon('arrow-up-right',14)}</button></section>`;}

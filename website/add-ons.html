@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#132126">
+  <meta name="description" content="Optional Claude visual Mods for HeloScrum: readable test results, file changes, and context at a glance. Choose from eight role workspaces.">
+  <meta property="og:title" content="Add-ons · HeloScrum">
+  <meta property="og:description" content="Give your agent's work a clearer view. Explore the Claude visual Mod and the next chapter of role-aware panels.">
+  <title>Add-ons · HeloScrum</title>
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="pages.css">
+  <link rel="stylesheet" href="addons.css">
+  <script type="module" src="site.js"></script>
+  <script type="module" src="addons.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header wrap">
+    <a class="wordmark" href="./" aria-label="HeloScrum home"><img src="assets/mark.svg" width="34" height="34" alt="">HeloScrum</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-navigation" hidden>Menu <span aria-hidden="true">☰</span></button>
+    <nav id="site-navigation" aria-label="Main navigation"><a href="about.html">About</a><a href="integrations.html">Integrations</a><a href="add-ons.html" aria-current="page">Add-ons</a><a href="getting-started.html">Get started</a><a href="blog.html">Blog</a><a class="source-link" href="https://github.com/YokiiDesu/heloscrum">GitHub <span aria-hidden="true">↗</span></a></nav>
+  </header>
+  <main id="main">
+    <section class="addon-hero wrap" aria-labelledby="page-title">
+      <div class="addon-intro">
+        <p class="eyebrow">SMALL ADDITIONS. A CLEARER VIEW.</p>
+        <h1 id="page-title">See the work<br><span>take shape.</span></h1>
+        <p class="page-lead">Tests with a story. Changes you can inspect. Context you can see. Give Claude’s activity a little more presence in your workspace.</p>
+        <div class="addon-badges"><span class="addon-badge">Optional · included in source</span><span>Claude Code</span></div>
+        <div class="hero-actions"><a class="button primary" href="#setup">Use the visual Mod <span aria-hidden="true">↓</span></a><a class="text-link" href="#role-packs">Explore role packs <span aria-hidden="true">↓</span></a></div>
+        <p class="addon-small">Available in the local alpha. No Jev connection required.</p>
+      </div>
+      <div class="addon-preview" aria-label="Interactive example of Claude activity cards">
+        <div class="addon-preview-heading"><span class="addon-monogram" aria-hidden="true">✳</span><div><strong>Claude visual Mod</strong><span>HeloScrum activity</span></div><span class="sample-badge">Sample data</span></div>
+        <div class="addon-tabs" role="tablist" aria-label="Preview cards" hidden>
+          <button type="button" id="preview-tests-tab" role="tab" aria-controls="preview-tests" aria-selected="true" tabindex="0">Test results</button>
+          <button type="button" id="preview-changes-tab" role="tab" aria-controls="preview-changes" aria-selected="false" tabindex="-1">File changes</button>
+          <button type="button" id="preview-context-tab" role="tab" aria-controls="preview-context" aria-selected="false" tabindex="-1">Context</button>
+        </div>
+        <section class="addon-sample" id="preview-tests" aria-labelledby="preview-tests-title">
+          <div class="sample-card-heading"><span class="sample-icon mint" aria-hidden="true">✓</span><div><h2 id="preview-tests-title">Tests completed</h2><p>Node test runner · example suite</p></div><span class="sample-duration">1.2 s</span></div>
+          <div class="sample-score"><strong>12</strong><div>tests reported<span>11 passed · 1 skipped · 0 failed</span></div></div>
+          <div class="sample-bar" aria-hidden="true"><span></span><i></i></div>
+          <ul class="sample-results"><li><span aria-hidden="true">✓</span> Keeps a saved draft after reload <small>Passed</small></li><li><span aria-hidden="true">✓</span> Returns focus after closing a dialog <small>Passed</small></li><li class="sample-skip"><span aria-hidden="true">−</span> Remote connection check <small>Skipped</small></li></ul>
+          <details class="sample-details"><summary>Command & details <span aria-hidden="true">↗</span></summary><pre><code>node --test test/workspace.test.mjs
+# tests 12
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 1
+# todo 0</code></pre><p>Illustrative excerpt. Counts in the app require a complete Node TAP summary.</p></details>
+        </section>
+        <section class="addon-sample" id="preview-changes" aria-labelledby="preview-changes-title">
+          <div class="sample-card-heading"><span class="sample-icon coral-text" aria-hidden="true">±</span><div><h2 id="preview-changes-title">A change you can read</h2><p>Edit completed · example file</p></div></div>
+          <div class="sample-file"><code>src/components/Dialog.css</code><span>−1 <b>+2</b></span></div>
+          <div class="sample-diff"><div class="diff-remove"><span aria-hidden="true">−</span><code>outline: none;</code></div><div class="diff-add"><span aria-hidden="true">+</span><code>outline: 2px solid var(--mint);</code></div><div class="diff-add"><span aria-hidden="true">+</span><code>outline-offset: 4px;</code></div></div>
+          <p class="sample-explanation">Before and after, right beside the conversation. Open the details when you need the full tool call.</p><p class="sample-caption">One reported edit. Final repository review is a separate step.</p>
+        </section>
+        <section class="addon-sample" id="preview-context" aria-labelledby="preview-context-title">
+          <div class="sample-card-heading"><span class="sample-icon blue" aria-hidden="true">◉</span><div><h2 id="preview-context-title">Room for the next thought</h2><p>Example context measurement</p></div></div>
+          <div class="sample-context"><div class="context-ring" role="img" aria-label="Sample context: 24 percent occupied"><strong>24<span>%</span></strong></div><div><strong>48k <span>/ 200k</span></strong><p>Reported context occupancy</p><span class="context-room">Room to continue</span></div></div>
+          <div class="sample-context-note"><span aria-hidden="true">▤</span><p>A useful cue for your next checkpoint. Actual cards use reported measurements; unknown usage stays unknown.</p></div><p class="sample-caption">Context occupancy is separate from billable token usage.</p>
+        </section>
+        <p class="preview-footnote">Interactive illustration · no agent or model is running here.</p>
+      </div>
+    </section>
+
+    <section class="addon-features wrap" aria-label="Visual Mod features">
+      <article><span class="feature-index">01 / IN THE CONVERSATION</span><h2>Results, with the details close.</h2><p>Named test results, outcome bars, and before/after edits make tool activity easier to scan. Expand a card to inspect its command, output, and timing.</p></article>
+      <article><span class="feature-index">02 / IN CLAUDE CODE</span><h2>A panel that stays in reach.</h2><p>Open <code>/heloscrum</code> for Activity, Changes, and Context tabs. Pin a compact status strip above the prompt when you want to keep it in view.</p></article>
+      <article><span class="feature-index">03 / BACK AT YOUR DESK</span><h2>Follow the evidence later.</h2><p>The web cards also appear in saved History. Dark and light appearances, expandable details, and reduced-motion support fit the rest of the workspace.</p></article>
+    </section>
+
+    <section class="connections-section wrap" aria-labelledby="bridge-story-title"><div class="section-heading"><div><p class="eyebrow">HOW WE USED CLAUDE MODS</p><h2 id="bridge-story-title">One event, two useful views.</h2></div><p>Claude’s Mod observes a tool event and reports it through the session’s authenticated HeloScrum connection. Our web renderer turns that record into a card; the Mod draws its own native panel inside Claude Code.</p></div><p class="section-footnote">Herdr keeps the native session connected. HeloScrum handles the web presentation and saved history. Reported test results remain distinct from independent task verification. <a class="inline-site-link" href="blog/claude-mods-readable-work.html">Read the implementation story.</a></p></section>
+
+    <section class="addon-setup wrap" id="setup" aria-labelledby="setup-title">
+      <div><p class="eyebrow">INCLUDED. YOUR CHOICE TO USE.</p><h2 id="setup-title">A small addition to<br>your Claude setup.</h2><p>HeloScrum bundles the visual Mod and loads it for new, compatible Claude Code sessions unless disabled. It requires no global plugin installation. The base activity view makes no model requests; optional Jev Auto role selection records its bounded requests and usage.</p><a class="text-link" href="https://github.com/YokiiDesu/heloscrum/blob/main/docs/claude-activity.md">Full setup & behavior <span aria-hidden="true">↗</span></a><p class="addon-small">The source and setup guide are available on GitHub under Apache-2.0.</p></div>
+      <div class="addon-setup-steps">
+        <article><span>01</span><div><h3>Use a compatible Claude Code CLI.</h3><p>The current public Mod documentation requires 2.1.287+. HeloScrum was also tested on 2.1.286 with its function-hook flag enabled by the launcher.</p><a href="https://code.claude.com/docs/en/plugins/mods/overview">Claude Mod documentation ↗</a></div></article>
+        <article><span>02</span><div><h3>Launch a Claude Code agent.</h3><p>Start it through HeloScrum, then open its Chat view. For an existing session, wait until work is idle before relaunching to load the Mod.</p></div></article>
+        <article><span>03</span><div><h3>Open your native panel, too.</h3><p>Run <code>/heloscrum</code> in the interactive Claude terminal. Choose <strong>Pin status strip</strong> to keep a compact view, or close the panel with Escape.</p></div></article>
+        <details class="addon-off"><summary>Prefer to leave it off?</summary><p>Before starting the HeloScrum server from your checkout:</p><pre><code>HELOSCRUM_CLAUDE_ACTIVITY=0 npm start</code></pre><p>This applies to newly launched sessions. Existing processes keep their configuration. Explicit Claude hook-disable settings are respected; normal transcript reading remains available. The base activity Mod has no per-agent switch; optional role packs have their own Off setting.</p></details>
+      </div>
+      <p class="addon-compatibility"><strong>Connect through Claude Code.</strong> Choosing a Claude model in Cursor, Kiro, or an API connection does not load Claude Code Mods. Your tool permissions and task-review rules still apply.</p>
+    </section>
+
+    <section class="addon-roles wrap" id="role-packs" aria-labelledby="roles-title">
+      <div class="section-heading"><div><p class="eyebrow">EIGHT ROLE PACKS · LOCAL ALPHA</p><h2 id="roles-title">A different lens<br>for each responsibility.</h2></div><p>One shared Mod, with focused panels and guidance for the job at hand. Combine any of the eight role workspaces in a Claude agent’s settings, with source-backed records and a guide for the job.</p></div>
+      <div class="role-pack-grid">
+        <article><div class="role-pack-heading"><span class="role-pack-icon mint" aria-hidden="true">⌘</span><span>Available</span></div><h3>Orchestration</h3><p>Bring dependencies, shared contracts, ownership, and handoffs into one view so the next move has a clear owner.</p><ul><li>Dependency map & handoff trail</li><li>Contract revisions & unresolved boundaries</li></ul><p class="role-pack-boundary">Coordination visibility follows existing authority.</p></article>
+        <article><div class="role-pack-heading"><span class="role-pack-icon coral-text" aria-hidden="true">▤</span><span>Available</span></div><h3>Scrum Master</h3><p>See what is waiting, what is blocked, and what needs independent review without losing the sprint’s purpose.</p><ul><li>Review queue & blocker updates</li><li>WIP, sprint goals & Definition of Done</li></ul><p class="role-pack-boundary">A role pack does not grant review permission.</p></article>
+        <article><div class="role-pack-heading"><span class="role-pack-icon purple-text" aria-hidden="true">◧</span><span>Available</span></div><h3>UI / UX design</h3><p>Keep interaction requirements, accessibility findings and recorded design checks together, with references for further review.</p><ul><li>Interface criteria & recorded observations</li><li>Accessibility findings & evidence links</li></ul><p class="role-pack-boundary">Unrun checks stay visibly unrun.</p></article>
+        <article><div class="role-pack-heading"><span class="role-pack-icon blue" aria-hidden="true">◇</span><span>Available</span></div><h3>Game design</h3><p>Connect rules and balance changes to the player experience, with room for the awkward moments a test suite can miss.</p><ul><li>Core loop, rules & balance notes</li><li>Reported playtests & supporting resources</li></ul><p class="role-pack-boundary">Simulation and human playtesting stay distinct.</p></article>
+        <article><div class="role-pack-heading"><span class="role-pack-icon mint" aria-hidden="true">✓</span><span>Available</span></div><h3>QA / Independent Reviewer</h3><p>See which reviews this agent can perform and keep author reports separate from independent findings.</p><ul><li>Review eligibility & evidence</li><li>Recorded passes & failures</li></ul><p class="role-pack-boundary">Owners and contributors cannot self-approve.</p></article>
+        <article><div class="role-pack-heading"><span class="role-pack-icon blue" aria-hidden="true">▱</span><span>Available</span></div><h3>Data Architect</h3><p>Connect data flows, models and governance to the project’s needs, scale and budget.</p><ul><li>Models, contracts & architecture decisions</li><li>Recovery & verification evidence</li></ul><p class="role-pack-boundary">A proposed migration is not an applied one.</p></article>
+        <article><div class="role-pack-heading"><span class="role-pack-icon coral-text" aria-hidden="true">◈</span><span>Available</span></div><h3>DevSecOps</h3><p>Track security ownership and evidence from planning through runtime.</p><ul><li>Pipeline & runtime references</li><li>Reported checks & verification</li></ul><p class="role-pack-boundary">Existing release and permission gates remain in force.</p></article>
+        <article><div class="role-pack-heading"><span class="role-pack-icon purple-text" aria-hidden="true">≡</span><span>Available</span></div><h3>Knowledge Manager</h3><p>Give codebase and website documentation consistent standards, ownership and a useful life beyond its first draft.</p><ul><li>SOPs, templates, classification & tags</li><li>Storage, references, versions & review</li><li>Retention, disposal & source freshness</li></ul><p class="role-pack-boundary">Review against established policy, with evidence.</p></article>
+      </div>
+      <div class="jev-proposal"><span class="jev-mark" aria-hidden="true">j.</span><div><p class="section-label">OPTIONAL AUTO SELECTION · POWERED BY JEV</p><h3>The role gives context. You keep control.</h3><p>Jev selects relevant installed packs from an agent’s duties and current brief. Choose <strong>Off</strong>, <strong>Manual</strong>, or <strong>Auto</strong>, with visible judgments and manual pins. If the match is unclear, keep the base view.</p><p>Off is the default. Manual selection needs no Jev connection. Auto is opt-in and records actual judgments and usage. One builder can wear more than one hat. Role packs adapt that builder’s workspace without requiring more agents.</p><a class="text-link" href="https://github.com/YokiiDesu/heloscrum/blob/main/docs/claude-role-packs.md">Read the role-pack guide <span aria-hidden="true">↗</span></a></div></div>
+    </section>
+    <section class="page-cta wrap"><div><p class="eyebrow">YOUR TOOLS. YOUR WORKSPACE.</p><h2>Start with the view that helps you.</h2></div><a class="button primary" href="getting-started.html">Set up HeloScrum <span aria-hidden="true">↗</span></a></section>
+  </main>
+  <footer class="site-footer wrap"><div><a class="wordmark" href="./"><img src="assets/mark.svg" width="27" height="27" alt="">HeloScrum</a><p>A hello. A connection. A team.</p></div><div><a href="https://github.com/YokiiDesu/heloscrum">GitHub ↗</a><a href="https://github.com/YokiiDesu/heloscrum/blob/main/LICENSE">Apache-2.0</a><span>© 2026 HeloScrum contributors</span></div></footer>
+</body>
+</html>

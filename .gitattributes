@@ -1,0 +1,2 @@
+# Preserve the recorded download and CSP-hashed inline blocks on every platform.
+website/demos/*.html text eol=lf

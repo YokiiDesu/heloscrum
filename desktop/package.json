@@ -1,0 +1,10 @@
+{
+  "name": "heloscrum-desktop",
+  "productName": "HeloScrum",
+  "version": "0.4.0-alpha.1",
+  "private": true,
+  "description": "HeloScrum's local desktop window",
+  "license": "Apache-2.0",
+  "main": "main.cjs",
+  "dependencies": { "electron": "44.7.0" }
+}

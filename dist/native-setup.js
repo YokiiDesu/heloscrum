@@ -1,0 +1,41 @@
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nativeKinds=['codex','claude','kiro','cursor'];
+let serial=0;
+export class NativeSetupFields {
+  constructor(host,{api,kind,project,taskId,value,onChange,disabled=false}){
+    host.nativeSetup?.dispose();host.nativeSetup=this;this.controller=new AbortController();
+    Object.assign(this,{host,api,kind,project,taskId,onChange,disabled});this.selection=structuredClone(value||{profile:null,files:[]});this.id='native-setup-'+(++serial);
+    this.host.addEventListener('change',event=>{
+      if(['kiroEngine','cursorMode'].includes(event.target.dataset.native)){this.selection[event.target.dataset.native]=event.target.value;this.onChange?.(this.value());this.ready=this.load();}
+      if(event.target.dataset.native==='profile'){
+        this.selection.profile=event.target.value||null;
+        const profile=this.report?.profiles.find(p=>p.id===this.selection.profile),file=this.report?.files.find(f=>f.path===profile?.file);
+        if(!this.taskId&&file&&!file.tracked&&!file.shared&&!this.selection.files.includes(file.path))this.selection.files.push(file.path);
+        this.render();this.host.querySelector('[data-native=profile]')?.focus({preventScroll:true});this.onChange?.(this.value());
+      }
+      if(event.target.dataset.native==='file'){this.selection.files=[...this.host.querySelectorAll('[data-native=file]:checked')].map(input=>input.value).sort();this.host.querySelector('.native-files>summary small').textContent=this.report.files.length+' found'+(this.selection.files.length?' · '+this.selection.files.length+' selected':'');this.onChange?.(this.value());}
+    },{signal:this.controller.signal});
+    this.host.addEventListener('click',event=>{if(event.target.closest('[data-native=refresh]'))this.ready=this.load();},{signal:this.controller.signal});this.ready=this.load();
+  }
+  dispose(){this.controller.abort();this.generation=(this.generation||0)+1;}
+  value(){return nativeKinds.includes(this.kind)?structuredClone(this.selection):{profile:null,files:[]};}
+  async load(){
+    if(!nativeKinds.includes(this.kind)){this.host.innerHTML='';return;}
+    const generation=(this.generation||0)+1;this.generation=generation;this.loading=true;this.error=null;this.render();
+    try{const report=await this.api('native-setup?'+new URLSearchParams({kind:this.kind,project:this.project,...(this.kind==='kiro'?{kiroEngine:this.selection.kiroEngine||'v2'}:{}),...(this.taskId?{task:this.taskId}:{})}));if(this.generation!==generation)return;this.report=report;}
+    catch(error){if(this.generation===generation)this.error=error.message;}
+    finally{if(this.generation===generation){this.loading=false;this.render();}}
+  }
+  render(){
+    if(this.host.nativeSetup!==this||!this.host.isConnected)return;
+    const isOpen=this.host.querySelector('details')?.open??!!this.taskId,r=this.report,locked=this.disabled?'disabled':'',profile=r?.profiles.find(p=>p.id===this.selection.profile&&p.available);
+    this.host.innerHTML=`<details class="native-setup" ${isOpen?'open':''}><summary><span>Native setup</span><small>${esc(this.selection.profile?.split(':').slice(1).join(':')||'Provider settings')}</small></summary><div class="native-setup-body"><p>Keep the CLI’s skills, hooks, and MCP connections. Choose a native profile and the local files this agent needs.</p>${this.loading?'<p role="status">Checking local configuration…</p>':''}${this.error?`<p role="alert">${esc(this.error)}</p>`:''}${r?`
+      ${this.kind==='kiro'?`<label for="${this.id}-engine">Kiro engine</label><select id="${this.id}-engine" data-native="kiroEngine" ${locked}><option value="v2" ${this.selection.kiroEngine!=='v3'?'selected':''}>V2 · existing session format</option><option value="v3" ${this.selection.kiroEngine==='v3'?'selected':''}>V3 · current agent harness</option></select><p class="native-help">Changing engines starts a fresh session with a reviewed handoff. Existing V2 sessions remain available.</p>`:''}
+      ${this.kind==='cursor'?`<label for="${this.id}-mode">Cursor launch mode</label><select id="${this.id}-mode" data-native="cursorMode" ${locked}><option value="headless" ${this.selection.cursorMode!=='interactive'?'selected':''}>Headless · structured CLI output</option><option value="interactive" ${this.selection.cursorMode==='interactive'?'selected':''}>Interactive · native terminal</option></select><p class="native-help">Interactive mode supports native approvals, slash commands, and terminal input. Existing headless sessions require a reviewed handoff to change modes. Sign in once with <code>cursor-agent login</code>.</p>`:''}
+      ${this.kind!=='cursor'?`<label for="${this.id}-profile">${this.kind==='claude'?'Native agent':'Native profile'}</label><select id="${this.id}-profile" data-native="profile" ${locked}><option value="">${this.kind==='kiro'?'HeloScrum task profile':'Inherit native settings'}</option>${this.selection.profile&&!profile?`<option selected value="${esc(this.selection.profile)}">${esc(this.selection.profile)} · unavailable</option>`:''}${r.profiles.filter((p,i,all)=>all.findIndex(other=>other.id===p.id&&other.available)===i||!all.some(other=>other.id===p.id&&other.available)).map(p=>`<option value="${esc(p.id)}" ${p.id===this.selection.profile?'selected':''} ${p.available?'':'disabled'}>${esc(p.name)} · ${p.scope==='user'?'User':'Project'}${p.note?' · '+esc(p.note):''}</option>`).join('')}</select><p class="native-help">Explicit model and effort choices above override native defaults. ${this.kind==='kiro'?'The selected profile is saved privately for this task; your original stays unchanged.':'Profiles are managed by the provider CLI.'}</p>`:''}
+      <details class="native-files"><summary>Project configuration <small>${r.files.length} found${this.selection.files.length?' · '+this.selection.files.length+' selected':''}</small></summary><p class="native-help">Committed files come from Git. Select additional local files to copy when creating an agent. Settings and hooks can contain commands, permissions, or credentials; copy only files you want this agent to use.</p>${this.taskId?'<p class="native-help">File selection is fixed for this worktree. Edit its files directly, or select different files when creating an agent.</p>':''}<div class="native-file-list">${r.files.length?r.files.map(f=>`<label class="native-file"><input type="checkbox" data-native="file" value="${esc(f.path)}" ${this.selection.files.includes(f.path)?'checked':''} ${f.tracked||f.shared||this.taskId||this.disabled?'disabled':''}><span><code>${esc(f.path)}</code><small>${f.tracked?'From Git':f.shared?'Shared by Claude Code':this.taskId&&this.selection.files.includes(f.path)?'Copied at setup':Math.max(1,Math.ceil(f.bytes/1024))+' KiB · local file'}</small></span></label>`).join(''):'<p class="native-help">No supported project configuration files found.</p>'}</div>${r.skipped.length?`<p class="native-help">Skipped: ${r.skipped.map(esc).join(', ')}</p>`:''}</details>
+      <dl class="native-checks">${r.checks.map(c=>`<div><dt>${esc(c.name)}<span>${esc(c.state)}</span></dt><dd>${esc(c.detail)}</dd></div>`).join('')}</dl>${r.notes.map(note=>`<p class="native-help">${esc(note)}</p>`).join('')}
+      ${r.detected.length?`<details><summary>Detected user configuration</summary>${r.detected.map(f=>`<p class="native-help"><code>${esc(f)}</code></p>`).join('')}</details>`:''}
+      ${r.terminal?`<a class="native-terminal" href="/cli?task=${encodeURIComponent(this.taskId)}" target="_blank" rel="noopener">Open native terminal <span aria-hidden="true">↗</span></a><p class="native-help">Connects to this running agent. Input goes directly to its CLI, without the chat queue. Closing the tab detaches.</p>`:''}`:''}<button class="native-refresh" type="button" data-native="refresh" ${this.loading||this.disabled?'disabled':''}>Refresh detection</button></div></details>`;
+  }
+}

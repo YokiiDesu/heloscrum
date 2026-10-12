@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>HeloScrum</title>
+  <rect width="64" height="64" rx="17" fill="#132126"/>
+  <rect x=".5" y=".5" width="63" height="63" rx="16.5" stroke="#85d8c6" stroke-opacity=".18"/>
+  <g stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 14v24c0 6.627 5.373 12 12 12h4" stroke="#ffab76"/>
+    <path d="M46 50V26c0-6.627-5.373-12-12-12h-4" stroke="#85d8c6"/>
+  </g>
+  <path d="M18 28h14v8H18z" fill="#ffab76"/>
+  <path d="M32 28h14v8H32z" fill="#85d8c6"/>
+</svg>

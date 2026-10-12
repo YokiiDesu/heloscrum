@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>HeloScrum connection mark</title>
+  <g stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 14v24c0 6.627 5.373 12 12 12h4" stroke="#ffab76"/>
+    <path d="M46 50V26c0-6.627-5.373-12-12-12h-4" stroke="#85d8c6"/>
+  </g>
+  <path d="M18 28h14v8H18z" fill="#ffab76"/>
+  <path d="M32 28h14v8H32z" fill="#85d8c6"/>
+</svg>

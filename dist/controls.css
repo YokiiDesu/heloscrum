@@ -1,0 +1,242 @@
+/* Shared control geometry and states. Theme colors remain in preferences.css.
+   Existing components opt in through their native element or semantic role. */
+:root {
+  --action-hover-fill: var(--nav-soft-hover, #30384f);
+  --action-hover-ink: var(--nav-soft-ink, #e3e7ff);
+  --action-hover-edge: var(--nav-border, #8794bf);
+  --control-focus-ring: 0 0 0 3px color-mix(in srgb, var(--action-hover-edge) 25%, transparent);
+  --checkbox-size: 18px;
+  --checkbox-fill: var(--nav-fill, #a5b1e3);
+  --checkbox-ink: var(--nav-ink, #17203b);
+  --checkbox-edge: var(--surface-edge, #7e91a1);
+  --icon-button-size: 34px;
+  --check-symbol: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 4 4L19 6'/%3E%3C/svg%3E");
+  --close-symbol: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='m6 6 12 12M6 18 18 6'/%3E%3C/svg%3E");
+}
+
+/* Native inputs retain their labels, checked state, keyboard and form behavior. */
+:root input[type=checkbox] {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-grid;
+  place-content: center;
+  flex: 0 0 var(--checkbox-size);
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
+  min-width: var(--checkbox-size);
+  min-height: var(--checkbox-size);
+  max-width: var(--checkbox-size);
+  max-height: var(--checkbox-size);
+  padding: 0;
+  margin: 0;
+  border: 1.5px solid var(--checkbox-edge);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--checkbox-ink);
+  vertical-align: middle;
+  cursor: pointer;
+  --focus-border: var(--action-hover-edge);
+  --focus-glow: var(--control-focus-ring);
+}
+:root input[type=checkbox]::before {
+  content: "";
+  width: 13px;
+  height: 13px;
+  background: currentColor;
+  mask: var(--check-symbol) center / contain no-repeat;
+  opacity: 0;
+}
+:root input[type=checkbox]:is(:checked, :indeterminate) {
+  background: var(--checkbox-fill);
+  border-color: var(--checkbox-fill);
+}
+:root input[type=checkbox]:is(:checked, :indeterminate)::before { opacity: 1; }
+:root input[type=checkbox]:indeterminate::before {
+  width: 8px;
+  height: 2px;
+  border-radius: 1px;
+  mask: none;
+}
+:root input[type=checkbox]:disabled { opacity: .5; cursor: not-allowed; }
+:root label:has(> input[type=checkbox]) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Radios share circular geometry while native labels and arrow keys still work.
+   Swatch/icon proxies retain their invisible full-card hit targets. */
+:root input[type=radio]:not(:where(.color-options input, .icon-options input)) {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-grid;
+  place-content: center;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  max-width: 18px;
+  max-height: 18px;
+  padding: 0;
+  margin: 2px 0 0;
+  border: 1.5px solid var(--checkbox-edge);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--accent, var(--orange));
+  vertical-align: middle;
+  cursor: pointer;
+}
+:root input[type=radio]:not(:where(.color-options input, .icon-options input))::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+}
+:root input[type=radio]:not(:where(.color-options input, .icon-options input)):checked { border-color: currentColor; }
+:root input[type=radio]:not(:where(.color-options input, .icon-options input)):checked::before { opacity: 1; }
+:root input[type=radio]:disabled { opacity: .5; cursor: not-allowed; }
+/* Pointer focus stays quiet; the shared keyboard focus ring remains visible. */
+:root input:is([type=radio], [type=checkbox]):focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}
+
+/* One vertical alignment and caret gutter for every single-value dropdown.
+   Lists and multi-selects keep their native row layout. */
+:root select:not([multiple]):not([size]) {
+  min-height: var(--select-min-height, 34px);
+  padding-block: var(--select-padding-block, 6px);
+  padding-inline: var(--select-padding-start, 12px) var(--select-padding-end, 38px);
+  line-height: 1.4;
+  align-items: center;
+  background-position: right 12px center;
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  vertical-align: middle;
+}
+@supports (appearance: base-select) {
+  :root select:not([multiple]):not([size]) { display: flex; }
+  :root select > .select-value {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    line-height: inherit;
+    text-align: start;
+  }
+  :root select > .select-value > selectedcontent { flex: 1; min-width: 0; }
+}
+
+/* Header, model, context and conversation actions share hover and focus states. */
+:root :is(.ui-action, .pack-top-actions > button, .agent-model-button,
+  .workspace-context > .context-actions > button,
+  .agent-card-meta > button, .dm-thread-link, .thread-reply, .thread-replies-link) {
+  --focus-border: var(--action-hover-edge);
+  --focus-glow: var(--control-focus-ring);
+  border-radius: 7px;
+}
+:root :is(.agent-card-meta > button, .dm-thread-link) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 5px 9px;
+  line-height: 1.4;
+}
+:root :is(.ui-action, .pack-top-actions > button, .agent-model-button,
+  .workspace-context > .context-actions > button,
+  .agent-card-meta > button, .dm-thread-link, .thread-reply, .thread-replies-link):not(:disabled):focus-visible {
+  background: var(--action-hover-fill);
+  color: var(--action-hover-ink);
+  border-color: var(--action-hover-edge);
+  box-shadow: var(--control-focus-ring);
+}
+@media (hover: hover) and (pointer: fine) {
+  :root :is(.ui-action, .pack-top-actions > button, .agent-model-button,
+  .workspace-context > .context-actions > button,
+    .agent-card-meta > button, .dm-thread-link, .thread-reply, .thread-replies-link):not(:disabled):hover {
+    background: var(--action-hover-fill);
+    color: var(--action-hover-ink);
+    border-color: var(--action-hover-edge);
+    box-shadow: var(--hover-glow);
+    filter: none;
+    translate: none;
+  }
+  :root input[type=checkbox]:not(:disabled):hover { border-color: var(--action-hover-edge); }
+}
+
+/* A reply summary is one padded hit area, including its avatars and metadata. */
+:root .thread-replies-link {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  gap: 10px;
+}
+:root .thread-replies-link small { color: inherit; opacity: .8; }
+
+/* Shared square icon control; accessible Close labels also cover older dialogs. */
+:root button:is(.icon-button, [aria-label^="Close "], [aria-label="Close"]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  align-self: center;
+  width: var(--icon-button-size);
+  height: var(--icon-button-size);
+  min-width: var(--icon-button-size);
+  min-height: var(--icon-button-size);
+  max-width: var(--icon-button-size);
+  max-height: var(--icon-button-size);
+  padding: 0;
+  gap: 0;
+  line-height: 1;
+  border-radius: 8px;
+}
+:root button:is([aria-label^="Close "], [aria-label="Close"]):not(:has(svg)) { font-size: 0; }
+:root button:is([aria-label^="Close "], [aria-label="Close"]):not(:has(svg))::before {
+  content: "";
+  display: block;
+  width: 18px;
+  height: 18px;
+  background: currentColor;
+  mask: var(--close-symbol) center / contain no-repeat;
+}
+:root button:is(.icon-button, [aria-label^="Close "], [aria-label="Close"]) > svg {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+/* Empty lists share centering without changing the surrounding panel layout. */
+:root :is(.empty-state, .work-list-empty, .drawer-empty, .settings-empty,
+  .library-empty, .reply-empty, .memory-empty) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+:root :is(p.empty-state, p.work-list-empty, p.reply-empty) { margin-block: 0; }
+
+@media (forced-colors: active) {
+  :root input[type=checkbox] { border-color: ButtonText; }
+  :root input[type=checkbox]:is(:checked, :indeterminate) {
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+    forced-color-adjust: none;
+  }
+  :root input[type=checkbox]:disabled { border-color: GrayText; }
+  :root input[type=radio]:not(:where(.color-options input, .icon-options input)) {
+    border-color: ButtonText;
+    color: Highlight;
+    forced-color-adjust: none;
+  }
+  :root input[type=radio]:disabled { border-color: GrayText; color: GrayText; }
+
+}

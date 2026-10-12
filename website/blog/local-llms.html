@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#132126">
+  <meta name="description" content="Set up local LLMs in HeloScrum with llama.cpp and Muse Glimmer. See the exact settings, recorded build times, and a playable red-ball physics demo.">
+  <meta property="og:title" content="A Local Model, a Red Ball, and a Working Demo · HeloScrum">
+  <meta property="og:description" content="Our llama.cpp and Muse Glimmer setup, from a local connection to a playable HTML file in 1 minute 40 seconds.">
+  <meta property="og:type" content="article">
+  <title>A Local Model, a Red Ball, and a Working Demo · HeloScrum</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/icon.svg">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../pages.css">
+  <link rel="stylesheet" href="../blog.css">
+  <link rel="stylesheet" href="../local-llms.css">
+  <script type="module" src="../site.js"></script>
+  <script type="module" src="../local-llms.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header wrap">
+    <a class="wordmark" href="../" aria-label="HeloScrum home"><img src="../assets/mark.svg" width="34" height="34" alt="">HeloScrum</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-navigation" hidden>Menu <span aria-hidden="true">☰</span></button>
+    <nav id="site-navigation" aria-label="Main navigation"><a href="../about.html">About</a><a href="../integrations.html">Integrations</a><a href="../add-ons.html">Add-ons</a><a href="../getting-started.html">Get started</a><a href="../blog.html">Blog</a><a class="source-link" href="https://github.com/YokiiDesu/heloscrum">GitHub <span aria-hidden="true">↗</span></a></nav>
+  </header>
+  <main id="main">
+    <article class="local-article" aria-labelledby="post-title">
+      <header class="post-header wrap">
+        <a class="text-link post-back" href="../blog.html">← All Field Notes</a>
+        <div class="post-meta"><span>Local AI · Setup &amp; Example</span><time datetime="2026-10-12">October 12, 2026</time><span>8 min read</span></div>
+        <h1 id="post-title">A Local Model, a Red Ball,<br>and a Working Demo.</h1>
+        <p class="post-deck">Muse Glimmer wrote a small physics playground through HeloScrum, running locally in llama.cpp. Here’s the setup, what happened, and the result you can try yourself.</p>
+        <p class="post-byline">By HeloScrum · Tested on macOS · Public Alpha</p>
+      </header>
+
+      <section class="local-example wrap" id="example" data-local-example aria-labelledby="example-title">
+        <div class="example-heading"><div><p class="eyebrow">FROM THE ACTUAL RUN</p><h2 id="example-title">One Brief. One HTML File. Try It.</h2></div><p>See the settings, original brief, tool actions, and actual reply. Then grab the ball and give it a throw.</p></div>
+        <dl class="run-metrics"><div><dt>HTML File Written</dt><dd>1m 40s<small>100.422 seconds</small></dd></div><div><dt>Full Turn Finished</dt><dd>1m 58s<small>118.009 seconds</small></dd></div><div><dt>Model Runtime</dt><dd>llama.cpp<small>Muse Glimmer · Q4_K_M</small></dd></div></dl>
+        <div class="run-window">
+          <div class="run-window-bar"><strong><img src="../assets/mark.svg" alt="">HeloScrum / Local Builder</strong><span>RUN WALKTHROUGH · ACTUAL OUTPUT</span></div>
+          <div class="run-columns">
+            <div class="run-controls">
+              <div class="run-steps" role="group" aria-label="Explore the recorded build"><button type="button" data-run-step="0" aria-pressed="true">1. Setup</button><button type="button" data-run-step="1" aria-pressed="false">2. Brief</button><button type="button" data-run-step="2" aria-pressed="false">3. Tools</button><button type="button" data-run-step="3" aria-pressed="false">4. Reply</button></div>
+              <div class="run-panels">
+                <div class="run-panel" data-run-panel="0"><span class="section-label">THE SAVED CONNECTION</span><h3>Meet the Local Builder</h3><dl class="run-settings"><div><dt>Provider</dt><dd>llama.cpp</dd></div><div><dt>Model</dt><dd>Muse Glimmer<small>meta/muse-glimmer</small></dd></div><div><dt>Context Window</dt><dd>32,768 tokens</dd></div><div><dt>Maximum Output</dt><dd>8,192 tokens</dd></div><div><dt>Tool Calling</dt><dd>Enabled</dd></div><div><dt>Image Input</dt><dd>Enabled</dd></div></dl><p class="connection-state"><i aria-hidden="true"></i>Connected during the recorded run</p></div>
+                <div class="run-panel" data-run-panel="1" hidden><span class="section-label">ORIGINAL BRIEF · RESUMED BUILDER</span><h3>A Ball You Can Throw</h3><blockquote>You're a coding agent and will be building an HTML that exhibits physics; a red ball that bounces around the screen with physics, that can be flicked or thrown, clicked and dragged around by the user.</blockquote><p>The Builder received this brief in a reviewed handoff after switching to llama.cpp.</p></div>
+                <div class="run-panel" data-run-panel="2" hidden><span class="section-label">TWO COMPLETED TOOL CALLS</span><h3>What Muse Did</h3><div class="written-file" data-tool-file><span aria-hidden="true">&lt;/&gt;</span><div><strong>Wrote index.html</strong><small>workspace_write · 4,862 bytes<br>At 1:40.422 · Completed</small></div></div><div class="written-file" data-tool-note><span aria-hidden="true">✓</span><div><strong>Saved a Notebook Entry</strong><small>notebook_write · Recorded the file and features<br>At 1:53.947 · Completed</small></div></div><details class="saved-note"><summary>Read the Saved Note</summary><p data-original-note>Created index.html with canvas physics: red ball with gravity, bounce, friction, pointer drag + flick throw. File written to worktree root. Ready for preview.</p></details><p>Muse went straight to the file write. There were no intermediate chat updates in this turn.</p></div>
+                <div class="run-panel" data-run-panel="3" hidden><span class="section-label">MUSE GLIMMER · ACTUAL REPLY · 1:58.009</span><h3>What the Model Said</h3><blockquote class="reply-text"><p>Created index.html with a self-contained canvas physics demo: a red ball with gravity, wall/floor bounce, friction, and pointer drag with flick/throw velocity. Open the file in the worktree to preview it.</p><p>The worktree root is now:</p><ul><li>index.html (canvas, requestAnimationFrame loop, pointer events for drag &amp; throw)</li></ul><p>Let me know if you want tweaks to bounce, gravity, or drag feel.</p></blockquote></div>
+              </div>
+              <p class="run-note">A walkthrough of one recorded turn. The animation shows the actual file and note; each real tool call saved its result in one operation.</p>
+              <div class="tool-playback-actions"><button type="button" class="button primary" data-tool-watch>Watch the Tool Actions</button><button type="button" data-tool-skip hidden>Show Result</button></div>
+              <p class="tool-playback-status" data-tool-status role="status">Illustrative playback · no LLM request</p>
+            </div>
+            <div class="run-result">
+              <div class="result-heading"><strong data-result-title>Red Ball Physics</strong><span data-result-label>ACTUAL OUTPUT</span></div>
+              <div class="tool-visualization" data-tool-visualization hidden>
+                <div class="file-visualization" data-file-visualization><div class="file-caption"><span>index.html</span><span data-file-lines>0 / 193 Lines</span></div><pre tabindex="0" aria-label="Actual HTML from Muse Glimmer" data-file-scroll><code data-file-code></code></pre></div>
+                <div class="note-visualization" data-note-visualization hidden><span class="section-label">BUILDER’S NOTEBOOK · FILE</span><h3>Red Ball Physics</h3><p data-note-reveal></p><div class="note-source">Source: index.html<br>Saved at 1:53.947 in the recorded turn</div></div>
+              </div>
+              <div class="demo-viewport" data-demo-viewport><div class="demo-overlay" data-demo-overlay><span class="demo-ball" aria-hidden="true"></span><button type="button" data-demo-play>Play the Demo</button><p>Click or touch the ball. Drag it around, then let go to throw it.</p></div></div>
+              <div class="demo-actions"><button type="button" data-demo-stop disabled>Stop Demo</button><button type="button" data-demo-reset disabled>Reset Demo</button><a href="../demos/red-ball.html" target="_blank" rel="noopener noreferrer">Open in Own Window ↗</a><a href="../demos/red-ball-original.html" download="red-ball.html">Download Original HTML ↓</a></div>
+              <p class="demo-status" data-demo-status role="status">Runs in a sandboxed frame. Starts only when you press Play and stops when you scroll away.</p>
+            </div>
+          </div>
+        </div>
+        <p class="example-footnote">Measured on an Apple M5 Max with 48 GiB of memory, starting with the successful llama.cpp turn and an already loaded model. Setup and earlier connection attempts are outside this timing. <a href="#timing">Read the timing notes</a>.</p>
+        <noscript><p class="example-footnote">Enable JavaScript for the tool animation, view controls, and embedded demo, or download the original HTML to open locally.</p></noscript>
+      </section>
+
+      <div class="post-layout wrap">
+        <aside class="post-index"><nav aria-label="In this article"><span class="section-label">IN THIS ARTICLE</span><a href="#example">Try the Demo</a><a href="#settings">Our Exact Settings</a><a href="#install">Install llama.cpp</a><a href="#model">Get the Model Files</a><a href="#server">Start the Server</a><a href="#connect">Connect HeloScrum</a><a href="#brief">Give It a First Task</a><a href="#timing">What the Timings Mean</a><a href="#troubleshooting">If Something Gets Stuck</a><a href="#alternatives">Other Local Runtimes</a></nav></aside>
+        <div class="post-body">
+          <section id="settings" aria-labelledby="settings-title">
+            <h2 id="settings-title">The Settings That Produced This Demo</h2>
+            <p>There are three parts: <strong>Muse Glimmer</strong> is the model, <strong>llama.cpp</strong> runs it, and <strong>HeloScrum</strong> gives the agent its workspace and tools. You start the model server, save its address in HeloScrum, and choose that connection for your agent.</p>
+            <p>This run used the <a href="https://huggingface.co/lmstudio-community/Muse-Glimmer-30B-GGUF">LM Studio Community GGUF of Muse Glimmer</a>. We reused an existing download, unloaded the model in LM Studio, and loaded those files in llama.cpp.</p>
+            <div class="table-scroll" role="region" aria-label="Exact demo configuration" tabindex="0"><table class="comparison-table settings-table"><tbody>
+              <tr><th scope="row">Computer</th><td>Apple M5 Max · 48 GiB unified memory · macOS 26.6.2</td></tr>
+              <tr><th scope="row">Runtime</th><td>llama.cpp 0.6.0 · build 11429 · commit <code>d81235049</code></td></tr>
+              <tr><th scope="row">Model File</th><td><code>Muse-Glimmer-30B-KQuant-17GB-Q4_K_M.gguf</code></td></tr>
+              <tr><th scope="row">Vision Projector</th><td><code>mmproj-Muse-Glimmer-30B-Q4_K_M.gguf</code></td></tr>
+              <tr><th scope="row">API Address</th><td><code>http://127.0.0.1:8080/v1</code></td></tr>
+              <tr><th scope="row">Model ID / Alias</th><td><code>meta/muse-glimmer</code></td></tr>
+              <tr><th scope="row">Context / Output</th><td>32,768 context tokens · 8,192 maximum output tokens</td></tr>
+              <tr><th scope="row">GPU / Parallelism</th><td>All layers on Metal · Flash Attention on · one parallel slot</td></tr>
+              <tr><th scope="row">Agent Capabilities</th><td>Tool calling on · image input on · no image was needed for this task</td></tr>
+              <tr><th scope="row">Sampling</th><td>Server defaults: temperature 0.8, top-k 40, top-p 0.95, min-p 0.05, repeat penalty 1.0. Random seed; no sampling or reasoning-effort override in HeloScrum.</td></tr>
+              <tr><th scope="row">API Key</th><td>Empty for this loopback-only server</td></tr>
+            </tbody></table></div>
+            <p>These are the settings we used, not minimum hardware requirements. A smaller model or shorter context may be a better fit for your computer. Leave memory for the operating system, HeloScrum, and the model’s working context.</p>
+          </section>
+          <section id="install" aria-labelledby="install-title">
+            <h2 id="install-title">1. Install llama.cpp</h2>
+            <p>Start with the <a href="https://github.com/ggml-org/llama.cpp">llama.cpp GitHub repository</a>, its <a href="https://llama.app/">official website</a>, or the <a href="https://github.com/ggml-org/llama.cpp/releases">prebuilt releases</a>. The commands below follow the project’s <a href="https://github.com/ggml-org/llama.cpp/blob/master/docs/install.md">installation guide</a>.</p>
+            <div class="terminal"><div class="terminal-bar"><span>macOS · WITH HOMEBREW INSTALLED</span><button type="button" data-copy-target="mac-install" data-copy-feedback="mac-feedback" data-copy-success="Copied. Run this in your terminal.">Copy</button></div><pre tabindex="0"><code id="mac-install">brew install llama.cpp
+llama-server --version</code></pre><p class="copy-feedback" id="mac-feedback" role="status"></p></div>
+            <details><summary>Windows</summary><p>In PowerShell, install through WinGet, then open a new terminal if the command isn’t found:</p><pre tabindex="0"><code>winget install llama.cpp
+llama-server --version</code></pre><p>You can also download the Windows build for your hardware from the releases page. Keep its executable and accompanying libraries together. Run <code>.\llama-server.exe</code> from the extracted folder.</p></details>
+            <details><summary>Linux</summary><p>Use a matching prebuilt release, an existing Homebrew installation, or follow the <a href="https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md">official build guide</a>. With Git, CMake, and a C++ compiler installed, a basic source build is:</p><pre tabindex="0"><code>git clone https://github.com/ggml-org/llama.cpp.git
+cd llama.cpp
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release -j 4
+./build/bin/llama-server --version</code></pre><p>The build guide covers CUDA, Vulkan, and other acceleration options. Choose the backend for your hardware before building.</p></details>
+            <p>This article’s measured example is on macOS. Installing llama.cpp on Windows or Linux doesn’t by itself verify HeloScrum’s full desktop workflow there; see <a href="../getting-started.html#platforms">HeloScrum’s platform notes</a>.</p>
+          </section>
+          <section id="model" aria-labelledby="model-title">
+            <h2 id="model-title">2. Get the Model Files</h2>
+            <p>Open the <a href="https://huggingface.co/lmstudio-community/Muse-Glimmer-30B-GGUF/tree/main">Muse Glimmer GGUF file list</a> and download the model and matching projector shown in our settings table. Read the model card and its terms before choosing it for your work. The two downloads total about 18.2 GB.</p>
+            <p>If you already have these GGUF files, point llama.cpp at them. You don’t need another copy just because you used a different app to download them. An MLX-format download isn’t a GGUF file, though, so check the format.</p>
+            <p>The projector adds image input for compatible models. This red-ball task only used text. For a text-only setup, omit <code>--mmproj</code> and leave image input off in HeloScrum. See llama.cpp’s <a href="https://github.com/ggml-org/llama.cpp/blob/master/docs/multimodal.md">multimodal guide</a> for supported pairings.</p>
+          </section>
+          <section id="server" aria-labelledby="server-title">
+            <h2 id="server-title">3. Start the Model Server</h2>
+            <p>This is the launch configuration from our run, with personal file paths replaced. Change <code>/path/to/models</code> to the folder holding your files, then paste the command into a macOS or Linux terminal.</p>
+            <div class="terminal"><div class="terminal-bar"><span>THE RECORDED SERVER CONFIGURATION</span><button type="button" data-copy-target="server-command" data-copy-feedback="server-feedback" data-copy-success="Copied. Replace /path/to/models before running it.">Copy Command</button></div><pre tabindex="0"><code id="server-command">llama-server \
+  --model "/path/to/models/Muse-Glimmer-30B-KQuant-17GB-Q4_K_M.gguf" \
+  --mmproj "/path/to/models/mmproj-Muse-Glimmer-30B-Q4_K_M.gguf" \
+  --alias meta/muse-glimmer \
+  --host 127.0.0.1 --port 8080 \
+  --ctx-size 32768 --parallel 1 \
+  --gpu-layers all --flash-attn on \
+  --cors-origins localhost --no-ui --offline --log-colors off</code></pre><p class="copy-feedback" id="server-feedback" role="status"></p></div>
+            <p>On Windows, use <code>llama-server.exe</code>, Windows file paths, and put the command on one line instead of using the backslash line breaks. A source build may need the full path to the executable.</p>
+            <p>Wait for the server to report that its model is loaded and it’s listening. Keep that terminal open. Press <strong>Ctrl+C</strong> when you’re done to stop the server and release its memory.</p>
+            <p>The alias is the model name HeloScrum will select. The context limit is 32,768 tokens and the server runs one request at a time. All-layer GPU offload and Flash Attention are the settings that worked on our Mac; adjust them for your hardware using the <a href="https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md">server reference</a>.</p>
+            <p><code>--offline</code> uses the supplied files without fetching a model. The address stays on this computer. HeloScrum supplies the agent tools, so this command doesn’t enable llama.cpp’s own agent or built-in tool mode.</p>
+          </section>
+          <section id="connect" aria-labelledby="connect-title">
+            <h2 id="connect-title">4. Save the Connection in HeloScrum</h2>
+            <ol>
+              <li>Open <strong>Settings → AI &amp; Context → Add Connection</strong>. Choose <strong>llama.cpp</strong>.</li>
+              <li>Name it <strong>llama.cpp · Muse Glimmer</strong>. Set the API base URL to <code>http://127.0.0.1:8080/v1</code>.</li>
+              <li>Click <strong>Discover Models</strong> and select <code>meta/muse-glimmer</code>. Discovery lists models without sending project content or running inference.</li>
+              <li>Set <strong>Model Context Window</strong> to <strong>32768</strong> and <strong>Maximum Output Tokens</strong> to <strong>8192</strong>. These limits should match your server and leave room for instructions, tools, and replies.</li>
+              <li>Enable <strong>tool calling</strong> for a coding agent. Enable <strong>image input</strong> only if you loaded a compatible vision model and projector. Save the connection.</li>
+              <li>Use <strong>Test Connection</strong> for a short generation check. Then choose this provider, model, and connection in your agent’s settings.</li>
+            </ol>
+            <div class="post-note"><strong>Already Seeing a Green “Connected” Indicator?</strong><p>Your saved connection’s model catalog is reachable. You can use that connection; there’s no need to set it up again. Manage it in AI &amp; Context if you need to change it. Unused duplicates can be archived and restored later.</p></div>
+            <p>“Connected” checks availability. A small test task is still the useful next check for tool calling and coding behavior. HeloScrum doesn’t start the model server for you.</p>
+            <p>If you’re switching an existing agent, wait for it to finish or interrupt it, choose the new connection, and click <strong>Review Change</strong>. Review the handoff, then choose <strong>Start Fresh With This Handoff</strong>. The agent keeps its workspace and receives the reviewed context in a new provider session.</p>
+            <p><code>127.0.0.1</code> means the computer running HeloScrum’s backend. If the backend is in a container or on another computer, use an address it can reach. Keep the server private and configure authentication before sharing it beyond loopback.</p>
+          </section>
+          <section id="brief" aria-labelledby="brief-title">
+            <h2 id="brief-title">5. Give It a Small, Visible Task</h2>
+            <p>Our original brief was:</p>
+            <div class="terminal"><div class="terminal-bar"><span>THE ORIGINAL RED-BALL BRIEF</span><button type="button" data-copy-target="ball-brief" data-copy-feedback="brief-feedback" data-copy-success="Copied. Paste this into your agent’s task instructions.">Copy Brief</button></div><pre tabindex="0"><code id="ball-brief">You're a coding agent and will be building an HTML that exhibits physics; a red ball that bounces around the screen with physics, that can be flicked or thrown, clicked and dragged around by the user.</code></pre><p class="copy-feedback" id="brief-feedback" role="status"></p></div>
+            <p>For a new run, open a small test project, add a Builder using your local connection, and give it the brief. Ask it to save the result as a self-contained <code>index.html</code>. Open that file and try dragging and throwing the ball. Review any command requests as they appear; local inference doesn’t change the tools’ access to your computer.</p>
+            <p>Our recorded run resumed an existing Builder after a provider change, with the brief and earlier context in its handoff. Copying the brief into a fresh session is a useful starting point, but the output and timing can differ.</p>
+            <p><a href="#example">Try the result above</a> or <a href="../demos/red-ball-original.html" download="red-ball.html">download the original HTML</a>. The download is the exact 4,862-byte file written by Muse. The embedded version adds a restrictive security policy around the same HTML. Its CSS, JavaScript, physics, and controls are unchanged.</p>
+          </section>
+          <section id="timing" aria-labelledby="timing-title">
+            <h2 id="timing-title">What the Timings Mean</h2>
+            <p>The successful turn started at 20:41:56.802 UTC on October 12. The file-write event completed at 20:43:37.224, the notebook update at 20:43:50.749, and the final reply at 20:43:54.811. That’s <strong>100.422 seconds to the HTML</strong> and <strong>118.009 seconds for the full turn</strong>.</p>
+            <p>The first model response processed 5,764 prompt tokens and generated 2,584 tokens. llama.cpp reported about <strong>28.13 generated tokens per second</strong> for that response. This measures generation, including the tool-call payload; it isn’t the rate of visible chat text.</p>
+            <p>The clock starts after the model is loaded, at the successful llama.cpp turn. It excludes downloads, setup, earlier LM Studio attempts, and later browser checks. This was one small build on one computer, with no fixed random seed. It’s an example you can reproduce and explore, rather than a comparison benchmark between runtimes.</p>
+            <p>The walkthrough shows the recorded tool actions and final reply. The optional animation reveals the actual HTML, then the exact notebook entry, in about eight seconds. It illustrates the changes; the original file and note were each saved by a completed tool call, not typed out on screen. Muse sent no intermediate chat updates during this turn. Playing the red-ball demo doesn’t require a local model. The ball uses pointer input; the original generated demo doesn’t include keyboard controls, and its physics are tied to the display’s animation frames.</p>
+          </section>
+          <section id="troubleshooting" aria-labelledby="troubleshooting-title">
+            <h2 id="troubleshooting-title">If Something Gets Stuck</h2>
+            <h3>“Not Connected” or No Models Listed</h3><p>Check that the server is running, the port matches, and the URL ends in <code>/v1</code>. We explicitly selected port 8080; other llama.cpp launchers or versions may use another port. Use the address your server prints, then try <strong>Discover Models</strong> or <strong>Check Again</strong>.</p>
+            <h3>“Waiting For Model” Takes a While</h3><p>Check the server log and memory use. Loading a large model, processing a long prompt, or waiting behind another request can take time. Start with one active agent. If you switched runtimes, unload unused models in the other app so two copies aren’t competing for memory.</p>
+            <h3>A Timeout or an Unfinished Reply</h3><p>HeloScrum allows five minutes for local generation to start, two minutes without activity after it starts, and thirty minutes overall for one response. Active generation can continue beyond ninety seconds. If it hits the output limit, increase the output budget or reduce the model’s reasoning budget. <strong>Interrupt</strong> stops the current request; check completed tool actions before trying again.</p>
+            <h3>The Model Chats but Doesn’t Use Tools</h3><p>Check the model’s tool support and its chat template in the server. Enabling a checkbox doesn’t teach a model tool calling. Try a small file-writing task first, then expand the work once that succeeds.</p>
+          </section>
+          <section id="alternatives" aria-labelledby="alternatives-title">
+            <h2 id="alternatives-title">Already Using Another Local Runtime?</h2>
+            <p><a href="https://lmstudio.ai/">LM Studio</a> is another supported connection. Load a suitable model, start the API server from its <strong>Developer</strong> tab, and save an LM Studio connection using its displayed address, commonly <code>http://127.0.0.1:1234/v1</code>. An open chat window alone doesn’t start the API server. Follow the <a href="https://lmstudio.ai/docs/developer/core/server">official server setup guide</a>.</p>
+            <p>HeloScrum also supports <a href="https://ollama.com/">Ollama</a> through its <a href="https://docs.ollama.com/api/openai-compatibility">compatible API</a>. The same pattern applies: start the runtime, load a tool-capable model, discover it, and save a named connection.</p>
+            <p>For this example, llama.cpp with Muse Glimmer worked well. If your existing runtime is already working, you can keep it. Pick the model and server combination that fits your hardware and the work you want to do.</p>
+          </section>
+          <div class="post-ending"><p>Project links: <a href="https://github.com/ggml-org/llama.cpp">llama.cpp on GitHub</a> · <a href="https://llama.app/">llama.cpp Website</a> · <a href="https://huggingface.co/lmstudio-community/Muse-Glimmer-30B-GGUF">Muse Glimmer GGUF</a> · <a href="https://github.com/YokiiDesu/heloscrum/blob/main/docs/AI_CONNECTIONS.md">HeloScrum Connection Reference</a>.</p></div>
+        </div>
+      </div>
+    </article>
+    <section class="post-next wrap"><p class="eyebrow">KEEP READING</p><h2><a href="one-builder-one-reviewer.html">Start With One Builder and One Reviewer ↗</a></h2><a class="text-link" href="../getting-started.html">Set Up HeloScrum ↗</a></section>
+  </main>
+  <footer class="site-footer wrap"><div><a class="wordmark" href="../"><img src="../assets/mark.svg" width="27" height="27" alt="">HeloScrum</a><p>A hello. A connection. A team.</p></div><div><a href="https://github.com/YokiiDesu/heloscrum">GitHub ↗</a><a href="https://github.com/YokiiDesu/heloscrum/blob/main/LICENSE">Apache-2.0</a><span>© 2026 HeloScrum contributors</span></div></footer>
+</body>
+</html>

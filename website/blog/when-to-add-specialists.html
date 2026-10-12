@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#132126">
+  <meta name="description" content="Add an agent for a specific responsibility, a real bottleneck and a clear handoff. Here is how we will decide when a project needs more than a builder and reviewer.">
+  <meta property="og:title" content="When another specialist earns a place on the team · HeloScrum">
+  <meta property="og:description" content="Add an agent for a specific responsibility, a real bottleneck and a clear handoff. Here is how we will decide when a project needs more than a builder and reviewer.">
+  <meta property="og:type" content="article">
+  <title>When another specialist earns a place on the team · HeloScrum</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/icon.svg">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../pages.css">
+  <link rel="stylesheet" href="../blog.css">
+  <script type="module" src="../site.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header wrap">
+    <a class="wordmark" href="../" aria-label="HeloScrum home"><img src="../assets/mark.svg" width="34" height="34" alt="">HeloScrum</a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-navigation" hidden>Menu <span aria-hidden="true">☰</span></button>
+    <nav id="site-navigation" aria-label="Main navigation"><a href="../about.html">About</a><a href="../integrations.html">Integrations</a><a href="../add-ons.html">Add-ons</a><a href="../getting-started.html">Get started</a><a href="../blog.html">Blog</a><a class="source-link" href="https://github.com/YokiiDesu/heloscrum">GitHub <span aria-hidden="true">↗</span></a></nav>
+  </header>
+  <main id="main">
+    <article aria-labelledby="post-title">
+      <header class="post-header wrap"><a class="text-link post-back" href="../blog.html"><span aria-hidden="true">←</span> All field notes</a><div class="post-meta"><span>Workflow</span><time datetime="2026-10-09">October 9, 2026</time><span>4 min read</span></div><h1 id="post-title">When another specialist earns a place on the team</h1><p class="post-deck">Add an agent for a specific responsibility, a real bottleneck and a clear handoff. Here is how we will decide when a project needs more than a builder and reviewer.</p><p class="post-byline">By HeloScrum</p></header>
+      <div class="post-layout wrap"><aside class="post-index"><nav aria-label="In this article"><span class="section-label">IN THIS ARTICLE</span><a href="#start-with-the-need">Start with the need</a><a href="#useful-boundaries">Look for work with a clear boundary</a><a href="#handoff-cost">Budget for the handoff</a><a href="#coordination-and-review">Keep coordination and review accountable</a><a href="#evaluate-the-change">Check whether the extra role helped</a></nav></aside><div class="post-body"><section id="start-with-the-need" aria-labelledby="start-with-the-need-title"><h2 id="start-with-the-need-title">Start with the need</h2>
+<p>Our default for a small local app is now <a href="one-builder-one-reviewer.html">one builder and one independent reviewer</a>. Larger projects may need more help, but we want the work to explain why a new role exists.</p>
+<p>A backend, a large asset library or a complicated data model can create useful boundaries for specialist work. Their presence does not automatically determine the team size. The question is whether a second owner can take a clear responsibility and improve the result enough to justify the coordination.</p>
+<p>Before adding an agent, write one sentence: <em>This specialist owns this outcome, and the builder receives this deliverable.</em> If that sentence remains vague, clarify the task first.</p>
+</section>
+<section id="useful-boundaries" aria-labelledby="useful-boundaries-title"><h2 id="useful-boundaries-title">Look for work with a clear boundary</h2>
+<p>These are examples we would consider, depending on the project’s actual scope:</p>
+<dl class="specialist-examples"><div><dt>Backend and data design</dt><dd>A service with persistent shared data, migrations and several clients may justify a specialist who owns the schema, API behavior and migration checks. The application builder remains responsible for integrating that service into the user experience.</dd></div><div><dt>Security review</dt><dd>Accounts, permissions, sensitive records or untrusted file handling can justify focused scrutiny. Give the reviewer the system’s trust boundaries and a concrete review scope; a role called “security” is not evidence that the system is secure.</dd></div><div><dt>Art and content production</dt><dd>A substantial asset or writing workload may benefit from dedicated ownership. Agree on the visual direction, formats and integration requirements using a small sample before producing the full set.</dd></div><div><dt>Performance and infrastructure</dt><dd>A measured performance problem or a deployment requirement may need concentrated investigation. Define the reproduction, environment and result the specialist must demonstrate.</dd></div></dl>
+<p>A role can be temporary. An agent brought in to investigate one migration or review one permission boundary does not need to become a permanent layer in the workflow.</p>
+</section>
+<section id="handoff-cost" aria-labelledby="handoff-cost-title"><h2 id="handoff-cost-title">Budget for the handoff</h2>
+<p>Every additional owner needs enough context to work correctly. Someone must also reconcile its output with the rest of the app. In our recent builds, making shared contracts readable and checking which candidate was actually integrated required attention of their own.</p>
+<p>For a useful handoff, agree on the relevant interface, file ownership, expected behavior and acceptance checks. Publish the complete contract somewhere both agents can read. An announcement that a document exists is not proof that the next agent received its contents.</p>
+<p>Name the integration owner before implementation begins. Ask the specialist to deliver a small working example early, then verify it in the actual application. A successful isolated component leaves the integration question open.</p>
+</section>
+<section id="coordination-and-review" aria-labelledby="coordination-and-review-title"><h2 id="coordination-and-review-title">Keep coordination and review accountable</h2>
+<p>With a builder and reviewer, the builder can manage the implementation plan and the reviewer can manage its findings. A dedicated coordinator becomes useful when several active owners have dependencies that need ongoing attention.</p>
+<p>If you add that role, give it explicit responsibility and the necessary authority. Who follows up on blocked tasks? Who integrates contributions? Who can review submitted work? Those answers should be visible before the team starts.</p>
+<p>Review independence still applies. A coordinator’s successful merge does not establish that a feature works, and contributing to an implementation rules out independently approving that contribution. Final human acceptance remains a separate decision.</p>
+</section>
+<section id="evaluate-the-change" aria-labelledby="evaluate-the-change-title"><h2 id="evaluate-the-change-title">Check whether the extra role helped</h2>
+<p>After a meaningful delivery, compare the benefit with the added work. Did the specialist remove a bottleneck, improve a difficult area or find defects the existing review missed? How much time went into explaining context, waiting, reconciling interfaces and repairing integration?</p>
+<p>Keep the model mix, tools, elapsed time, usage and human interventions alongside that assessment. Comparing different teams can inform the next project without proving that one coordination strategy is universally best.</p>
+<p>For our next small local projects, we are keeping the builder and reviewer pair. We will expand when we can name the missing responsibility, give it a workable boundary and independently verify the contribution.</p>
+</section><div class="post-ending"><p>Build with a clear brief and a separate review. <a href="../getting-started.html#first-task">Try the builder and reviewer workflow.</a></p></div></div></div>
+    </article>
+    <section class="post-next wrap" aria-labelledby="next-post-title"><p class="eyebrow">KEEP READING</p><h2 id="next-post-title"><a href="one-builder-one-reviewer.html">Start with one builder and one reviewer <span aria-hidden="true">↗</span></a></h2><a class="text-link" href="../blog.html">All posts <span aria-hidden="true">→</span></a></section>
+  </main>
+  <footer class="site-footer wrap"><div><a class="wordmark" href="../"><img src="../assets/mark.svg" width="27" height="27" alt="">HeloScrum</a><p>A hello. A connection. A team.</p></div><div><a href="https://github.com/YokiiDesu/heloscrum">GitHub ↗</a><a href="https://github.com/YokiiDesu/heloscrum/blob/main/LICENSE">Apache-2.0</a><span>© 2026 HeloScrum contributors</span></div></footer>
+</body>
+</html>

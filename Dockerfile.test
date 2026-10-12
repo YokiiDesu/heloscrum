@@ -1,0 +1,14 @@
+# Official multi-architecture Node 24 image; update this digest deliberately.
+FROM node:24-bookworm@sha256:3d27e5c11e5786e309ec3e03f93ae536eb36e6e5eb3714d5eb3300a36157add0
+RUN mkdir -p '/app/HeloScrum with spaces' && chown -R node:node /app
+WORKDIR /app/HeloScrum with spaces
+USER node
+COPY --chown=node:node package.json package-lock.json ./
+COPY --chown=node:node scripts/setup-pty.mjs ./scripts/setup-pty.mjs
+ENV npm_config_jobs=2
+RUN npm ci --no-audit --no-fund
+COPY --chown=node:node . .
+# Release checks need an index, not the user's actual Git history or credentials.
+RUN git init --quiet --initial-branch=main
+ENV CI=true TZ=UTC
+CMD ["node", "scripts/platform-check.mjs"]

@@ -1,0 +1,21 @@
+.DS_Store
+node_modules
+.sites-runtime/
+*.tar.gz
+
+.heloscrum/
+
+# Private settings and local verification artifacts
+.env
+.env.*
+!.env.example
+*.log
+*.pem
+*.key
+.openai/
+.playwright-cli/
+output/
+coverage/
+.desktop-setup.lock/
+# Private experiment records are not part of the application distribution.
+benchmarks/

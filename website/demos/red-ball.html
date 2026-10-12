@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-RXiiXfzWai+ANLvbJwSHcJg+jYeAqyRa1l7COkJYEuU='; style-src 'sha256-fkdb4Po/lSjLjnscoX9/UM6E95XC6NLjD6sumVb7+ls='; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Red Ball Physics</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: #0f1115;
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  #hint {
+    position: fixed;
+    left: 12px;
+    bottom: 12px;
+    color: #aaa;
+    font-family: system-ui, sans-serif;
+    font-size: 13px;
+    background: rgba(0,0,0,0.4);
+    padding: 6px 10px;
+    border-radius: 8px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hint">Click & drag the red ball to throw it</div>
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  let w = canvas.width = window.innerWidth;
+  let h = canvas.height = window.innerHeight;
+
+  window.addEventListener('resize', () => {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  });
+
+  const ball = {
+    x: w * 0.5,
+    y: h * 0.3,
+    vx: 4,
+    vy: 0,
+    r: 28,
+    color: '#e53935',
+    gravity: 0.55,
+    bounce: 0.78,
+    friction: 0.995
+  };
+
+  let dragging = false;
+  let dragOffsetX = 0;
+  let dragOffsetY = 0;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let dragStartTime = 0;
+
+  function hitTest(px, py) {
+    const dx = px - ball.x;
+    const dy = py - ball.y;
+    return dx*dx + dy*dy <= ball.r*ball.r;
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+    if (hitTest(px, py)) {
+      dragging = true;
+      dragOffsetX = px - ball.x;
+      dragOffsetY = py - ball.y;
+      dragStartX = px;
+      dragStartY = py;
+      dragStartTime = performance.now();
+      ball.vx = 0;
+      ball.vy = 0;
+      canvas.setPointerCapture(e.pointerId);
+    }
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const rect = canvas.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+    ball.x = px - dragOffsetX;
+    ball.y = py - dragOffsetY;
+    // keep inside bounds while dragging
+    ball.x = Math.max(ball.r, Math.min(w - ball.r, ball.x));
+    ball.y = Math.max(ball.r, Math.min(h - ball.r, ball.y));
+  });
+
+  canvas.addEventListener('pointerup', (e) => {
+    if (!dragging) return;
+    dragging = false;
+    const rect = canvas.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+    const dt = Math.max(16, performance.now() - dragStartTime);
+    const dx = px - dragStartX;
+    const dy = py - dragStartY;
+    // flick velocity proportional to drag distance
+    ball.vx = dx * 0.18;
+    ball.vy = dy * 0.18;
+    // add a little extra throw if fast drag
+    const speed = Math.hypot(dx, dy) / dt;
+    if (speed > 0.3) {
+      ball.vx *= 1.2;
+      ball.vy *= 1.2;
+    }
+  });
+
+  canvas.addEventListener('pointercancel', () => { dragging = false; });
+
+  function update() {
+    if (!dragging) {
+      ball.vy += ball.gravity;
+      ball.vx *= ball.friction;
+      ball.vy *= ball.friction;
+      ball.x += ball.vx;
+      ball.y += ball.vy;
+
+      // walls
+      if (ball.x - ball.r < 0) {
+        ball.x = ball.r;
+        ball.vx = -ball.vx * ball.bounce;
+      } else if (ball.x + ball.r > w) {
+        ball.x = w - ball.r;
+        ball.vx = -ball.vx * ball.bounce;
+      }
+      if (ball.y - ball.r < 0) {
+        ball.y = ball.r;
+        ball.vy = -ball.vy * ball.bounce;
+      } else if (ball.y + ball.r > h) {
+        ball.y = h - ball.r;
+        ball.vy = -ball.vy * ball.bounce;
+        ball.vx *= 0.98;
+        // stop tiny bounces
+        if (Math.abs(ball.vy) < 1.2) ball.vy = 0;
+      }
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    // subtle floor gradient
+    const grad = ctx.createLinearGradient(0,0,0,h);
+    grad.addColorStop(0, '#0f1115');
+    grad.addColorStop(1, '#1a1e27');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,w,h);
+
+    // shadow
+    ctx.beginPath();
+    ctx.ellipse(ball.x, h - ball.r + 8, ball.r * 0.9, ball.r * 0.3, 0, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fill();
+
+    // ball
+    const g = ctx.createRadialGradient(ball.x - ball.r*0.3, ball.y - ball.r*0.3, ball.r*0.2, ball.x, ball.y, ball.r);
+    g.addColorStop(0, '#ff6e6e');
+    g.addColorStop(1, ball.color);
+    ctx.beginPath();
+    ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2);
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.stroke();
+  }
+
+  function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+</body>
+</html>

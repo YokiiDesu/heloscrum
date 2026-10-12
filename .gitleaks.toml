@@ -1,0 +1,7 @@
+title = "HeloScrum release scanning"
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Installed packages and local runtime state are not release source"
+paths = ['''(^|/)node_modules/''', '''(^|/)\.heloscrum/''', '''(^|/)\.git/''', '''(^|/)output/''']
