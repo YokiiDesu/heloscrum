@@ -20,7 +20,7 @@ export function structureIndex(thread){return new Map((thread.structures||[]).ma
 /** Which kind of rendering a message gets: a full card, or a small tag. */
 export function structureRole(message){
   const ref=message.structure;if(!ref)return null;
-  if(ref.event==='opened'||ref.type==='decision'&&ref.event==='recorded')return 'card';
+  if(ref.event==='opened'||ref.type==='decision'&&ref.event==='recorded'||ref.event==='resolved'&&ref.decisionId)return 'card';
   return 'tag';
 }
 

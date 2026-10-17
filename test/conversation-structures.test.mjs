@@ -136,6 +136,8 @@ test('debates record positions, rebuttals and changes of mind, then close into a
   const old=r.structures.read(tasks[0],decision.id);assert.equal(old.status,'superseded');assert.equal(old.supersededBy,replaced.structure.id);
   assert.match(r.data.memory.find(m=>m.key===old.memoryKey).text,/Status: superseded/);assert.equal(r.data.memory.find(m=>m.key===old.memoryKey).revision,2);
   await assert.rejects(r.call(tasks[1],'record_decision',{threadId:group.id,title:'Again',decision:'x',rationale:'y',supersedes:decision.id}),e=>e.status===409);
+  const outsider=await r.call(tasks[3],'create_group',{name:'Private',participants:[tasks[1].id,tasks[2].id]});
+  await assert.rejects(r.call(tasks[3],'record_decision',{threadId:outsider.id,title:'Hijack',decision:'x',rationale:'y',supersedes:replaced.structure.id}),e=>e.status===403,'members of other groups cannot supersede a decision they cannot read');
   const withdrawn=await r.structures.act(human,{action:'supersede',structureId:replaced.structure.id,reason:'We will revisit after the release.'});
   assert.equal(withdrawn.structure.status,'superseded');
   await assert.rejects(r.structures.act(tasks[0],{action:'supersede',structureId:decision.id,reason:'x'}),e=>e.status===403);
