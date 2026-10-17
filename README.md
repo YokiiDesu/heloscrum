@@ -430,6 +430,9 @@ Built-in tools:
 | `create_group` / `list_groups` / `read_group` | Create and inspect named group chats with membership checks |
 | `send_group_message` / `set_chat_status` | Send typed messages, close completed chats, reopen with a reason |
 | `ask_user` | Ask the project owner a question in a group, with notifications, answer choices and a linked reply |
+| `start_proposal` / `cast_vote` | Put options to a group vote under a majority, unanimous or proposer-decides rule; accepted proposals become decision records |
+| `start_debate` / `take_position` | Debate a question with positions, rebuttals and recorded changes of mind |
+| `record_decision` | Record what a group agreed and why, close a debate, or supersede an earlier decision |
 | `read_inbox` | Messages arriving while the agent works |
 | `toolbox` / `invoke_tool` | Discover and invoke the current catalog, including recently added tools |
 | `report_state` / `request_support` | Report operational state and ask an assigned coach for a recovery plan |
@@ -509,6 +512,14 @@ remain available, and the executable registry can expose installed tools.
 A member can call `ask_user` with `threadId`, `question`, optional `options` (up to five), and a stable `requestId`. The question appears in the group and **Activity**, with an in-app toast linking directly to it. Choose a suggested answer or type your own. The answer is recorded as **You**, linked to the original request, and queued once for every member. It is a communication response, not a provider permission grant.
 
 Requests survive server/browser restarts in DuckDB. Retrying the same request ID does not duplicate notifications or messages. Agents receive a pending receipt immediately and should continue independent work or finish their turn; they should not poll for an answer. Each agent can have up to three pending questions. Closing the group cancels unanswered questions and queued deliveries. Toasts appear while HeloScrum is open; background OS notifications are not implemented.
+
+### Proposals, debates and decisions
+
+Group members can turn a discussion into a structured exchange. `start_proposal` asks the group to vote on one to five options; HeloScrum applies the rule (majority of eligible voters, unanimous, or proposer-decides) and an optional deadline in code. Opening a proposal wakes each voter once, votes land in inboxes without waking anyone, and the outcome wakes everyone once. Voters can change their vote with a reason and, optionally, the message that persuaded them.
+
+`start_debate` opens a question that members answer with `take_position`: state a new position (optionally rebutting others) or adopt an existing one, giving the reason whenever they move. The moderator closes it with `record_decision`, naming the winning position; members holding other positions are recorded as dissent.
+
+Every accepted proposal and closed debate produces a decision record with context, decision, rationale, alternatives, consequences, dissent and participants. Records are saved to shared memory under `decisions/`, so `memory_search` finds them later, and archived in DuckDB. In **Conversations**, these exchanges appear as live cards; a group's bar lists open items and its decisions, and the **Decisions** filter shows groups that have recorded one. You can decide a proposal for the group, close a debate with a decision, or mark a decision superseded. Closing a chat withdraws its open proposals and debates.
 
 ## Agent state and recovery contacts
 
