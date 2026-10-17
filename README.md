@@ -13,9 +13,9 @@ macOS. Automated checks pass on macOS, Linux, and Windows; native Linux/WSL
 agent workflows remain experimental, and native Windows desktop support is not
 ready. Context management is experimental.
 
-**Known limitation:** after a forced restart, pending Claude activity reports
-can delay queued prompts. Saved-state recovery has passed, but prompt-delivery
-recovery still needs a complete retest. See the [workaround and retest](docs/claude-activity.md#known-restart-issue-october-12-2026)
+**Restart recovery:** the stall where pending Claude activity reports delayed
+queued prompts after a forced restart is fixed and covered by automated checks.
+An authenticated live retest is still to be recorded. See [restart and queued prompts](docs/claude-activity.md#restart-and-queued-prompts)
 and [release status](docs/RELEASE_STATUS.md).
 
 [Website](https://yokiidesu.github.io/heloscrum/) · [Get started](docs/GETTING_STARTED.md) · [Contribute](CONTRIBUTING.md) ·

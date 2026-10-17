@@ -13,13 +13,17 @@ const labelOf=event=>{const input=inputOf(event);return input.description||input
     pending.push({...event,sessionId});pending=pending.slice(-128);
     if(event.kind==='tool'){recent=recent.filter(item=>item.id!==event.id);recent.push(event);recent=recent.slice(-24);}
   };
-  const flush=async $=>{
-    if(busy||!sessionId)return;busy=true;const was=pending.length+'|'+lastError+'|'+lastDelivered;
+  // While HeloScrum is unreachable, each attempt is MCP work the native session
+  // shows as in progress. Back off (1, 2, 4 … 30 one-second ticks) instead of
+  // retrying every tick; an explicit status check still retries at once.
+  let failures=0,skipTicks=0;
+  const flush=async($,{force=false}={})=>{
+    if(busy||!sessionId)return;if(!force&&skipTicks>0){skipTicks--;return;}busy=true;const was=pending.length+'|'+lastError+'|'+lastDelivered;
     try{for(let n=0;n<16&&pending.length;n++){
       const event=pending[0],result=await $.mcp.call('heloscrum','activity_report',event);
       if(result.isError)throw Error('HeloScrum rejected an activity report');
-      const index=pending.indexOf(event);if(index>=0)pending.splice(index,1);lastDelivered=new Date().toISOString();lastError='';
-    }}catch{lastError='Activity delivery unavailable; native Claude tools continue normally.';}finally{busy=false;if(was!==pending.length+'|'+lastError+'|'+lastDelivered)redraw($);}
+      const index=pending.indexOf(event);if(index>=0)pending.splice(index,1);lastDelivered=new Date().toISOString();lastError='';failures=0;skipTicks=0;
+    }}catch{lastError='Activity delivery unavailable; native Claude tools continue normally.';failures++;skipTicks=Math.min(2**(failures-1),30)-1;}finally{busy=false;if(was!==pending.length+'|'+lastError+'|'+lastDelivered)redraw($);}
   };
   const measure=async ($,id)=>{
     try{const usage=await $.session.usage(),context={};for(const key of ['tokens','window','percent'])if(Number.isFinite(usage.context?.[key]))context[key]=usage.context[key];
@@ -93,7 +97,7 @@ export function register(on) {
     return next(e);
   });
   on('command.run',{command:'heloscrum-status'},async $=>{
-    await measure($,'context-status');await flush($);
+    await measure($,'context-status');await flush($,{force:true});
     return {text:lastError||`HeloScrum activity bridge connected. Last delivery: ${lastDelivered||'waiting'}. ${pending.length} reports pending.`};
   });
   on('tool.call',async ($,e,next)=>{

@@ -21,9 +21,10 @@ behavior on every platform.
 
 ## Known Limitations
 
-Pending Claude Mod activity reports can delay queued prompts after a forced
-restart. The [Mod guide](claude-activity.md#known-restart-issue-october-12-2026)
-contains the reproduction and recovery procedure. Treat restart persistence and
+The October 12 stall, where pending Claude Mod activity reports delayed queued
+prompts after a forced restart, is fixed and covered by automated checks; see
+[Restart and queued prompts](claude-activity.md#restart-and-queued-prompts). An
+authenticated live retest is still to be recorded. Treat restart persistence and
 successful prompt delivery as separate checks.
 
 Broader platform support needs the native workflows in

@@ -31,7 +31,12 @@ const json=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application
 function auth(value){if(typeof value!=='string')return false;const a=Buffer.from(value),b=Buffer.from(token);return a.length===b.length&&timingSafeEqual(a,b);}
 const apiV1=await new ApiV1(plane,{browserAuth:auth}).init();
 async function body(req,limit=32000){assert(req.headers['content-type']?.split(';')[0]==='application/json','Use JSON requests',415);let size=0,parts=[];for await(const part of req){size+=part.length;assert(size<=limit,'Request is too large',413);parts.push(part);}let result;try{result=JSON.parse(Buffer.concat(parts).toString());}catch{throw Object.assign(new Error('Invalid JSON'),{status:400});}assert(result&&typeof result==='object'&&!Array.isArray(result),'Expected a JSON object');return result;}
+let closing=false,inFlight=0;
 const server=http.createServer(async(req,res)=>{
+ // A stopping backend must not keep serving agent calls over kept-alive
+ // sockets: answer at once and release the socket so callers reconnect.
+ if(closing){res.setHeader('Connection','close');return json(res,503,{error:'HeloScrum is restarting. Retry once it is ready.',code:'BACKEND_STOPPING'});}
+ inFlight++;res.once('close',()=>{inFlight--;if(closing)server.closeIdleConnections();});
  try{
   assert(validRequest(req,port),'Local same-origin access only',403);
   const url=new URL(req.url,`http://${req.headers.host}`),route=url.pathname;
@@ -197,8 +202,17 @@ server.listen(port,'127.0.0.1',async()=>{
  }catch(error){console.error(error);process.exitCode=1;await close();if(process.connected)process.disconnect();}
 });
 server.on('error',async error=>{console.error(error);process.exitCode=1;await close();if(process.connected)process.disconnect();});
-let closing=false;
-async function close(){if(closing)return;closing=true;eventRelays?.close();clearInterval(delivery);clearInterval(historyTimer);await plane.scheduler.stop();await apiV1.close();await plane.managed.close();terminals.close();await plane.mcp.close();await new Promise(resolve=>server.close(resolve));await deliveryPending;await plane.historyCollector.pending?.catch(()=>{});await plane.saveQueue.catch(()=>{});plane.transcripts.close();await plane.history.close();
+// Node's server.close() waits for every open connection, and a socket that was
+// busy when it ran stays open for as long as its client keeps sending requests.
+// Agent bridges poll every second, so stop serving first, let current requests
+// finish within a bound, then drop the remaining sockets before tearing down.
+const SHUTDOWN_DRAIN_MS=8000;
+async function stopServing(){
+ const stopped=new Promise(resolve=>server.close(resolve));server.closeIdleConnections();
+ const deadline=Date.now()+SHUTDOWN_DRAIN_MS;while(inFlight>0&&Date.now()<deadline)await new Promise(resolve=>setTimeout(resolve,25));
+ server.closeAllConnections();await stopped;
+}
+async function close(){if(closing)return;closing=true;eventRelays?.close();clearInterval(delivery);clearInterval(historyTimer);await plane.scheduler.stop();await apiV1.close();terminals.close();await stopServing();await plane.managed.close();await plane.mcp.close();await deliveryPending;await plane.historyCollector.pending?.catch(()=>{});await plane.saveQueue.catch(()=>{});plane.transcripts.close();await plane.history.close();
  await desktopEngineStart?.catch(()=>{});
  if(desktopOwnsEngine)try{if(!(await plane.herdr.list()).length)await plane.herdr.command(['server','stop']);else console.log('Native agent sessions remain in Herdr; its engine was left running.');}catch(error){console.error('Herdr cleanup:',error.message);}
 }
