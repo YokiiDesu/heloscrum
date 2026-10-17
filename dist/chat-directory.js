@@ -20,7 +20,8 @@ export function chatTimestamp(value,now=new Date()){
 export function filterChats(threads,{kind='all',project='all',date='all',status='all',query=''}={},now=new Date()){
   const search=query.trim().toLocaleLowerCase();
   return threads.filter(thread=>{
-    if(kind!=='all'&&thread.kind!==kind||project!=='all'&&thread.project!==project||status!=='all'&&thread.status!==status)return false;
+    if(kind==='decisions'?!(thread.structureCounts?.decisions>0):kind!=='all'&&thread.kind!==kind)return false;
+    if(project!=='all'&&thread.project!==project||status!=='all'&&thread.status!==status)return false;
     const stamp=parsed(activityAt(thread)),age=valid(stamp)?(day(now)-day(stamp))/86400000:null;
     if(date==='today'&&age!==0||date==='yesterday'&&age!==1||date==='week'&&(age===null||age<0||age>6))return false;
     return !search||[thread.name,thread.projectName,thread.project,...thread.participants.map(p=>p.name)].join(' ').toLocaleLowerCase().includes(search);
