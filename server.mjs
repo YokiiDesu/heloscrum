@@ -198,7 +198,7 @@ server.listen(port,'127.0.0.1',async()=>{
 });
 server.on('error',async error=>{console.error(error);process.exitCode=1;await close();if(process.connected)process.disconnect();});
 let closing=false;
-async function close(){if(closing)return;closing=true;eventRelays?.close();clearInterval(delivery);clearInterval(historyTimer);await plane.scheduler.stop();await apiV1.close();await plane.managed.close();terminals.close();await plane.mcp.close();await new Promise(resolve=>server.close(resolve));await deliveryPending;await plane.historyCollector.pending?.catch(()=>{});await plane.saveQueue.catch(()=>{});plane.transcripts.close();await plane.history.close();
+async function close(){if(closing)return;closing=true;eventRelays?.close();clearInterval(delivery);clearInterval(historyTimer);await plane.scheduler.stop();await apiV1.close();await plane.managed.close();await plane.structured.close();terminals.close();await plane.mcp.close();await new Promise(resolve=>server.close(resolve));await deliveryPending;await plane.historyCollector.pending?.catch(()=>{});await plane.saveQueue.catch(()=>{});plane.transcripts.close();await plane.history.close();
  await desktopEngineStart?.catch(()=>{});
  if(desktopOwnsEngine)try{if(!(await plane.herdr.list()).length)await plane.herdr.command(['server','stop']);else console.log('Native agent sessions remain in Herdr; its engine was left running.');}catch(error){console.error('Herdr cleanup:',error.message);}
 }
