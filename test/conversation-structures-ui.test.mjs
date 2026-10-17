@@ -36,7 +36,7 @@ test('a group chat that votes produces a decision record the chat view renders',
   assert.match(card,/moved from B to A: Architect showed data loss\./);assert.match(card,/Persuaded by Architect/);
   assert(!card.includes('structure-form'),'closed proposals offer no actions');
   assert.match(v.messageBubble(vote,page),/class="structure-tag structure-tag-proposal"><span>Vote<\/span>/);
-  assert.match(v.messageBubble(outcome,page),/Proposal accepted/);
+  assert.equal(structureRole(outcome),'card');assert.match(v.messageBubble(outcome,page),/structure-decision/,'the outcome message shows the decision record inline');
   const summary=structureSummary(page,{expanded:true,markdown});
   assert.match(summary,/0 open · 1 decision/);assert.match(summary,/Decision record/);assert.match(summary,new RegExp(decision.memoryKey.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
   assert.match(structureSummary(page,{markdown}),/Show decisions/);
