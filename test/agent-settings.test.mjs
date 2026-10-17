@@ -285,3 +285,21 @@ test('reviewed native restart preserves model, effort, history and never re-prom
   assert.equal(await readFile(path.join(f.task.path,'draft.txt'),'utf8'),'keep my edits');
  }finally{await f.cleanup();}
 });
+test('switching Codex between Terminal and App server resumes the same thread instead of a fresh handoff',async()=>{
+ const {StructuredSessions}=await import('../lib/structured-sessions.mjs');
+ const f=await fixture();try{
+  const requests=[];const spawnProcess=(executable,args)=>{const {EventEmitter}=process.getBuiltinModule('node:events'),{PassThrough}=process.getBuiltinModule('node:stream');const child=new EventEmitter();child.stdout=new PassThrough();child.stderr=new PassThrough();child.stdin=new PassThrough();child.kill=()=>child.emit('close',0);let buffer='';child.stdin.on('data',chunk=>{buffer+=chunk;let end;while((end=buffer.indexOf('\n'))>=0){const line=buffer.slice(0,end);buffer=buffer.slice(end+1);if(!line.trim())continue;const message=JSON.parse(line);requests.push(message);if(message.id===undefined)continue;const reply=message.method==='initialize'?{platformOs:'test'}:message.method==='thread/resume'?{thread:{id:message.params.threadId,status:{type:'idle'}}}:message.method==='thread/turns/list'?{data:[],nextCursor:null}:{};child.stdout.write(JSON.stringify({id:message.id,result:reply})+'\n');}});return child;};
+  f.plane.structured=new StructuredSessions(f.plane,{spawnProcess});f.plane.managed=new ManagedAgents(f.plane);f.plane.herdr=withManagedAgents(f.plane.herdr,f.plane.managed,f.plane.structured);
+  const preview=await f.plane.agentSettings.preview(f.task.id,{kind:'codex',model:'old-codex',nativeSetup:{codexEngine:'app-server'}});
+  assert.equal(preview.freshSession,false);assert.equal(preview.crossProvider,false);assert.equal(preview.sessionId,session);
+  await f.plane.agentSettings.change(f.task.id,{previewId:preview.previewId});
+  assert.equal(f.calls.filter(c=>c[0]==='exit').length,1);assert(!f.calls.some(c=>c[0]==='start'||c[0]==='workspace'||c[0]==='prompt'));
+  const resume=requests.find(r=>r.method==='thread/resume');assert.equal(resume.params.threadId,session);assert.equal(resume.params.model,'old-codex');
+  assert.equal(f.task.phase,'launched');assert.match(f.task.pane,/^structured:/);assert.equal(f.task.providerSessionId,session);assert.equal(f.task.nativeSetup.codexEngine,'app-server');assert.equal(f.task.sessionArchives,undefined);
+  // And back to the terminal engine: the same thread is resumed in a Herdr pane.
+  const back=await f.plane.agentSettings.preview(f.task.id,{kind:'codex',model:'old-codex',nativeSetup:{profile:null,files:[]}});assert.equal(back.freshSession,false);
+  await f.plane.agentSettings.change(f.task.id,{previewId:back.previewId});
+  const start=f.calls.find(c=>c[0]==='start');assert.deepEqual(start[4].slice(0,2),['resume',session]);assert.equal(f.task.nativeSetup.codexEngine,undefined);assert.equal(f.plane.structured.list().length,0);
+  await f.plane.structured.close();
+ }finally{await f.cleanup();}
+});
