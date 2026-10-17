@@ -14,11 +14,10 @@ function assertSession(){
 }
 let revision=-1,notifiedAt=0,initialized=false,polling=false;
 const send=value=>process.stdout.write(JSON.stringify(value)+'\n');
-// Telemetry is idempotent and the Claude Mod retries it, so it gets a short
-// bound: while a call is open the native session shows MCP work in progress,
-// and that holds back every prompt queued for it.
-const TELEMETRY_TOOLS=new Set(['activity_report']);
-const requestTimeout=(route,tool)=>route!=='call'?7000:TELEMETRY_TOOLS.has(tool)?5000:65000;
+// An open activity report shows as MCP work in the native session and holds
+// back its queued prompts. Reports are idempotent and the Mod retries them, so
+// they get a short bound; real tool calls keep the long one.
+const requestTimeout=(route,tool)=>route!=='call'?7000:tool==='activity_report'?5000:65000;
 async function request(route,body){
  assertSession();
  // A desktop restart may choose a free port. Read the address again, while
