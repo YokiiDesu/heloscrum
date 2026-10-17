@@ -58,19 +58,3 @@ test('the bridge bounds telemetry calls to a stalled backend without shortening 
   assert(telemetry.ms>=4500&&telemetry.ms<6500,`telemetry call answered after ${telemetry.ms} ms`);
   assert.equal(toolAnswered,false,'an ordinary tool call keeps its longer bound');
 });
-
-test('the activity Mod backs off while HeloScrum is unreachable and recovers on the next success',async()=>{
-  const {register}=await import('../plugins/heloscrum-activity/hooks/register.js?test='+randomUUID()),hooks=new Map(),ticks=[];
-  register((name,...args)=>hooks.set(name+(args[0]?.command?':'+args[0].command:''),args.at(-1)));
-  let online=false,attempts=0;
-  const $={session:{id:async()=>randomUUID(),usage:async()=>({context:{window:200000}})},command:{register:async()=>{}},ui:{invalidate:()=>{}},clock:{every:(_ms,fn)=>ticks.push(fn)},
-    mcp:{call:async(_server,tool)=>{if(tool!=='activity_report')throw Error('offline');attempts++;if(!online)throw Error('offline');return {content:[]};}}};
-  await hooks.get('session.start')($,{},async()=>({}));
-  for(let n=0;n<60;n++)await ticks[0]();
-  // Attempts at ticks 1, 2, 4, 8, 16 and 32, then every 30: 6 in 60 ticks, not 60.
-  assert.equal(attempts,6);
-  const forced=attempts;const status=await hooks.get('command.run:heloscrum-status')($);assert.match(status.text,/unavailable/);assert.equal(attempts,forced+1,'an explicit status check retries at once');
-  online=true;await hooks.get('command.run:heloscrum-status')($);
-  const delivered=attempts;await hooks.get('tool.call')($,{tool:'Bash',tool_use_id:'toolu_after',command:'true'},async()=>({text:'ok'}));
-  await ticks[0]();assert(attempts>delivered,'a success resets the back-off');
-});

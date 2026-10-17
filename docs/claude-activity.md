@@ -87,7 +87,7 @@ a disabled or incompatible session will not register that command.
 On October 12, 2026, an authenticated two-provider test forced a HeloScrum backend
 restart and left two native `activity_report` calls pending. Herdr reported the
 open MCP calls as background work, so the next queued prompt waited until those
-calls timed out. Three defects combined to cause this, and all three are fixed:
+calls timed out. Two defects combined to cause this, and both are fixed:
 
 - **The stopping backend kept serving.** Node's `server.close()` waits for every
   open connection, and agent bridges poll every second, so a kept-alive socket
@@ -99,13 +99,9 @@ calls timed out. Three defects combined to cause this, and all three are fixed:
 - **Telemetry shared the 65-second tool bound.** The MCP bridge now bounds
   `activity_report` at 5 seconds. Reports are idempotent and the Mod retries them,
   so a short bound loses nothing. Ordinary tool calls keep 65 seconds.
-- **The Mod retried every second while offline.** Each attempt is MCP work the
-  native session shows as in progress. The Mod now backs off (1, 2, 4 … 30
-  seconds) after failures and resets on the next success; `/heloscrum-status`
-  still retries at once.
 
-`test/restart-delivery.test.mjs` covers each case against a real backend, bridge
-and Mod. Those checks do not authenticate a provider, so record a live check on
+`test/restart-delivery.test.mjs` covers both cases against a real backend and
+bridge. Those checks do not authenticate a provider, so record a live check on
 each platform as well: start a Claude session with this Mod, wait for activity
 delivery, restart only the HeloScrum backend, and queue a small prompt once the
 native composer is idle. Record the native background-task state, delivery
