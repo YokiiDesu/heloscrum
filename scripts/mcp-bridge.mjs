@@ -14,6 +14,11 @@ function assertSession(){
 }
 let revision=-1,notifiedAt=0,initialized=false,polling=false;
 const send=value=>process.stdout.write(JSON.stringify(value)+'\n');
+// Telemetry is idempotent and the Claude Mod retries it, so it gets a short
+// bound: while a call is open the native session shows MCP work in progress,
+// and that holds back every prompt queued for it.
+const TELEMETRY_TOOLS=new Set(['activity_report']);
+const requestTimeout=(route,tool)=>route!=='call'?7000:TELEMETRY_TOOLS.has(tool)?5000:65000;
 async function request(route,body){
  assertSession();
  // A desktop restart may choose a free port. Read the address again, while
@@ -21,7 +26,7 @@ async function request(route,body){
  const current=JSON.parse(await readFile(process.argv[2],'utf8'));
  for(const key of ['token','taskId','contactId','client','externalSessionId'])if(current[key]!==config[key])throw Error('HeloScrum connection identity changed; reconnect this MCP session.');
  if(!localAddress(current.url))throw Error('HeloScrum MCP requires a local loopback address.');
- const res=await fetch(current.url+'/agent-api/'+route,{headers,redirect:'error',method:body?'POST':'GET',...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(route==='call'?65000:7000)});const result=await res.json();if(!res.ok)throw Error(result.error);return result;
+ const res=await fetch(current.url+'/agent-api/'+route,{headers,redirect:'error',method:body?'POST':'GET',...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(requestTimeout(route,body?.name))});const result=await res.json();if(!res.ok)throw Error(result.error);return result;
 }
 async function handle(message){
   const {id,method,params={}}=message;

@@ -82,26 +82,39 @@ a disabled or incompatible session will not register that command.
 
 ## Verification
 
-### Known Restart Issue (October 12, 2026)
+### Restart and queued prompts
 
-During an authenticated two-provider test, forcing a HeloScrum backend restart
-left two native `activity_report` calls pending. Herdr continued to report
-background MCP work, so the next queued prompt waited until those calls timed
-out. Later reports succeeded, and the project, messages, attachments and native
-session identities were preserved. This does not establish prompt delivery
-immediately after every restart; the cause and reliable recovery remain open.
+On October 12, 2026, an authenticated two-provider test forced a HeloScrum backend
+restart and left two native `activity_report` calls pending. Herdr reported the
+open MCP calls as background work, so the next queued prompt waited until those
+calls timed out. Three defects combined to cause this, and all three are fixed:
 
-To reproduce and verify a fix, start a Claude session with this Mod, wait for
-activity delivery, restart only the HeloScrum backend, and queue a small prompt
-once the native composer is idle. Record the native background-task state,
-delivery latency and any permission request. The prompt must reach the idle
-session without a stale activity report blocking it, and it must run only once.
-Keep real native permission prompts intact.
+- **The stopping backend kept serving.** Node's `server.close()` waits for every
+  open connection, and agent bridges poll every second, so a kept-alive socket
+  never went idle. The half-stopped backend kept accepting agent calls after its
+  delivery loop had stopped, until the desktop supervisor killed it after 15
+  seconds (or never, for `SIGTERM` and an orphaned backend). It now answers new
+  requests with `503` and `Connection: close` as soon as shutdown starts, gives
+  current requests up to 8 seconds, then closes the remaining sockets.
+- **Telemetry shared the 65-second tool bound.** The MCP bridge now bounds
+  `activity_report` at 5 seconds. Reports are idempotent and the Mod retries them,
+  so a short bound loses nothing. Ordinary tool calls keep 65 seconds.
+- **The Mod retried every second while offline.** Each attempt is MCP work the
+  native session shows as in progress. The Mod now backs off (1, 2, 4 … 30
+  seconds) after failures and resets on the next success; `/heloscrum-status`
+  still retries at once.
 
-`HELOSCRUM_CLAUDE_ACTIVITY=0` prevents this Mod from loading in newly started
-sessions; it does not cancel reports already pending in an existing process.
-Normal transcript reading remains available without the Mod. This is an opt-out
-for further testing, not a verified recovery command for a stuck session.
+`test/restart-delivery.test.mjs` covers each case against a real backend, bridge
+and Mod. Those checks do not authenticate a provider, so record a live check on
+each platform as well: start a Claude session with this Mod, wait for activity
+delivery, restart only the HeloScrum backend, and queue a small prompt once the
+native composer is idle. Record the native background-task state, delivery
+latency and any permission request. The prompt must reach the idle session
+without a stale activity report blocking it, and it must run only once. Keep real
+native permission prompts intact.
+
+`HELOSCRUM_CLAUDE_ACTIVITY=0` still prevents this Mod from loading in newly
+started sessions. Normal transcript reading remains available without the Mod.
 
 The implementation has regression checks for rich TAP results, nested suites, file
 change previews, native panel tabs/pinning/close, session isolation, idempotent and
