@@ -52,6 +52,7 @@ Agents select a **provider**, **connection**, and **model** independently.
 | Jev / TypeSafe | TypeSafe API key, `jev-latest` | Context decisions only; select a separate generative model for summaries |
 | Claude Code summaries | Installed, signed-in Claude Code CLI; exact model ID | Summary-only connection; uses existing account with tools and MCP disabled |
 | Codex summaries | Installed, signed-in Codex CLI; exact model ID | Summary-only connection, using the existing CLI account; cannot create endpoint agents |
+| Gemini CLI | Installed and signed-in `gemini` (or `HELOSCRUM_GEMINI_BIN`) | Native CLI account over ACP; see [Gemini setup](GEMINI.md) |
 | Cursor CLI | Installed and signed-in `cursor-agent` (or an explicit binary path) | Native CLI account; no model-server connection needed |
 
 Use **Discover models** for the local OpenAI-compatible servers. AWS model IDs

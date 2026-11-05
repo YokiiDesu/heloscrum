@@ -28,6 +28,18 @@ export function diffHTML(value,options={}){
   return `<pre class="diff-preview${options.plain?' plain-diff':''}">${diffLines(value,options).map(line=>`<span class="diff-line diff-${line.kind}">${esc(line.text)}</span>`).join('\n')}</pre>`;
 }
 
+// Keep the provider's complete before/after text; highlight the replacement
+// region between the common prefix and suffix without inventing a patch.
+export function editDiffHTML(edits=[]){
+  return edits.map(edit=>{
+    const before=edit.oldText??'',after=edit.newText,lines=text=>text===''?[]:text.replace(/\n$/,'').split('\n'),a=lines(before),b=lines(after);
+    let start=0,end=0;while(start<a.length&&start<b.length&&a[start]===b[start])start++;
+    while(end<a.length-start&&end<b.length-start&&a[a.length-1-end]===b[b.length-1-end])end++;
+    const pane=(text,rows,label,kind)=>`<section><h5>${label}</h5><pre tabindex="0" aria-label="${esc(label+' '+edit.path)}">${rows.map((line,i)=>`<span class="edit-line ${i>=start&&i<rows.length-end?'edit-'+kind:''}"><span class="edit-number" aria-hidden="true">${i+1}</span><code>${esc(line)||' '}</code></span>`).join('')}</pre><small>${rows.length} lines · ${text===''?'Empty file':text.endsWith('\n')?'Ends with newline':'No final newline'}</small></section>`;
+    return `<div class="edit-review"><h4>${esc(edit.path)}${edit.oldText===null?' · New file':''}</h4><p>Before / after · highlighted replacement region</p><div class="edit-columns">${pane(before,a,'Before','remove')}${pane(after,b,'After','add')}</div></div>`;
+  }).join('');
+}
+
 const statuses={A:['added','Added'],D:['deleted','Deleted'],M:['modified','Modified'],R:['renamed','Renamed'],C:['copied','Copied'],U:['conflict','Unmerged'],T:['typechanged','Type changed'],'?':['unknown','Changed']};
 export function fileStatus(file){
   const raw=file.status||'',conflict=file.conflict||['DD','AU','UD','UA','DU','AA','UU'].includes(raw);

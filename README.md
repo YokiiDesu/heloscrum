@@ -96,7 +96,7 @@ Docker, Jev, and a summary model are optional. Keep the backend on localhost.
 
 Open http://127.0.0.1:4173. Node.js 22.13+ and Git 2.28+ are required. HeloScrum binds to
 loopback and runs on your machine. Install and authenticate Codex, Claude
-Code, Kiro CLI, or Cursor CLI, or configure a local/AWS model connection under
+Code, Kiro CLI, Cursor CLI, or Gemini CLI, or configure a local/AWS model connection under
 **Project settings → AI & context**. Agent turns use the selected account or model
 server. Multiple Ollama, llama.cpp, LM Studio, Bedrock, and compatible SageMaker
 connections are supported. See [AI connections and context management](docs/AI_CONNECTIONS.md)
@@ -105,6 +105,12 @@ The [local LLM walkthrough](https://yokiidesu.github.io/heloscrum/blog/local-llm
 includes our llama.cpp and Muse Glimmer settings, measured build times, and the
 original playable red-ball example. Saved model connections show **Connected**
 when their catalog is reachable; manage them in **AI & Context**.
+
+Gemini CLI uses its signed-in account through ACP, with streamed Chat/Block
+transcripts, tool approvals, image input, and saved-session resume. It does not
+require Herdr. **Gemini controls** adds Plan-to-board drafts, session modes,
+reported context/token usage, and advertised native commands. File approvals
+include side-by-side before/after previews. See [Gemini setup](docs/GEMINI.md).
 
 The **Refresh** control in the header updates the workspace in place, keeping open
 drafts and selections. HeloScrum also catches up when you return to the tab and

@@ -27,10 +27,12 @@ without starting agents or submitting tasks.
 - One supported provider, installed and signed in separately. Follow its own
   setup instructions: [Codex](https://developers.openai.com/codex/cli/),
   [Claude Code](https://code.claude.com/docs/en/setup),
-  [Kiro CLI](https://kiro.dev/docs/cli/), or
-  [Cursor CLI](https://cursor.com/docs/cli/installation).
-- **Herdr 0.9.0** for Codex, Claude Code, Kiro, or interactive Cursor sessions. Headless Cursor and model
-  endpoints use HeloScrum's managed runner and do not require Herdr.
+  [Kiro CLI](https://kiro.dev/docs/cli/),
+  [Cursor CLI](https://cursor.com/docs/cli/installation), or
+  [Gemini CLI](https://geminicli.com/docs/get-started/installation/).
+- **Herdr 0.9.0** for Codex, Claude Code, Kiro, or interactive Cursor sessions.
+  Headless Cursor, Gemini CLI, and model endpoints use HeloScrum's managed runner
+  and do not require Herdr.
 
 Get the matching binary from the [Herdr 0.9.0 release](https://github.com/herdrdev/herdr/releases/tag/v0.9.0).
 For example, on an Apple silicon Mac:
@@ -62,7 +64,7 @@ npm ci
 npm run doctor -- --provider codex
 ```
 
-Replace `codex` with `claude`, `kiro`, `cursor`, or your endpoint provider. Doctor
+Replace `codex` with `claude`, `kiro`, `cursor`, `gemini`, or your endpoint provider. Doctor
 checks installed binaries and native modules without starting agents or making
 AI requests. It does not establish provider login or available quota. A missing
 optional provider is a warning; a missing selected provider is a failure.

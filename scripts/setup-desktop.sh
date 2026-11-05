@@ -240,7 +240,7 @@ fi
 
 step 5 'Choose provider tools'
 say 'Provider accounts and usage belong to you. Setup does not log in or send AI requests.'
-for provider_name in codex claude kiro-cli cursor-agent; do
+for provider_name in codex claude kiro-cli cursor-agent gemini; do
   if command -v "$provider_name" >/dev/null; then ok "Found $provider_name"; else say "$provider_name — not detected"; fi
 done
 if [ "$provider" = ask ]; then
@@ -258,6 +258,7 @@ install_provider() {
 case "$provider" in codex) install_provider codex @openai/codex;; claude) install_provider claude @anthropic-ai/claude-code;; both) install_provider codex @openai/codex; install_provider claude @anthropic-ai/claude-code;; esac
 say 'To sign in later, run your provider CLI: codex login · claude auth login'
 say 'Kiro: https://kiro.dev/docs/cli/ · Cursor: https://cursor.com/docs/cli/installation'
+say 'Gemini: https://geminicli.com/docs/get-started/installation/ · sign in with gemini'
 
 step 6 'Choose your workspace and create a launcher'
 saved_root=$("$node_bin" "$repo_dir/scripts/desktop-setup.mjs" saved-root "$setup_home")

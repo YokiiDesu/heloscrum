@@ -473,3 +473,49 @@ select:not([multiple]){appearance:none;-webkit-appearance:none;background-image:
 @media(prefers-reduced-motion:reduce){.mod-card *,.mod-card *::after{animation:none!important;transition:none!important}}
 
 .ai-memory-ranking{display:flex;align-items:center;gap:10px}.ai-memory-ranking input{width:16px;height:16px;margin:0;flex-shrink:0}
+
+/* Gemini session controls and exact provider edit previews. */
+.gemini-session-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 14px;border-bottom:1px solid var(--border);font-size:11px;flex-wrap:wrap}
+.gemini-usage-strip{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted)}
+.gemini-session-bar button{font-size:11px;padding:4px 8px}
+.gemini-controls-dialog{width:min(820px,calc(100vw - 32px));max-height:90dvh;overflow:auto;padding:22px;border:1px solid var(--border);border-radius:16px;background:var(--panel);color:var(--text)}
+.gemini-controls-dialog::backdrop{background:#0008}
+.gemini-controls-dialog header,.gemini-section-title{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.gemini-controls-dialog h2,.gemini-controls-dialog h3{margin:0 0 8px}
+.gemini-controls-dialog section{padding:18px 0;border-top:1px solid var(--border)}
+.gemini-controls-dialog label{display:grid;gap:6px;margin:12px 0;font-size:13px}
+.gemini-controls-dialog input,.gemini-controls-dialog textarea,.gemini-controls-dialog select{width:100%;box-sizing:border-box;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:9px;font:inherit}
+.gemini-controls-dialog textarea{resize:vertical;min-height:100px}
+.gemini-controls-dialog button{padding:7px 12px;cursor:pointer}
+.gemini-controls-dialog button:disabled{opacity:.5;cursor:default}
+.gemini-note,.gemini-mode-description{font-size:12px;line-height:1.6;color:var(--muted)}
+.gemini-error{color:var(--danger,#d85c62);white-space:pre-wrap}
+.gemini-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.gemini-metrics>div{display:flex;flex-direction:column;gap:6px;padding:12px;border:1px solid var(--border);border-radius:8px;overflow-wrap:anywhere}
+.gemini-metrics span,.gemini-metrics small{font-size:11px;color:var(--muted)}
+.gemini-metrics strong{font-size:17px}.gemini-metrics meter{width:100%}
+.edit-review{margin:12px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden;min-width:0}
+.edit-review h4,.edit-review>p{margin:8px 12px;overflow-wrap:anywhere}.edit-review>p{font-size:11px;color:var(--muted)}
+.edit-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.edit-columns section{min-width:0}.edit-columns section+section{border-left:1px solid var(--border)}
+.edit-columns h5{margin:0;padding:6px 12px;border-block:1px solid var(--border)}
+.edit-columns pre{margin:0!important;max-height:360px!important;overflow:auto;white-space:pre!important;padding:6px 0!important;font-size:11px;line-height:1.6}
+.edit-line{display:flex;min-width:max-content;min-height:1.6em}.edit-line code{font:inherit;color:inherit;padding-right:10px}.edit-number{display:inline-block;min-width:4ch;text-align:right;padding:0 8px;color:var(--muted);user-select:none}
+.edit-remove{background:rgba(230,75,90,.16)}.edit-add{background:rgba(45,180,115,.16)}.edit-columns small{display:block;padding:6px 10px;color:var(--muted);font-size:10px}
+@media(max-width:600px){.gemini-metrics,.edit-columns{grid-template-columns:1fr}.edit-columns section+section{border-left:0}.gemini-controls-dialog{padding:16px}}
+/* Keep dialog rhythm explicit rather than inheriting compact workspace spacing. */
+.gemini-controls-dialog{padding:24px}
+.gemini-controls-dialog>header{padding-bottom:24px;align-items:flex-start}
+.gemini-controls-dialog>header>div{display:grid;gap:8px}
+.gemini-controls-dialog>header h2,.gemini-controls-dialog>header p{margin:0}
+.gemini-controls-dialog>section{display:grid;gap:16px;padding:24px 0}
+.gemini-controls-dialog>section:last-child{padding-bottom:0}
+.gemini-controls-dialog h3,.gemini-controls-dialog p{margin:0}
+.gemini-controls-dialog form{display:grid;gap:16px;margin:0}
+.gemini-controls-dialog form>label{gap:8px;margin:0;line-height:1.5}
+.gemini-controls-dialog form>button{justify-self:start;margin:0}
+.gemini-controls-dialog .gemini-note,.gemini-controls-dialog .gemini-mode-description{line-height:1.65}
+.gemini-controls-dialog .gemini-metrics{gap:12px}
+.gemini-controls-dialog .gemini-metrics>div{padding:16px;gap:10px}
+.gemini-controls-dialog .gemini-metrics small{line-height:1.6}
+.gemini-controls-dialog .gemini-error:not(:empty){padding:14px 0;line-height:1.6}
+@media(max-width:600px){.gemini-controls-dialog{padding:20px}.gemini-controls-dialog>header{padding-bottom:20px}.gemini-controls-dialog>section{padding:20px 0;gap:14px}.gemini-controls-dialog form{gap:14px}}

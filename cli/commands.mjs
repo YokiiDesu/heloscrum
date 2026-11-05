@@ -12,7 +12,7 @@ export function parseArgs(argv){const words=[],options={};for(let i=0;i<argv.len
 }return {words,options};}
 export const help=`HeloScrum — connected agents, shared momentum
 
-  heloscrum doctor [--provider codex|claude|kiro|cursor|ollama|llamacpp|lmstudio|bedrock|sagemaker] [--json]
+  heloscrum doctor [--provider codex|claude|kiro|cursor|gemini|ollama|llamacpp|lmstudio|bedrock|sagemaker] [--json]
   heloscrum serve [--root DIRECTORY] [--port 4173]
   heloscrum tui [--project PROJECT] [--no-motion] [--plain]
   heloscrum projects list | open --path REPOSITORY
