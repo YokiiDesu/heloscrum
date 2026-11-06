@@ -9,6 +9,7 @@ import {randomUUID} from 'node:crypto';
 import {ControlPlane} from '../lib/control-plane.mjs';
 import {Collaboration} from '../lib/collaboration.mjs';
 import {ManagedAgents,withManagedAgents} from '../lib/managed-agents.mjs';
+import {Transcripts} from '../lib/transcripts.mjs';
 import {HerdrAdapter,run} from '../lib/adapters.mjs';
 import {cursorSteeringConfig} from '../lib/cursor.mjs';
 import {geminiSteeringConfig,hookCommand,steeringHookOutput} from '../lib/steering.mjs';
@@ -36,6 +37,7 @@ test('native hook claims steering exactly once, never queue, without read_inbox'
     assert.equal(claims.filter(x=>x.text).length,1);const claim=claims.find(x=>x.text);
     assert.match(claim.text,/Change course/);assert.doesNotMatch(claim.text,/Later/);
     assert.equal(c.data.messages[1].delivery,'uncertain');
+    f.p.tools||={};f.p.transcripts=new Transcripts(f.p);t.after(()=>f.p.transcripts.close());
     f.p.transcripts.readCurrent=async()=>({sessionId:f.task.providerSessionId,events:[]});
     assert.equal((await f.p.transcripts.read(f.task)).events.length,0,'unconfirmed delivery is not shown as received');
     await c.steeringBoundary(f.task,{...f.input,receipt:claim.receipt});

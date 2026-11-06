@@ -118,11 +118,11 @@ export function transcriptRows(events,width,expanded=new Set(),{task}={}){
       gap(event.id);
     }else if(event.type==='tool'){
       const open=expanded.has(event.id),failed=event.failed||event.status==='failed',complete=['completed','success'].includes(event.status),status=failed?'failed':event.status||'pending',connects=linked(event,events[index+1]);
-      const name=event.name.replace(/^heloscrum\s*\/\s*/,''),preview=toolPreview(event.input);
+      const tool=toolPresentation(event),name=tool.name.replace(/^heloscrum\s*\/\s*/,''),preview=tool.name===event.name?toolPreview(tool.input):'';
       add([span(name),...(preview?[span(' '+preview,'blue')]:[]),span('  '+(open?'▾':'▸'),'muted'),...(failed?[span(' failed','error')]:[])],'tool',event.id,{prefix:'● ',continuation:connects||open?'│ ':'',prefixTone:failed?'error':complete?'green':'text',toolHeader:true,status});
       if(open){
         const rail={prefix:'│ ',continuation:'│ ',prefixTone:'rail'};
-        add([span('INPUT','muted')],'tool-detail',event.id,rail);add([span(typeof event.input==='string'?event.input:JSON.stringify(event.input??{}),'blue')],'tool-detail',event.id,rail);
+        add([span('INPUT','muted')],'tool-detail',event.id,rail);add([span(typeof tool.input==='string'?tool.input:JSON.stringify(tool.input??{}),'blue')],'tool-detail',event.id,rail);
         add([span('OUTPUT · '+status,'muted')],'tool-detail',event.id,rail);
         const output=plainText(event.output|| (complete?'No output recorded.':'Waiting for output…'));
         if(toolPresentation(event).kind==='edit'){
