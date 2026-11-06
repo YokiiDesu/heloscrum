@@ -5,7 +5,7 @@ export const statusLabel=status=>({working:'Working',blocked:'Needs Review',idle
 export const modelActivityLabel=(status,activity)=>status==='working'?({waiting:'Waiting For Model',receiving:'Receiving Response'}[activity?.phase]||statusLabel(status)):statusLabel(status);
 export const workingEllipsis='<span class="working-ellipsis" aria-hidden="true"><span>.</span><span>.</span><span>.</span></span>';
 export function workspacePreferences(saved={},narrow=false){
-  return {tab:navigationTabs.includes(saved.tab)?saved.tab:'agents',layout:agentLayouts.includes(saved.layout)?saved.layout:narrow?'focus':'grid',theme:chatThemes.includes(saved.theme)?saved.theme:'bubble',selected:saved.selected||null,compare:saved.compare||null};
+  return {tab:navigationTabs.includes(saved.tab)?saved.tab:'agents',layout:agentLayouts.includes(saved.layout)?saved.layout:narrow?'focus':'grid',theme:chatThemes.includes(saved.theme)?saved.theme:'bubble',selected:saved.selected||null,compare:saved.compare||null,railCollapsed:typeof saved.railCollapsed==='boolean'?saved.railCollapsed:narrow};
 }
 function toolTitle(value){
   const first=value.trim().split(/\r?\n/,1)[0].replace(/\s+/g,' '),call=first.match(/^([\w./:-]+)\s*\(/)?.[1];
