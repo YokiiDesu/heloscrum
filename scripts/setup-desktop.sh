@@ -13,7 +13,7 @@ HeloScrum desktop setup
   --no-shortcut          Keep the generated launcher without adding an Applications shortcut
   --home PATH            Store runtime, launchers and logs in this absolute directory
   --workspace PATH       Use this Git workspace or a new empty directory
-  --node auto|local      Use a compatible installed Node, or install private Node 24
+  --node auto|local      Use a compatible installed Node, or install private Node 26 LTS
   --provider CHOICE      existing (default), none, codex, claude, both
   --repair              Reinstall locked application and Electron dependencies
   --help                 Show this help
@@ -159,18 +159,18 @@ if [ "$node_mode" = auto ] && command -v node >/dev/null && node -e 'const [a,b]
   node_bin=$(node -p process.execPath)
 fi
 if [ -z "$node_bin" ]; then
-  say 'HeloScrum needs Node 22.13 or newer. A private Node 24 runtime will leave your system Node untouched.'
-  confirm 'Install verified Node 24.21.0 in the HeloScrum data folder?' yes || fail 'Node is required. Install it yourself, then rerun setup.'
-  runtime_name="node-v24.21.0-$os_name-$node_arch"
+  say 'HeloScrum needs Node 22.13 or newer. A private Node 26 LTS runtime will leave your system Node untouched.'
+  confirm 'Install verified Node 26.13.0 in the HeloScrum data folder?' yes || fail 'Node is required. Install it yourself, then rerun setup.'
+  runtime_name="node-v26.13.0-$os_name-$node_arch"
   case "$os_name-$node_arch" in
-    darwin-arm64) node_sha=bed7eea5325e1108f32ce5228ddd6a5f0f08a499ee42aa7442aea583702f6057;;
-    darwin-x64) node_sha=1462cb3b3046b815cf8ea436d3da450ec1a9f11dac7e5a46b0ada5305d7e8097;;
-    linux-arm64) node_sha=724282c3b43aec998aa9527380465b45d229e021b58035f5f4f63095eabfe5d5;;
-    linux-x64) node_sha=6e1db87ef58b8819e5d5402eff1536491b18edd8eb7bee5ef7897876e88dc5ff;;
+    darwin-arm64) node_sha=d38bd5e5a2ddce6bbb5ce45e46e208337da4d51fffe611e567fd32073d6439f6;;
+    darwin-x64) node_sha=525c9b29bb0263d687de60a4cec0e2a6db876a8eb032369e5795eca71e7c358e;;
+    linux-arm64) node_sha=439e9c438acdf6a6ffe47418da709153d66c4bed812e30a473faacb107dd2791;;
+    linux-x64) node_sha=5848553868b402d3fabb5b09270649977780a390f832155721025a08b5104455;;
   esac
   node_bin="$setup_home/runtime/$runtime_name/bin/node"
   if [ ! -x "$node_bin" ]; then
-    download "https://nodejs.org/dist/v24.21.0/$runtime_name.tar.gz" "$temp_dir/$runtime_name.tar.gz"
+    download "https://nodejs.org/dist/v26.13.0/$runtime_name.tar.gz" "$temp_dir/$runtime_name.tar.gz"
     verify "$node_sha" "$temp_dir/$runtime_name.tar.gz"
     tar -xzf "$temp_dir/$runtime_name.tar.gz" -C "$temp_dir"
     mkdir -p "$setup_home/runtime"

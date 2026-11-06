@@ -57,7 +57,10 @@ async function fixture(options){
   const server=fakeAppServer(options);
   const p={root,data:{tasks:[task]},save:async()=>{},tools:{codex:'/mock/codex'},transcripts:{cache:new Map()},collaboration:{connections:new Map(),mcpBridge:async()=>({command:'/usr/bin/node',args:['bridge.mjs','/connection.json']})},images:{validateModel:()=>{},readFor:async()=>({mimeType:'image/png',base64:Buffer.from('png').toString('base64')})}};
   p.structured=new StructuredSessions(p,{spawnProcess:server.spawnProcess});
-  const settle=()=>new Promise(r=>setTimeout(r,20));
+  // Notifications arrive over the fake stdout, then run through each session's
+  // ordered queue and persist to disk. Wait for that queue, not a fixed delay:
+  // a slow filesystem (Windows CI) outlasts any sleep.
+  const settle=async()=>{for(let i=0;i<5;i++){await new Promise(r=>setTimeout(r,20));for(const s of p.structured.sessions.values())await p.structured.drain(s);}};
   return {root,task,p,server,settle,close:async()=>{await p.structured.close();await rm(root,{recursive:true,force:true});}};
 }
 const until=async(check,message)=>{for(let i=0;i<200;i++){if(check())return;await new Promise(r=>setTimeout(r,5));}assert.fail(message);};
@@ -171,8 +174,8 @@ test('an app-server exit takes its sessions offline without losing their saved e
     const s=await f.p.structured.start(f.task);await f.p.structured.prompt(f.task.pane,'Go');
     f.server.child.kill();
     await until(()=>f.p.structured.list().length===0,'session should go offline');
-    await s.saveQueue;const saved=JSON.parse(await readFile(path.join(f.root,'.heloscrum/agents',f.task.id,'structured',f.server.threadId+'.json'),'utf8'));
-    assert.match(saved.events.at(-1).text,/Codex app-server exited/);
+    await f.p.structured.drain(s);const saved=JSON.parse(await readFile(path.join(f.root,'.heloscrum/agents',f.task.id,'structured',f.server.threadId+'.json'),'utf8'));
+    assert.deepEqual(saved.events.map(e=>e.role),['user','system']);assert.match(saved.events.at(-1).text,/Codex app-server exited/);
     f.task.resumeOnly=true;await f.p.structured.start(f.task);assert.equal(f.server.spawned,2);assert.equal(f.p.structured.list()[0].agent_status,'idle');
   }finally{await f.close();}
 });
@@ -241,7 +244,7 @@ test('control plane: an app-server agent launches without Herdr, delivers queued
     const first=server.requests.find(r=>r.method==='turn/start');assert.match(first.params.input[0].text,/^Task instructions/);assert.match(first.params.input[0].text,/work_brief/);
     // Queued while the first turn runs; delivered only after Codex reports the turn complete.
     const queued=await plane.collaboration.queuePrompt(task,'Second message');await plane.collaboration.deliverReady();assert.equal(queued.delivery,'queued');
-    server.complete();await new Promise(r=>setTimeout(r,30));await plane.collaboration.deliverReady();
+    server.complete();await until(()=>plane.structured.list()[0]?.agent_status==='done','turn should complete');await plane.collaboration.deliverReady();
     assert.equal(queued.delivery,'delivered');const second=server.requests.filter(r=>r.method==='turn/start')[1];assert.match(second.params.input[0].text,/Second message/);
     // Approval routed through the plane's request API without any screen parsing.
     server.request(950,'item/commandExecution/requestApproval',{threadId:server.threadId,turnId:server.turnId,itemId:'c',startedAtMs:1,command:'npm test',cwd:task.path});
@@ -251,7 +254,7 @@ test('control plane: an app-server agent launches without Herdr, delivers queued
     await plane.chooseTaskResponse(task.id,'allow',current.fingerprint);
     assert.deepEqual((await server.waitFor(r=>r.id===950&&r.result)).result,{decision:'accept'});
     assert.equal((await plane.taskRequest(task.id)).pending,false);
-    await plane.interruptTask(task.id);await server.waitFor(r=>r.method==='turn/interrupt');
+    await plane.interruptTask(task.id);await server.waitFor(r=>r.method==='turn/interrupt');await until(()=>plane.structured.list()[0]?.agent_status==='idle','interrupt should settle');
     const snapshot=await plane.snapshot();assert.equal(snapshot.tasks[0].status,'idle');assert.equal(snapshot.tasks[0].live.engine,'app-server');
     const history=await plane.transcripts.read(task,snapshot.tasks[0].live);assert.equal(history.source,'Codex app-server');assert(history.events.some(e=>e.role==='user'&&/Second message/.test(e.text)));
     await plane.structured.close();await plane.transcripts.close();await plane.managed.close();await plane.scheduler?.stop?.();await plane.history?.close?.();
