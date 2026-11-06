@@ -92,6 +92,9 @@ test('three History results rank a larger deduplicated pool and recover an older
   const text=calls.filter(c=>c.body.input_type==='document').flatMap(c=>c.body.inputs.flat());assert.equal(text.filter(t=>t==='A repeated recent status update').length,1);
   const one=await plane.notebooks.search(task,{...input,limit:1});assert.equal(one.matches.length,1);assert.equal(one.historyCoverage.candidates,14);assert(one.ranking.cacheHit);
   assert.match((await plane.notebooks.readSource(task,result.matches[0].source.retrieve.input)).text,/Correction/);
+  const archived=(await plane.history.rows(task.project,'message')).find(r=>r.record_id==='delivery-noise'),callCount=calls.length;
+  const exact=await plane.notebooks.search(task,{query:archived.version,scope:'history',limit:3});
+  assert.equal(exact.matches.length,1);assert.equal(exact.matches[0].source.entryId,archived.seq);assert.equal(calls.length,callCount,'explicit versions never call Voyage');
 });
 test('History supplements recent semantic candidates with old keyword evidence without uploading inaccessible matches',async t=>{
   const {plane,task,calls,root}=await fixture(t);plane.history=await new HistoryStore(path.join(root,'history.duckdb')).init();
