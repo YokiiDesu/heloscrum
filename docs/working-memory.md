@@ -1,8 +1,8 @@
 # Working memory and focused continuation
 
 HeloScrum keeps durable records while sending agents a smaller working set. Retrieval,
-revision comparison, source checks, and tool discovery run locally. Optional Jev ranking
-helps memory searches find related passages; Jev also recommends checkpoints. The
+revision comparison, source checks, and tool discovery run locally. Voyage contextual embeddings
+help memory searches find related passages; Jev separately recommends checkpoints. The
 configured summary model writes the occasional reviewed checkpoint. Neither gains
 task permissions.
 
@@ -53,7 +53,7 @@ provides the full legacy detail; JSON and Markdown exports remain available.
 Agent mutation receipts are compact and identify pending proposals without replaying
 full plan history. Human board/API operations retain their full detail responses.
 
-`memory_search` ranks exact identifiers/paths ahead of keyword passages across the
+`memory_search` looks up exact identifiers/paths/hashes directly and retrieves passages across the
 agent's notebook, permitted shared memory, accessible tasks and its archived context.
 Results include source identifiers, revisions, offsets, and retrieval instructions.
 It also searches durable History: shared memory revisions, the requesting agent's
@@ -74,33 +74,56 @@ Registered external chat contacts can read/search shared project Memory and thei
 own authorized History. This does not grant shared-memory writes, access to peer
 notebooks/transcripts, plan membership, or native local file access.
 Archive searches inspect 20 records per batch and return a cursor for older records.
-Local search makes no AI call. Enable **Rank memory search with Jev** in the model/context
-settings to evaluate up to 12 authorized passages per search. The candidate batch
-prioritizes up to eight keyword matches and fills with other accessible passages,
-including recent notebook entries. This is bounded reranking, not a full semantic index;
-it can miss a relevant document or passage outside the batch. There are no embeddings.
-Use `memory_search({query, ranking: "local"})` or **Memory → Search → Local only** to
-skip the service. Shared-memory tool restrictions are applied before any remote call.
+Local search makes no AI call. Add **Voyage AI · embeddings** in **Settings → AI &
+Context → Add connection** and save its API key in the masked field. Saving selects
+that connection under **Memory search**. The key is stored in the backend's private
+credential file, excluded from app state, exports, browser responses and logs.
+Embedding connections cannot run agents, summarize text or make Jev decisions.
+Select **Keywords only** to disable cloud retrieval. Existing Jev memory-ranking
+flags no longer trigger reranking; Jev's checkpoint decisions remain separate.
 
-Exact identifiers remain first. Jev's Noul answer is the probability that a passage is
-useful for the query, not confidence in factual accuracy or workflow correctness.
-An initial 0.65 admission threshold applies only to candidates with no keyword match;
-keyword results are preserved. Status and source freshness accompany each judgment.
-Six synthetic live cases passed on Jev 1.13.0, including paraphrase, superseded notes,
-historical rationale, irrelevant evidence, embedded instructions and exact references.
-This is a smoke evaluation, not a statistically calibrated production threshold.
+The default semantic path uses `voyage-context-4`, 512-dimensional float vectors.
+It embeds paragraph/line-aware, non-overlapping chunks of up to 950 characters,
+with exact UTF-16 offsets and full-source SHA-256. Chunks from the same source are
+contextualized together in windows bounded to 20,000 serialized UTF-8 bytes; a large
+source can span several windows. This preserves exact text and Unicode, while
+avoiding the old keyword-first passage bottleneck. No reranker or probabilistic
+admission threshold is applied. Similarity ranks passages; even the first result
+may not answer the question. Status, freshness and author confidence remain separate.
 
-Results fall back to local search on a missing/disabled connection, five-second timeout,
-service failure, malformed answer, oversized request, or busy ranking service. There is
-no automatic inference retry. Successful judgments are cached for one minute per agent,
-project, connection, model and exact candidate state; source revisions invalidate them.
-Two simultaneous inferences and 64 cached batches bound resource use.
+Authorization is applied before collecting text or using cached vectors. The search
+service receives only this agent's allowed source text and query. It does not scan
+workspace files or upload downloaded attachments automatically. Source tools remain
+the way to read exact files and task resources; local availability is not a read receipt.
+History retrieval includes non-keyword records in a bounded authorized batch; use its
+continuation cursor for older records. It does not claim to index all history at once.
 
-Each attempted inference records the supplied state, questions, policy, raw answers,
-answer validation and measured usage in that agent's private `context-usage` directory.
-Missing usage remains unknown. Service failure, invalid model answers and unavailable
-local audit storage are distinct fallbacks. Search results retain source links and make
-no board, permission or completion changes.
+Document vectors are cached privately per agent/project, source hash, window,
+chunking policy and model/dimension. Edits use a new cache key; deleted or newly
+inaccessible sources are never returned from cache. Completed windows persist across
+restart, even when a later window fails. Query vectors use a bounded in-memory cache.
+At most 128 source windows are cached per agent, four agent caches remain in memory,
+and at most 1,024 chunks are considered in one search. Each search issues at most four
+document requests and one query request, with a 15-second total inference deadline,
+an eight-second request deadline, 28,000-byte request ceiling and 2 MiB response ceiling.
+There are at most two active searches and 30 embedding requests per minute per backend.
+
+Results report indexed/total chunks, partial coverage, pending indexing, cache reuse,
+call counts and provider-reported usage. Search again to continue pending batches;
+if the index limit is reached, narrow the scope or page older History. These are
+retrieval receipts, not proof of review. Missing usage remains unknown. Each attempted
+call records its input hash, byte/chunk counts, model, policy, outcome and measured
+usage in the private `context-usage` directory. Vectors are retained in the private
+index; credentials and full prompts are not copied into usage records.
+
+Missing/disabled connections, service or validation failures, storage failures,
+timeouts and exhausted budgets fall back to keyword results. Calls are not retried
+automatically; a service failure applies a 60-second cooldown. Use
+`memory_search({query, ranking: "local"})` or **Memory → Search → Local only** to
+bypass cloud calls. Search results retain source links and make no board, permission
+or completion changes.
+
+The integration follows [Voyage's contextual embedding guide](https://docs.voyageai.com/docs/contextualized-chunk-embeddings).
 
 ## Sharing contracts across worktrees
 

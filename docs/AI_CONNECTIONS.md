@@ -49,6 +49,7 @@ Agents select a **provider**, **connection**, and **model** independently.
 | LM Studio | `http://127.0.0.1:1234/v1` by default | Developer API server enabled and model loaded |
 | Amazon Bedrock | AWS region, optional profile, model/inference-profile ID | AWS CLI v2, authenticated profile/default credentials, Converse-compatible model and invoke permission |
 | Amazon SageMaker AI | AWS region, optional profile, endpoint name, model ID | AWS CLI v2, invoke permission, compatible deployed inference container |
+| Voyage AI | Voyage API key, `voyage-context-4` | Contextual embeddings for Memory search; no agent sessions or summaries |
 | Jev / TypeSafe | TypeSafe API key, `jev-latest` | Context decisions only; select a separate generative model for summaries |
 | Claude Code summaries | Installed, signed-in Claude Code CLI; exact model ID | Summary-only connection; uses existing account with tools and MCP disabled |
 | Codex summaries | Installed, signed-in Codex CLI; exact model ID | Summary-only connection, using the existing CLI account; cannot create endpoint agents |
@@ -250,3 +251,14 @@ summary setting must be unassigned first. Saved session history is kept.
 - [Cursor CLI parameters](https://cursor.com/docs/cli/reference/parameters) and [output format](https://cursor.com/docs/cli/reference/output-format)
 - [Bedrock Converse](https://docs.aws.amazon.com/cli/latest/reference/bedrock-runtime/converse.html)
 - [SageMaker OpenAI compatibility](https://docs.aws.amazon.com/sagemaker/latest/dg/realtime-endpoints-openai-compatible.html)
+
+## Semantic Memory search
+
+In **Settings → AI & Context → Add connection**, choose **Voyage AI · embeddings**.
+Enter the API key in the masked field and save. The connection becomes the default
+Memory search service; **Test connection** sends a small embedding request.
+Use **Memory search → Keywords only** to disable it. Existing exact ID/path/hash
+lookups stay local; ordinary searches use cached contextual embeddings with keyword
+fallback. No reranker is called. The query and accessible source text go to Voyage;
+keys stay in the private backend credential store. See [working memory](working-memory.md)
+for authorization, cache invalidation, measured usage and partial-index limits.

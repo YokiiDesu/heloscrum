@@ -34,6 +34,8 @@
 .project-settings-dialog .project-settings-tabs button{flex:0 0 auto;white-space:nowrap;padding:14px 16px}
 .project-settings-body{scroll-padding-block:24px 88px}
 .project-resource-actions{z-index:2}
+.ai-connection-form .project-resource-actions{position:static;margin-top:8px;padding-top:16px}
+.ai-context-form .settings-subheading{margin-bottom:0}
 
 .project-settings-dialog :is(h2,h3,h4,legend,summary),.project-settings-tabs button{text-transform:capitalize}
 .project-settings-dialog.ai-connection-dialog{width:min(800px,calc(100vw - 32px))}
