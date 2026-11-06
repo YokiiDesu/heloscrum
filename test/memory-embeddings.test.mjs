@@ -61,9 +61,10 @@ test('missing keys, failures and explicit local mode return keyword results with
   const {plane,task,calls}=await fixture(t);plane.collaboration.data.memory=[{project:task.project,key:'policy',revision:1,text:'reservation returned'}];
   await plane.notebooks.search(task,{query:'reservation',scope:'shared',ranking:'local'});assert.equal(calls.length,0);
   let attempts=0;plane.ai.client.fetcher=async()=>{attempts++;return new Response('test-key and private source',{status:429});};
-  const result=await plane.notebooks.search(task,{query:'reservation',scope:'shared'});assert.equal(result.ranking.status,'fallback');assert.equal(result.matches.length,1);assert(!JSON.stringify(result).includes('test-key'));assert.equal(attempts,1);
+  const result=await plane.notebooks.search(task,{query:'reservation',scope:'shared'});assert.equal(result.ranking.status,'fallback');assert.equal(result.matches.length,1);assert(!JSON.stringify(result).includes('test-key'));assert.equal(attempts,1);assert.equal(result.ranking.calls,1);assert.deepEqual(result.ranking.usage,[null]);
   assert.equal((await plane.notebooks.search(task,{query:'reservation',scope:'shared'})).ranking.reason,'service-cooldown');assert.equal(attempts,1);
   plane.data.aiConnections[0].enabled=false;assert.equal((await plane.notebooks.search(task,{query:'reservation',scope:'shared'})).ranking.reason,'connection-unavailable');
+  plane.data.aiConnections[0].enabled=true;delete plane.ai.secrets.voyage;assert.equal((await plane.notebooks.search(task,{query:'reservation',scope:'shared'})).ranking.reason,'connection-unavailable');assert.equal(attempts,1);
 });
 test('partial indexing resumes completed windows and reports coverage without claiming the full corpus was searched',async t=>{
   const {plane,task,calls}=await fixture(t);plane.collaboration.data.memory=[{project:task.project,key:'large',revision:1,text:Array.from({length:7000},(_,i)=>'Line '+i+' about reservations.\n').join('')}];
