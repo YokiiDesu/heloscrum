@@ -46,10 +46,19 @@ function mockGemini({onPrompt,onRequest,loadSession=true,initError}={}){
   };
   return {sessionId,calls,children,spawnProcess};
 }
+test('Gemini mode updates are status events and reasoning sections do not run together',()=>{
+  const events=new GeminiEvents();
+  const mode=events.update({sessionUpdate:'agent_message_chunk',content:{type:'text',text:'[MODE_UPDATE] autoEdit'}});
+  assert.equal(mode.type,'session-mode');assert.equal(mode.mode,'autoEdit');assert.equal(mode.text,'Mode changed to Auto edit');
+  const reply=events.update({sessionUpdate:'agent_message_chunk',content:{type:'text',text:'Continuing the task.'}});assert.equal(reply.text,'Continuing the task.');
+  events.update({sessionUpdate:'agent_thought_chunk',content:{type:'text',text:'**First section**\nInitial summary.'}});
+  const thought=events.update({sessionUpdate:'agent_thought_chunk',content:{type:'text',text:'**Next section**\nAnother summary.'}});
+  assert.match(thought.text,/summary\.\n\n\*\*Next section/);
+});
 async function fixture(t,mock=mockGemini()){
   const root=await mkdtemp(path.join(os.tmpdir(),'heloscrum-gemini-')),repo=path.join(root,'repo');await mkdir(repo);
   const task={id:randomUUID(),kind:'gemini',path:repo,project:repo,model:'chosen-model',name:'gemini-test',role:'Tester',prompt:'Check the fixture'};
-  const plane={root,data:{tasks:[task]},tools:{gemini:'/mock/gemini'},save:async()=>{},transcripts:{cache:new Map()},collaboration:{mcpServer:()=>({command:'/node',args:['bridge','private-connection.json']}),connections:new Map()}};
+  const plane={root,data:{tasks:[task]},tools:{gemini:'/mock/gemini'},save:async()=>{},transcripts:{cache:new Map()},collaboration:{mcpServer:()=>({command:'/node',args:[path.resolve('scripts/mcp-bridge.mjs'),path.join(root,'private-connection.json')]}),connections:new Map()}};
   plane.managed=new ManagedAgents(plane,{spawnProcess:mock.spawnProcess});
   t.after(async()=>{await plane.managed.close();await rm(root,{recursive:true,force:true});});
   return {root,task,plane,mock};

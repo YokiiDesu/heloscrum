@@ -42,6 +42,7 @@ const server=http.createServer(async(req,res)=>{
    if(route==='/agent-api/catalog'&&req.method==='GET')return json(res,200,plane.collaboration.catalog(task,{compact:true}));
    if(route==='/agent-api/listed'&&req.method==='POST'){plane.collaboration.seen(task,input.revision);return json(res,200,{ok:true});}
    if(route==='/agent-api/call'&&req.method==='POST')return json(res,200,await plane.collaboration.call(task,input.name,input.input));
+   if(route==='/agent-api/steering'&&req.method==='POST')return json(res,200,await plane.collaboration.steeringBoundary(task,input));
    if(route==='/agent-api/session'&&req.method==='POST'){assert(!task.external,'External contacts do not register managed runtime sessions',403);await plane.transcripts.register(task,input);return json(res,200,{ok:true});}
    return json(res,404,{error:'Unknown agent endpoint'});
   }

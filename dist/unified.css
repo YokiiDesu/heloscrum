@@ -367,7 +367,15 @@ button:not(:disabled):not([aria-disabled=true]):active { translate: 0 0; filter:
 .thinking-block[open] .thinking-hide{display:inline}
 .thinking-content{border-top:1px solid light-dark(#dedfee,#363c57);padding:12px 14px}
 .thinking-content .message-content{margin:0}
-.thinking-content .markdown{font-size:13px;line-height:1.65}
+.thinking-content .markdown{font-size:13px;line-height:2}
+.thinking-content .message-content{--message-line-height:2em}
+.thinking-content .markdown p,.thinking-content .markdown li{line-height:inherit}
+.thinking-content .markdown .thinking-section-title{margin-bottom:0}
+.thinking-content .markdown .thinking-section-title+p{margin-top:0}
+.provider-status{display:flex;align-items:center;gap:12px;margin:18px 0;padding:14px 16px;border:1px solid var(--border);border-radius:9px;background:light-dark(#f1f4f8,#18242d);color:var(--muted);font-size:12px;line-height:1.7}
+.provider-status>svg{flex:none;color:light-dark(#526d8c,#9ebbd7)}
+.provider-status>span{min-width:0}.provider-status strong{display:inline-block;margin-left:5px;padding:2px 9px;border:1px solid light-dark(#bccad9,#43596d);border-radius:6px;color:light-dark(#264b6c,#c2dbf1);background:light-dark(#e5edf5,#253746);font-weight:600}
+.provider-status time{margin-left:auto;flex:none;font-size:11px;color:var(--muted)}
 .thinking-block summary:focus-visible{outline:2px solid var(--focus-border);outline-offset:3px;border-radius:5px}
 /* Animate the actual status dot, including cards without the extra roster ring. */
 .status-working>i,.lifecycle-working::before{animation:agent-working-breathe 2.2s ease-in-out infinite;transform-origin:center}

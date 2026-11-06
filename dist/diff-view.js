@@ -28,15 +28,40 @@ export function diffHTML(value,options={}){
   return `<pre class="diff-preview${options.plain?' plain-diff':''}">${diffLines(value,options).map(line=>`<span class="diff-line diff-${line.kind}">${esc(line.text)}</span>`).join('\n')}</pre>`;
 }
 
-// Keep the provider's complete before/after text; highlight the replacement
-// region between the common prefix and suffix without inventing a patch.
+// Compare lines for presentation without rewriting the provider's edit payload.
+export function editLineKinds(a,b){
+  const before=Array(a.length).fill('context'),after=Array(b.length).fill('context');
+  let start=0,end=0;while(start<a.length&&start<b.length&&a[start]===b[start])start++;
+  while(end<a.length-start&&end<b.length-start&&a[a.length-1-end]===b[b.length-1-end])end++;
+  const n=a.length-start-end,m=b.length-start-end;
+  before.fill('remove',start,a.length-end);after.fill('add',start,b.length-end);
+  if(!n||!m)return {before,after,region:false};
+  if(n*m>1000000)return {before,after,region:true};
+  const grid=Array.from({length:n+1},()=>new Uint32Array(m+1));
+  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)grid[i][j]=a[start+i]===b[start+j]?1+grid[i+1][j+1]:Math.max(grid[i+1][j],grid[i][j+1]);
+  let i=0,j=0;while(i<n&&j<m){if(a[start+i]===b[start+j]){before[start+i++]='context';after[start+j++]='context';}else if(grid[i+1][j]>=grid[i][j+1])i++;else j++;}
+  return {before,after,region:false};
+}
 export function editDiffHTML(edits=[]){
   return edits.map(edit=>{
-    const before=edit.oldText??'',after=edit.newText,lines=text=>text===''?[]:text.replace(/\n$/,'').split('\n'),a=lines(before),b=lines(after);
-    let start=0,end=0;while(start<a.length&&start<b.length&&a[start]===b[start])start++;
-    while(end<a.length-start&&end<b.length-start&&a[a.length-1-end]===b[b.length-1-end])end++;
-    const pane=(text,rows,label,kind)=>`<section><h5>${label}</h5><pre tabindex="0" aria-label="${esc(label+' '+edit.path)}">${rows.map((line,i)=>`<span class="edit-line ${i>=start&&i<rows.length-end?'edit-'+kind:''}"><span class="edit-number" aria-hidden="true">${i+1}</span><code>${esc(line)||' '}</code></span>`).join('')}</pre><small>${rows.length} lines · ${text===''?'Empty file':text.endsWith('\n')?'Ends with newline':'No final newline'}</small></section>`;
-    return `<div class="edit-review"><h4>${esc(edit.path)}${edit.oldText===null?' · New file':''}</h4><p>Before / after · highlighted replacement region</p><div class="edit-columns">${pane(before,a,'Before','remove')}${pane(after,b,'After','add')}</div></div>`;
+    const before=edit.oldText??'',after=edit.newText,lines=text=>text===''?[]:text.replace(/\n$/,'').split('\n'),a=lines(before),b=lines(after),kinds=editLineKinds(a,b);
+    const pane=(text,rows,label,side,changes)=>{
+      const row=(line,i)=>`<span class="edit-line edit-${changes[i]}"><span class="edit-number" aria-hidden="true">${i+1}</span><span class="edit-marker" aria-hidden="true">${changes[i]==='add'?'+':changes[i]==='remove'?'−':' '}</span><code>${esc(line)||' '}</code></span>`;
+      const rendered=[];
+      for(let i=0;i<rows.length;){
+        if(changes[i]!=='context'){rendered.push(row(rows[i],i++));continue;}
+        let end=i;while(end<rows.length&&changes[end]==='context')end++;
+        const leading=i===0?0:3,trailing=end===rows.length?0:3,hidden=end-i-leading-trailing;
+        if(hidden>6){
+          for(let k=i;k<i+leading;k++)rendered.push(row(rows[k],k));
+          rendered.push(`<details class="edit-context"><summary>Unchanged lines not shown <span>(${hidden})</span></summary>${rows.slice(i+leading,end-trailing).map((line,k)=>row(line,i+leading+k)).join('')}</details>`);
+          for(let k=end-trailing;k<end;k++)rendered.push(row(rows[k],k));
+        }else for(let k=i;k<end;k++)rendered.push(row(rows[k],k));
+        i=end;
+      }
+      return `<section class="edit-side-${side}"><h5>${label}<span>${side==='remove'?'− Removed':'+ Added'}</span></h5><div class="edit-code" tabindex="0" role="region" aria-label="${esc(label+' '+edit.path)}">${rendered.join('')}</div><small>${rows.length} lines · ${text===''?'Empty file':text.endsWith('\n')?'Ends with newline':'No final newline'}</small></section>`;
+    };
+    return `<div class="edit-review"><h4>${esc(edit.path)}${edit.oldText===null?' · New file':''}</h4><p>Before / after · ${kinds.region?'highlighted replacement region':'removed and added lines highlighted'}</p><div class="edit-columns">${pane(before,a,'Before','remove',kinds.before)}${pane(after,b,'After','add',kinds.after)}</div></div>`;
   }).join('');
 }
 

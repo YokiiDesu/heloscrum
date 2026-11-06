@@ -47,3 +47,14 @@ export class GeminiControlsDialog {
     }finally{this.busy=false;for(const [el,disabled] of controls)if(el.isConnected)el.disabled=disabled;}
   }
 }
+
+const modes={default:'Default',autoEdit:'Auto edit',yolo:'Full auto',plan:'Plan'};
+export function providerStatus(event,provider){
+  if(provider!=='gemini')return null;
+  const mode=event.type==='session-mode'?event.mode:event.type==='message'&&event.role==='assistant'?event.text?.trim().match(/^\[MODE_UPDATE\]\s+(default|autoEdit|yolo|plan)$/)?.[1]:null;
+  return modes[mode]?{mode,label:modes[mode],text:'Mode changed to '+modes[mode]}:null;
+}
+export function providerStatusHTML(event,provider,time=''){
+  const status=providerStatus(event,provider);if(!status)return '';
+  return `<div class="provider-status" data-event="${esc(event.id)}" role="note"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h9m4 0h3M4 17h3m4 0h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>Mode changed to <strong>${esc(status.label)}</strong></span>${time?`<time>${esc(time)}</time>`:''}</div>`;
+}
