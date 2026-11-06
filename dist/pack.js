@@ -60,7 +60,7 @@ export class PackBoard {
     this.submit=event=>{const form=event.target.closest('form[data-slot-form]');if(!form)return;event.preventDefault();this.send(this.slots[Number(form.dataset.slotForm)]).catch(e=>this.options.toast(e));};
     this.root.addEventListener('click',this.click);this.root.addEventListener('change',this.change);this.root.addEventListener('input',this.input);this.root.addEventListener('submit',this.submit);this.key=event=>{if(event.target.closest('.native-terminal .xterm'))return;if(this.slashKey(event))return;const expanded=this.slots.find(slot=>slot.expanded);if(event.key==='Escape'&&this.drawer&&!this.toolMenu&&!this.settingsDialog){event.preventDefault();event.stopPropagation();if(this.drawer==='memory'&&this.memoryExpanded)this.toggleMemoryExpanded();else this.closeDrawer();return;}if(event.key==='Escape'&&expanded&&!this.toolMenu){event.preventDefault();event.stopPropagation();this.setExpanded(expanded,false);expanded.host.querySelector('.agent-expand')?.focus();return;}const index=event.target.dataset.promptSlot;if(index===undefined)return;const slot=this.slots[Number(index)];if(slot?.mode==='tui'&&event.key==='Escape'&&this.task(slot)?.status==='working'){event.preventDefault();this.options.api('tasks/interrupt',{id:slot.taskId}).then(()=>this.options.toast('Interrupt sent')).catch(e=>this.options.toast(e));return;}if(slot?.inputHistory?.handle(event,event.target)){slot.draft=event.target.value;this.resizeComposer(slot);this.renderSlashCommands(slot);return;}if(slot&&event.key==='Enter'&&!event.shiftKey&&!event.isComposing){event.preventDefault();this.send(slot).catch(e=>this.options.toast(e));}};this.root.addEventListener('keydown',this.key,true);
     this.onScroll=event=>{if(event.target.matches('.pack-chat'))this.updateChatJump(this.slots[Number(event.target.dataset.chat)]);};
-    this.onToggle=event=>{const host=event.target.closest('.pack-chat');if(host)this.updateChatJump(this.slots[Number(host.dataset.chat)]);};
+    this.onToggle=event=>{const host=event.target.closest('.pack-chat');if(!host)return;const slot=this.slots[Number(host.dataset.chat)];if(event.target.matches('details[data-event]')){if(event.target.open)slot.expandedTools.add(event.target.dataset.event);else slot.expandedTools.delete(event.target.dataset.event);this.hydrateTool(slot,event.target);}this.updateChatJump(slot);};
     this.root.addEventListener('scroll',this.onScroll,true);this.root.addEventListener('toggle',this.onToggle,true);this.root.addEventListener('message-content-resize',this.onToggle);
     this.chatResize=new ResizeObserver(()=>this.slots.forEach(slot=>this.updateChatJump(slot)));this.chatResize.observe(this.root);
     if(!this.options.taskId)this.shell=new WorkspaceShell(this);
@@ -155,24 +155,35 @@ export class PackBoard {
     for(const notice of registry.notifications){if(notice.type!=='human-request'&&!this.initial&&!this.lastNotifications.has(notice.id))this.options.toast(notice.detail);this.lastNotifications.add(notice.id);}this.initial=false;
     if(this.drawer)this.renderDrawer();this.shell?.update();this.persist();
   }
-  eventHTML(event,task){
+  toolBodyHTML(event,tool,{block=false}={}){
+    const output=event.edits?.length?editDiffHTML(event.edits):tool.kind==='edit'?diffHTML(event.output,{diff:true}):toolOutputHTML(event,{markdown});
+    return `${tool.input?`<div class="tool-section"><span>INPUT</span><pre>${esc(tool.input)}</pre></div>`:''}${event.output?`<div class="tool-section"><span>OUTPUT${block&&event.exitCode!=null?' · EXIT '+event.exitCode:''}</span>${output}</div>`:block?'<p class="tool-empty">No output reported yet.</p>':''}`;
+  }
+  hydrateTool(slot,detail){
+    if(!detail.open||!detail.hasAttribute('data-lazy-tool'))return;
+    const event=detail.closest('.transcript-entry')?.transcriptEvent;if(!event)return;
+    detail.removeAttribute('data-lazy-tool');
+    detail.insertAdjacentHTML('beforeend',this.toolBodyHTML(event,toolPresentation(event),{block:this.shell?.prefs.theme==='block'}));
+    for(const nested of detail.querySelectorAll('details[data-event]'))nested.open=slot.expandedTools.has(nested.dataset.event);
+    enhanceMarkdown(detail,()=>this.updateChatJump(slot),{project:this.snapshot.project.path,taskId:slot.taskId});
+  }
+  eventHTML(event,task,{body=true}={}){
     const status=providerStatusHTML(event,task.kind,event.at?shortTime(event.at):'');if(status)return status;
     if(event.type==='activity')return activityCard(event);
     if(event.type==='session')return `<div class="session-boundary">${esc(event.text)}</div>`;
     if(event.type==='reasoning'||event.type==='thinking')return thinkingBlock(event,{markdown,provider:task.kind,scope:`task:${task.id}`});
     if(event.type==='state')return `<div class="state-report">${statePill(event.report)}<span>${esc(event.report.reason)}</span></div>`;
-    if(event.type==='tool'){const tool=toolPresentation(event);return `<details class="chat-tool tool-${tool.kind} tool-${tool.status}" data-event="${esc(event.id)}"><summary><span class="tool-glyph">${glyph(tool.kind)}</span><strong>${esc(tool.name)}</strong><span class="tool-status">${esc(tool.status)}</span>${disclosureIcon}</summary>${tool.input?`<div class="tool-section"><span>INPUT</span><pre>${esc(tool.input)}</pre></div>`:''}${event.output?`<div class="tool-section"><span>OUTPUT</span>${event.edits?.length?editDiffHTML(event.edits):tool.kind==='edit'?diffHTML(event.output,{diff:true}):toolOutputHTML(event,{markdown})}</div>`:''}</details>`;}
+    if(event.type==='tool'){const tool=toolPresentation(event);return `<details class="chat-tool tool-${tool.kind} tool-${tool.status}" data-event="${esc(event.id)}"${body?'':' data-lazy-tool'}><summary><span class="tool-glyph">${glyph(tool.kind)}</span><strong>${esc(tool.name)}</strong><span class="tool-status">${esc(tool.status)}</span>${disclosureIcon}</summary>${body?this.toolBodyHTML(event,tool):''}</details>`;}
     if(event.communication){const message=event.communication;return `<article class="chat-message from-contact" ${agentAttributes(message.from)}><div class="dm-route">${agentAvatar(message.from)}<span><strong>${esc(message.fromRole)}</strong> ${message.kind==='group'?'in '+esc(message.threadName||'Group chat'):'messaged '+esc(message.toRole)}</span>${event.at?`<time>${shortTime(event.at)}</time>`:''}</div><div class="dm-bubble">${event.communication?.workBrief?workMessage(event.communication.workBrief,`task:${task.id}:${event.id}`,undefined,markdown):messageContent(markdown(event.text),`task:${task.id}:${event.id}`)}${imageGallery(event.attachments,this.snapshot.project.path)}</div><button type="button" class="dm-thread-link" data-pack="open-thread" data-thread-id="${esc(message.threadId)}">View ${message.kind==='group'?'group chat':'conversation'} →</button></article>`;}
     return `<article class="chat-message ${event.role==='user'?'from-user':'from-agent'}"><div class="message-role"><span class="message-author">${agentLabel(event.role==='user'?'human':task,event.role==='user'?'You':task.role||task.title)}${event.label?` · ${esc(event.label)}`:''}</span><span class="message-meta">${event.role==='assistant'&&event.agentState?statePill(event.agentState):''}${event.at?`<time>${shortTime(event.at)}</time>`:''}</span></div>${event.communication?.workBrief?workMessage(event.communication.workBrief,`task:${task.id}:${event.id}`,undefined,markdown):messageContent(markdown(event.text),`task:${task.id}:${event.id}`)}${imageGallery(event.attachments,this.snapshot.project.path)}</article>`;
   }
-  blockEventHTML(event,task){
+  blockEventHTML(event,task,{body=true}={}){
     const status=providerStatusHTML(event,task.kind,event.at?shortTime(event.at):'');if(status)return status;
     if(event.type==='activity')return activityCard(event);
     if(event.type==='session')return this.eventHTML(event,task);
     if(event.type==='tool'){
       const tool=toolPresentation(event);
-      const output=event.edits?.length?editDiffHTML(event.edits):tool.kind==='edit'?diffHTML(event.output,{diff:true}):toolOutputHTML(event,{markdown});
-      return `<details class="chat-tool block-tool tool-${tool.kind} tool-${tool.status}" data-event="${esc(event.id)}"><summary><span class="block-icon">${glyph(tool.kind)}</span><span class="block-tool-name"><small>${({edit:'FILE CHANGE',read:'READ / SEARCH',command:'COMMAND',tool:'TOOL CALL'})[tool.kind]}</small><strong>${esc(tool.name)}</strong></span><span class="tool-status">${tool.status==='completed'?'✓ ':tool.status==='failed'?'! ':''}${esc(tool.status)}</span>${tool.duration?`<time>${esc(tool.duration)}</time>`:event.at?`<time>${shortTime(event.at)}</time>`:''}${disclosureIcon}</summary>${tool.input?`<div class="tool-section"><span>INPUT</span><pre>${esc(tool.input)}</pre></div>`:''}${event.output?`<div class="tool-section"><span>OUTPUT${event.exitCode!=null?' · EXIT '+event.exitCode:''}</span>${output}</div>`:'<p class="tool-empty">No output reported yet.</p>'}</details>`;
+      return `<details class="chat-tool block-tool tool-${tool.kind} tool-${tool.status}" data-event="${esc(event.id)}"${body?'':' data-lazy-tool'}><summary><span class="block-icon">${glyph(tool.kind)}</span><span class="block-tool-name"><small>${({edit:'FILE CHANGE',read:'READ / SEARCH',command:'COMMAND',tool:'TOOL CALL'})[tool.kind]}</small><strong>${esc(tool.name)}</strong></span><span class="tool-status">${tool.status==='completed'?'✓ ':tool.status==='failed'?'! ':''}${esc(tool.status)}</span>${tool.duration?`<time>${esc(tool.duration)}</time>`:event.at?`<time>${shortTime(event.at)}</time>`:''}${disclosureIcon}</summary>${body?this.toolBodyHTML(event,tool,{block:true}):''}</details>`;
     }
     if(event.type==='state')return `<details class="block-state" data-event="${esc(event.id)}"><summary>${glyph('thinking')} ${statePill(event.report)}<span>Reported activity</span>${disclosureIcon}</summary>${messageContent(markdown(event.report.reason),`task:${task.id}:${event.id}`)}${event.report.nextStep?`<p class="reported-next">Next: ${esc(event.report.nextStep)}</p>`:''}</details>`;
     if(event.type==='reasoning'||event.type==='thinking')return thinkingBlock(event,{markdown,provider:task.kind,scope:`task:${task.id}`});
@@ -189,14 +200,43 @@ export class PackBoard {
     if(slot.mode==='tui'){slot.tui?.update(this.task(slot),slot.transcript,slot.historyError);return;}
     const host=slot.host.querySelector('.pack-chat');if(!host)return;
     const theme=this.shell?.prefs.theme||'bubble';host.classList.toggle('block-theme',theme==='block');
-    const transcript=slot.transcript,key=JSON.stringify([transcript,slot.historyError,theme,this.task(slot)?.agentState]);if(key===slot.chatKey)return;
+    const task=this.task(slot),transcript=slot.transcript,context=JSON.stringify([theme,task?.id,task?.kind,task?.role,task?.title,agentIdentities.revision]);
+    const key=JSON.stringify([transcript,slot.historyError,context,task?.agentState]);if(key===slot.chatKey)return;
     const visibleEvents=transcript?.events.filter(e=>e.type!=='message'||e.text?.trim()||e.agentState)||[];
     const position=host.querySelector('.transcript-entry')?this.chatPosition(host):slot.chatScroll||{follow:true,top:0},follow=position.follow;this.captureTools(slot,host);slot.chatKey=key;
     const error=slot.historyError?`<div class="history-error">${esc(slot.historyError)} <button type="button" data-pack="refresh-session" data-slot="${slot.index}">Refresh session</button></div>`:'';
-    host.innerHTML=error+(theme==='block'?this.activityHTML(slot):'')+(transcript?(visibleEvents.length?visibleEvents.map(e=>`<div class="transcript-entry" data-transcript-id="${esc(e.id)}">${theme==='block'?this.blockEventHTML(e,this.task(slot)):this.eventHTML(e,this.task(slot))}</div>`).join(''):'<div class="chat-placeholder">No messages yet. Send a message below.</div>')+`<div class="history-source">${esc(transcript.source)} · ${esc(transcript.sessionId.slice(0,8))}</div>`:slot.historyError?'':loadingState('Loading conversation',{variant:'compact'}));
-    for(const detail of host.querySelectorAll('details'))detail.open=slot.expandedTools.has(detail.dataset.event);
+    // Polling usually changes one streamed event. Keep every unchanged entry
+    // mounted, including its expanded tools, code blocks and reading position.
+    const previous=host.transcriptEntries||new Map(),next=new Map(),changed=[];
+    const nodes=visibleEvents.map(event=>{
+      const signature=JSON.stringify([context,event]),old=previous.get(event.id);
+      const node=old?.node||document.createElement('div');
+      if(old?.signature!==signature){
+        node.className='transcript-entry';node.dataset.transcriptId=event.id;
+        const options={body:slot.expandedTools.has(event.id)};
+        node.innerHTML=theme==='block'?this.blockEventHTML(event,task,options):this.eventHTML(event,task,options);
+        for(const detail of node.querySelectorAll('details[data-event]'))detail.open=slot.expandedTools.has(detail.dataset.event);
+        changed.push(node);
+      }
+      node.transcriptEvent=event;next.set(event.id,{node,signature});return node;
+    });
+    const decoration=(name,html)=>{
+      const node=host[name]||=document.createElement('div');
+      if(node.renderedHTML!==html){node.innerHTML=html;node.renderedHTML=html;}
+      return node;
+    };
+    nodes.unshift(decoration('transcriptHeader',error+(theme==='block'?this.activityHTML(slot):'')));
+    nodes.push(decoration('transcriptFooter',transcript?`${visibleEvents.length?'':'<div class="chat-placeholder">No messages yet. Send a message below.</div>'}<div class="history-source">${esc(transcript.source)} · ${esc(transcript.sessionId.slice(0,8))}</div>`:slot.historyError?'':loadingState('Loading conversation',{variant:'compact'})));
+    const keep=new Set(nodes);for(const child of [...host.children])if(!keep.has(child))child.remove();
+    let cursor=host.firstChild;for(const node of nodes){if(node!==cursor)host.insertBefore(node,cursor);else cursor=cursor.nextSibling;}
+    host.transcriptEntries=next;
     const restore=()=>{if(follow)host.scrollTop=host.scrollHeight;else{host.scrollTop=position.top;const anchor=[...host.querySelectorAll('.transcript-entry')].find(e=>e.dataset.transcriptId===position.anchor);if(anchor)host.scrollTop+=anchor.getBoundingClientRect().top-host.getBoundingClientRect().top-position.offset;}this.updateChatJump(slot);};
-    restore();enhanceMarkdown(host,restore,{project:this.snapshot.project.path,taskId:this.task(slot).id});this.shell?.updateOverview();
+    restore();let restoredTop=host.scrollTop,resizeQueued=false;
+    const onResize=()=>{if(resizeQueued)return;resizeQueued=true;requestAnimationFrame(()=>{resizeQueued=false;if(!host.isConnected)return;if(Math.abs(host.scrollTop-restoredTop)<1){restore();restoredTop=host.scrollTop;}else this.updateChatJump(slot);});};
+    // Enhance only newly rendered bodies; scanning old diffs on every poll is
+    // expensive even when the browser has their disclosures collapsed.
+    for(const node of changed)enhanceMarkdown(node,onResize,{project:this.snapshot.project.path,taskId:task.id});
+    restore();restoredTop=host.scrollTop;this.shell?.updateOverview();
   }
   updateChatJump(slot){
     const chat=slot?.host.querySelector('.pack-chat'),button=slot?.host.querySelector('.chat-jump');if(!chat||!button)return;

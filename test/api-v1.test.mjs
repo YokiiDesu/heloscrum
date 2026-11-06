@@ -147,3 +147,18 @@ test('live reviewer delegation is owner-controlled and used by the verification 
     p=await f.client.request(route);assert.equal(p.items[0].verification.by,'agent-1');assert.equal(p.items[0].status,'done');
   }finally{reviewer?.close();await f.close();}
 });
+
+test('agents run structured conversations through v1 tool invocation with message scopes',async()=>{
+  const f=await apiFixture();try{
+    const group=await f.client.mutate(f.base+'/conversations',{name:'API decisions',participants:['agent-0','agent-1']});
+    const builder=new HeloClient(await f.credential(['messages:read','messages:write','tools:invoke'])),qa=new HeloClient(await f.credential(['messages:read','messages:write','tools:invoke'],'agent-1')),reader=new HeloClient(await f.credential(['messages:read','tools:invoke']));
+    const invoke=(client,name,input)=>client.mutate(f.base+'/tools/invoke',{name,input});
+    const opened=await invoke(builder,'start_proposal',{threadId:group.id,title:'Adopt the v1 client',summary:'Use HeloClient everywhere.',options:['Adopt']});
+    await assert.rejects(invoke(reader,'start_debate',{threadId:group.id,question:'Read-only?'}),e=>e.status===403);
+    await invoke(builder,'cast_vote',{structureId:opened.structure.id,stance:'support',rationale:'One client is easier to secure.'});
+    const voted=await invoke(qa,'cast_vote',{structureId:opened.structure.id,stance:'support',rationale:'Tests already use it.'});
+    assert.equal(voted.structure.status,'accepted');assert.equal(voted.decision.decision,'Adopt');
+    const read=await reader.request(f.base+'/conversations/'+group.id);assert.deepEqual(read.structures.map(s=>[s.type,s.status]),[['proposal','accepted'],['decision','accepted']]);
+    for(const client of [builder,qa,reader])client.close();
+  }finally{await f.close();}
+});

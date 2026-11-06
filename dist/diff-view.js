@@ -54,7 +54,9 @@ export function editDiffHTML(edits=[]){
         const leading=i===0?0:3,trailing=end===rows.length?0:3,hidden=end-i-leading-trailing;
         if(hidden>6){
           for(let k=i;k<i+leading;k++)rendered.push(row(rows[k],k));
-          rendered.push(`<details class="edit-context"><summary>Unchanged lines not shown <span>(${hidden})</span></summary>${rows.slice(i+leading,end-trailing).map((line,k)=>row(line,i+leading+k)).join('')}</details>`);
+          // Omitted context must not allocate thousands of hidden DOM rows.
+          // The original provider payload remains intact in the transcript.
+          rendered.push(`<div class="edit-context">Unchanged lines not shown <span>(${hidden})</span></div>`);
           for(let k=end-trailing;k<end;k++)rendered.push(row(rows[k],k));
         }else for(let k=i;k<end;k++)rendered.push(row(rows[k],k));
         i=end;
