@@ -23,7 +23,9 @@ and non-overlapping. Documents are re-embedded as a whole when the snapshot chan
 
 Bounds: at most 12 API calls and 120,000 UTF-8 input bytes per run; at most 28,000
 input bytes per request; 30-second request timeout; 4 MiB response ceiling. There
-are no automatic retries. Eight document requests and one batched query request
+are no automatic retries. Failed evaluations retain completed document embeddings;
+**Continue comparison** resumes explicitly after any rate-limit wait. The same
+call and byte budgets still apply. Eight document requests and one batched query request
 normally leave three additional queries. Repeated queries reuse their vector.
 These are byte/request limits, not a price guarantee. The service's measured token
 usage is retained; unknown usage stays unknown, including interrupted requests.
@@ -57,3 +59,33 @@ before returning current-version evidence.
 
 Results are saved to ignored `output/voyage-trial/report.json`. The browser shows
 the measured comparison and lets the user inspect passages or try extra questions.
+
+## First live result — 2026-11-06
+
+The first run used implementation `d37d0dd` and the user-provided Voyage key.
+The downloaded JSON and locally saved report have identical parsed contents.
+
+| Method | Correct document first / 16 | Labeled evidence in top 3 / 15 | Returned passage bytes |
+| --- | --- | --- | --- |
+| Current keyword search | 10 | 7 | 43,786 |
+| Contextual embeddings | 14 | 13 | 35,583 |
+| Equal-weight rank fusion | 12 | 13 | 79,215 |
+
+Nine calls reported 17,417 input tokens; indexing and the batched fixed-query
+evaluation took 2,192 ms. Embeddings improved the labeled evidence count while
+returning about 19% fewer passage bytes. Rank fusion worsened first-result
+accuracy compared with embeddings and returned more text. This result supports
+further evaluation of semantic retrieval; it does not justify that fusion policy.
+
+All methods missed the labeled cached-input-usage passage. Embeddings retrieved
+the correct attachment document but missed the precise understanding/receipt
+anchor; lexical search retained it. For the unanswerable cost question, the top
+semantic similarity (0.227) exceeded a valid self-review result (0.180), so a
+single threshold cannot be inferred from this small set.
+
+No reranker was tested. Voyage's [current reranker guide](https://docs.voyageai.com/docs/reranker)
+recommends `rerank-3` for accuracy and `rerank-3-lite` for latency. A next comparison
+should give each reranker the same candidate passages and evidence budget, retain
+raw scores and usage, and distinguish missing candidates from poor reranking.
+Jev is an existing optional implementation, not a required part of this pipeline.
+Evaluate on additional held-out queries before selecting or tuning a policy.

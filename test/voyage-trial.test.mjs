@@ -31,6 +31,7 @@ test('oversized responses and invalid query groups are bounded',async()=>{
   await assert.rejects(client.embed([['a']],'query'),e=>e.code==='response-limit');
 });
 test('chunks reconstruct Unicode source exactly with contiguous ranges',()=>{
+  assert.throws(()=>chunkSource('🦋',1),/at least two/);
   const text=('line 🦋\n\nUnicode λ variable.\n').repeat(80),chunks=chunkSource(text,70);
   assert.equal(chunks.map(c=>c.text).join(''),text);for(let i=0;i<chunks.length;i++){assert.equal(chunks[i].offset,i?chunks[i-1].end:0);assert.equal(chunks[i].text,text.slice(chunks[i].offset,chunks[i].end));assert.ok(!/[\uD800-\uDBFF]$/.test(chunks[i].text));}
 });
@@ -47,4 +48,10 @@ test('trial freezes valid labels and uses actual local search, grouped embedding
 test('evidence score requires the correct source and quoted passage, not a document hit alone',()=>{
   const row={expected:{path:'correct',anchor:'evidence'},keyword:[{path:'correct',text:'wrong excerpt',exposedBytes:13}],semantic:[{path:'wrong',text:'evidence',exposedBytes:8}],hybrid:[{path:'correct',text:'evidence',exposedBytes:8}]};
   const scores=scoreTrial([row]);assert.equal(scores.keyword.documentTop1,1);assert.equal(scores.keyword.evidenceTop3,0);assert.equal(scores.semantic.evidenceTop3,0);assert.equal(scores.hybrid.evidenceTop3,1);assert.equal(cosine([1,0],[0,1]),0);
+});
+test('explicit continuation reuses completed documents and keeps first-attempt elapsed time',async()=>{
+  const corpus=await loadTrialCorpus(fileURLToPath(new URL('../',import.meta.url)));
+  let requests=0;const client=new VoyageContext('fixture',{policy:{dimensions:2},fetchImpl:async(_url,init)=>{requests++;if(requests===2)return new Response('rate limited',{status:429,headers:{'retry-after':'1'}});return Response.json(response(JSON.parse(init.body).inputs));}});
+  const trial=new VoyageTrial(corpus,client);await assert.rejects(trial.evaluate(),e=>e.code==='rate-limit');assert.equal(trial.vectors.size,1);assert.equal(client.calls[1].retryAfterSeconds,1);
+  const began=trial.startedAt;trial.startedAt-=1000;const result=await trial.evaluate();assert.equal(requests,10);assert.ok(result.elapsedMs>=1000);assert.equal(trial.startedAt,began-1000);assert.equal(result.usage.unknownUsageCalls,1);
 });
