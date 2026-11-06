@@ -35,7 +35,7 @@ and [release status](docs/RELEASE_STATUS.md).
 
 The installer **automatically detects the OS and CPU architecture**. There are
 no separate macOS and Linux scripts. It uses compatible installed Node.js or offers
-a verified private Node 24 runtime, installs required **Herdr**, and installs
+a verified private Node 26 LTS runtime, installs required **Herdr**, and installs
 Electron. Provider sign-in stays in your provider's own login flow. Docker, Jev,
 and a summary model are optional.
 
