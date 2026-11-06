@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {EventEmitter} from 'node:events';
 import {PassThrough} from 'node:stream';
-import {mkdtemp,mkdir,readFile,rm,writeFile,chmod} from 'node:fs/promises';
+import {mkdtemp,mkdir,readFile,rm,writeFile} from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import {randomUUID} from 'node:crypto';
@@ -172,9 +172,11 @@ test('Gemini task creation, model switching and restart resume use the managed l
   assert.equal(task.phase,'launched');assert.equal((await plane.transcripts.readCurrent(task)).events.filter(e=>e.text==='Hello').length,1);assert.equal(mock.calls.filter(r=>r.method==='session/prompt').length,1);
 });
 test('Gemini catalog reads the installed CLI JSON format without inventing models or effort levels',async t=>{
-  const f=await fixture(t),executable=path.join(f.root,'gemini-fixture.mjs');
-  await writeFile(executable,`#!${process.execPath}\nimport assert from 'node:assert/strict';assert.deepEqual(process.argv.slice(2),['models','--output-format','json']);console.log(JSON.stringify([{id:'exact-model',modelId:'exact-model',displayName:'Exact model',contextLimits:{inputTokens:1000000}}]));\n`);await chmod(executable,0o700);f.plane.tools.gemini=executable;
-  const settings=new AgentSettings(f.plane),catalog=await settings.provider('gemini');assert.deepEqual(catalog.models,[{id:'exact-model',label:'Exact model'}]);assert.equal(catalog.effortLevels,undefined);assert.equal(catalog.error,undefined);
+  const f=await fixture(t);
+  // Node is the portable fixture executable; the first CLI argument selects
+  // this script in the fixture cwd. Windows cannot execute a Unix shebang.
+  await writeFile(path.join(f.root,'models'),`const assert=require('node:assert/strict');assert.equal(require('node:path').basename(process.argv[1]),'models');assert.deepEqual(process.argv.slice(2),['--output-format','json']);console.log(JSON.stringify([{id:'exact-model',modelId:'exact-model',displayName:'Exact model',contextLimits:{inputTokens:1000000}}]));\n`);f.plane.tools.gemini=process.execPath;
+  const settings=new AgentSettings(f.plane),catalog=await settings.provider('gemini');assert.equal(catalog.error,undefined);assert.deepEqual(catalog.models,[{id:'exact-model',label:'Exact model'}]);assert.equal(catalog.effortLevels,undefined);
 });
 
 async function controlsFixture(t,mock){

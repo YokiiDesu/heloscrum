@@ -36,9 +36,12 @@ test('native hook claims steering exactly once, never queue, without read_inbox'
     assert.equal(claims.filter(x=>x.text).length,1);const claim=claims.find(x=>x.text);
     assert.match(claim.text,/Change course/);assert.doesNotMatch(claim.text,/Later/);
     assert.equal(c.data.messages[1].delivery,'uncertain');
+    f.p.transcripts.readCurrent=async()=>({sessionId:f.task.providerSessionId,events:[]});
+    assert.equal((await f.p.transcripts.read(f.task)).events.length,0,'unconfirmed delivery is not shown as received');
     await c.steeringBoundary(f.task,{...f.input,receipt:claim.receipt});
     await c.steeringBoundary(f.task,{...f.input,receipt:claim.receipt});
     assert.equal(c.data.messages[1].delivery,'delivered');assert.equal(c.data.messages[1].deliveryChannel,'native-hook');
+    const timeline=(await f.p.transcripts.read(f.task)).events;assert.equal(timeline.length,1);assert.equal(timeline[0].text,'Change course');assert.equal(timeline[0].label,'Steer · delivered to active turn');
     f.idle();await c.deliver();assert.equal(f.calls.length,1);assert.match(f.calls[0][1],/Later/);assert.doesNotMatch(f.calls[0][1],/Change course/);
   }
 });

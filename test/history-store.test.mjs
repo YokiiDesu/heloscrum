@@ -13,6 +13,19 @@ import {readCodexRollout,rolloutEvents} from '../lib/codex-rollout.mjs';
 const task={id:'qa',project:'pack',kind:'codex',providerSessionId:'11111111-1111-4111-a111-111111111111',role:'QA',title:'Test',createdAt:'2026-09-11T00:00:00Z'};
 const key=task.id+':'+task.kind+':'+task.providerSessionId;
 async function fixture(t){const dir=await mkdtemp(path.join(os.tmpdir(),'heloscrum-duckdb-')),db=await new HistoryStore(path.join(dir,'archive.duckdb')).init();t.after(async()=>{await db.close();await rm(dir,{recursive:true,force:true});});return {dir,db};}
+test('hook steering survives archive reopen and paginates once without changing provider records',async t=>{
+  const {dir,db}=await fixture(t),agent={...task,kind:'gemini'},session=`${agent.id}:gemini:${agent.providerSessionId}`;
+  const receipt={id:'hook-direction',project:'pack',from:'human',to:agent.id,toSessionKey:session,sessionPrompt:true,promptMode:'steer',deliveryChannel:'native-hook',delivery:'uncertain',at:'2026-11-06T04:00:01Z',text:'Correct the active turn'};
+  const data={project:'pack',tasks:[agent],events:[],collaboration:{messages:[receipt]}};
+  const native=[{id:'tool',type:'tool',at:'2026-11-06T04:00:00Z'},{id:'reply',type:'message',role:'assistant',text:'Done',at:'2026-11-06T04:00:03Z'}];
+  await db.saveState(data);await db.captureTranscript(agent,{sessionId:agent.providerSessionId,source:'Gemini ACP',events:native});assert.equal((await db.sessionHistory('pack',session)).total,2);
+  receipt.delivery='delivered';receipt.deliveredAt='2026-11-06T04:00:02Z';await db.saveState(data);await db.close();
+  const reopened=await new HistoryStore(path.join(dir,'archive.duckdb')).init();try{
+    const latest=await reopened.sessionHistory('pack',session,{limit:2});assert.equal(latest.total,3);assert.equal(latest.events[0].text,receipt.text);assert.equal(latest.events[1].id,'reply');assert(latest.hasMore);
+    const previous=await reopened.sessionHistory('pack',session,{before:latest.before,limit:2});assert.deepEqual(previous.events,native.slice(0,1));assert(!previous.hasMore);
+    assert.equal((await reopened.rows('pack','transcript',session)).length,2,'provider records remain unchanged');
+  }finally{await reopened.close();}
+});
 test('atomic state and revision persistence, serialized concurrent updates, A → B → A, export/restore',async t=>{
   const {dir,db}=await fixture(t),plane={root:dir,data:{project:'pack',tasks:[task],events:[]},save(){return db.saveState(this.data);}};const c=new Collaboration(plane);c.data.credentials.qa='PRIVATE_CAPABILITY';
   await plane.save();

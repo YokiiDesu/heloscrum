@@ -1,6 +1,57 @@
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const readingPositions=new Map();
 
+const parseJSON=text=>{try{return JSON.parse(text);}catch{return null;}};
+const object=value=>value&&typeof value==='object'&&!Array.isArray(value);
+
+// Context pages can start/end inside a JSON string. Show only the text actually
+// present; never fetch more context, reconstruct records, or rewrite saved output.
+function inboxExcerpts(text){
+  const excerpts=[];
+  const decode=(value,continued=false)=>{
+    const decoded=parseJSON('"'+value+'"');
+    if(typeof decoded==='string'&&decoded.trim())excerpts.push({text:decoded,continued});
+  };
+  const leading=text.match(/^((?:\\.|[^"\\])*)"\s*,\s*"[a-zA-Z]/);
+  if(leading)decode(leading[1],true);
+  const fields=/(?:^|[,{])\s*"text"\s*:\s*"((?:\\.|[^"\\])*)("|$)/g;
+  for(const match of text.matchAll(fields))decode(match[1],match[2]!== '"');
+  return excerpts;
+}
+
+export function toolOutputHTML(event,{markdown}={}){
+  const raw=String(event.output??''),prose=text=>markdown?markdown(text,{literalHtml:true}):esc(text).replaceAll('\n','<br>');
+  let value=parseJSON(raw);
+  // MCP text envelopes and JSON-encoded strings occur in both live and saved
+  // provider transcripts. Only unwrap a single text block so none are dropped.
+  for(let i=0;i<3;i++){
+    if(typeof value==='string'){const parsed=parseJSON(value);if(parsed===null)break;value=parsed;continue;}
+    if(object(value)&&Array.isArray(value.content)&&value.content.length===1&&value.content[0]?.type==='text'){
+      const parsed=parseJSON(value.content[0].text);if(parsed===null)break;value=parsed;continue;
+    }
+    break;
+  }
+  const isPage=object(value)&&typeof value.reference==='string'&&typeof value.source==='string'&&typeof value.text==='string';
+  const payload=isPage?parseJSON(value.text):value;
+  const messages=object(payload)&&Array.isArray(payload.messages)&&payload.messages.every(m=>object(m)&&typeof m.text==='string')?payload.messages:null;
+  const rawDetails=()=>`<details class="tool-output-raw" data-event="${esc(event.id)}:raw"><summary>Raw output</summary><pre>${esc(raw)}</pre></details>`;
+  const message=m=>`<article class="tool-output-message"><header><strong>${esc(m.fromRole||'Message')}${m.toRole?' → '+esc(m.toRole):''}</strong>${typeof m.at==='string'?`<time>${esc(m.at)}</time>`:''}</header><div class="markdown tool-output-prose">${prose(m.text)}</div></article>`;
+  if(isPage){
+    const offset=Number.isInteger(value.offset)&&value.offset>=0?value.offset:0,total=Number.isInteger(value.totalCharacters)&&value.totalCharacters>=0?value.totalCharacters:null;
+    const partial=offset>0||value.nextOffset!=null||(total!==null&&offset+value.text.length<total);
+    const range=`Characters ${offset.toLocaleString('en-US')}–${(offset+value.text.length).toLocaleString('en-US')}${total!==null?' of '+total.toLocaleString('en-US'):''}`;
+    let body;
+    if(messages)body=messages.map(message).join('')||'<p class="tool-output-note">No messages in this result.</p>';
+    else if(/(?:^|__)read_inbox$/.test(value.source)){
+      const excerpts=inboxExcerpts(value.text);
+      body=excerpts.length?excerpts.map(m=>`<article class="tool-output-message"><header><strong>${m.continued?'Partial message':'Message excerpt'}</strong></header><div class="markdown tool-output-prose">${prose(m.text)}</div></article>`).join(''):`<pre>${esc(payload!==null?JSON.stringify(payload,null,2):value.text)}</pre>`;
+    }else body=payload!==null?`<pre>${esc(JSON.stringify(payload,null,2))}</pre>`:`<div class="markdown tool-output-prose">${prose(value.text)}</div>`;
+    return `<div class="tool-output-readable"><div class="tool-output-meta"><strong>Saved context · ${esc(value.source)}</strong><span>${range}</span></div>${partial?'<p class="tool-output-note">Partial saved result · only this page is shown; records may continue outside it.</p>':''}${body}${rawDetails()}</div>`;
+  }
+  if(messages)return `<div class="tool-output-readable">${messages.map(message).join('')||'<p class="tool-output-note">No messages in this result.</p>'}${rawDetails()}</div>`;
+  return `<pre>${esc(value!==null?JSON.stringify(value,null,2):raw)}</pre>`;
+}
+
 // The body is already sanitized Markdown. Never shorten the source itself.
 export function messageContent(html,key,instance=key){
   const id='message-body-'+encodeURIComponent(instance);

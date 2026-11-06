@@ -494,16 +494,24 @@ select:not([multiple]){appearance:none;-webkit-appearance:none;background-image:
 .gemini-metrics>div{display:flex;flex-direction:column;gap:6px;padding:12px;border:1px solid var(--border);border-radius:8px;overflow-wrap:anywhere}
 .gemini-metrics span,.gemini-metrics small{font-size:11px;color:var(--muted)}
 .gemini-metrics strong{font-size:17px}.gemini-metrics meter{width:100%}
+.edit-review,.edit-columns{--edit-surface:light-dark(color-mix(in srgb,var(--bg) 98%,#000),color-mix(in srgb,var(--bg) 75%,#000));background:var(--edit-surface);color:var(--text)}
 .edit-review{margin:12px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden;min-width:0}
 .edit-review h4,.edit-review>p{margin:8px 12px;overflow-wrap:anywhere}.edit-review>p{font-size:11px;color:var(--muted)}
 .edit-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.edit-columns section{min-width:0}.edit-columns section+section{border-left:1px solid var(--border)}
 .edit-columns h5{display:flex;gap:12px;justify-content:space-between;margin:0;padding:10px 14px;border-block:1px solid var(--border)}
-.edit-columns h5>span{font-size:10px;font-weight:500}.edit-side-remove h5{background:light-dark(#f9e6e9,#0b0f14);color:light-dark(#972f41,#f0afba)}.edit-side-add h5{background:light-dark(#dff3e7,#0b0f14);color:light-dark(#22643d,#a2dfbc)}
+.edit-columns h5>span{font-size:10px;font-weight:500}.edit-side-remove h5{background:light-dark(#f9e6e9,var(--edit-surface));color:light-dark(#972f41,#f0afba)}.edit-side-add h5{background:light-dark(#dff3e7,var(--edit-surface));color:light-dark(#22643d,#a2dfbc)}
 .edit-columns .edit-code{margin:0;max-height:360px;overflow:auto;white-space:pre;padding:8px 0;font:11px/1.75 var(--mono,monospace)}
 .edit-line{display:flex;min-width:max-content;min-height:1.75em}.edit-line code{font:inherit!important;color:inherit!important;background:none!important;border:0!important;border-radius:0!important;padding:0 14px 0 0!important;white-space:pre}.edit-number{display:inline-block;min-width:4ch;text-align:right;padding:0 8px;color:var(--muted);user-select:none}.edit-marker{width:2ch;flex:none;user-select:none;font-weight:700}
 .edit-line.edit-remove{background:light-dark(#fbe0e5,#261b1e);color:light-dark(#842739,#ffd1d9);box-shadow:inset 3px 0 light-dark(#b84e63,#e0879b)}.edit-line.edit-add{background:light-dark(#d5efdf,#162820);color:light-dark(#1d6138,#c2f3d5);box-shadow:inset 3px 0 light-dark(#3c945e,#63bd88)}
-.edit-line.edit-remove .edit-number,.edit-line.edit-add .edit-number{color:inherit;opacity:.75}.edit-context{white-space:normal}.edit-context>summary{padding:8px 14px;color:var(--muted);font:11px/1.6 var(--sans,sans-serif);cursor:pointer;background:light-dark(#edf1f5,#1c2932);border-block:1px solid var(--border)}
+.edit-line.edit-remove .edit-number,.edit-line.edit-add .edit-number{color:inherit;opacity:.75}.edit-context{white-space:normal}.edit-context>summary{padding:8px 14px;color:var(--muted);font:11px/1.6 var(--sans,sans-serif);cursor:pointer;background:color-mix(in srgb,var(--edit-surface) 94%,var(--text));border-block:1px solid var(--border)}
 .edit-columns small{display:block;padding:8px 14px;color:var(--muted);font-size:10px}
+.tool-output-readable{padding:12px 0;color:var(--text);min-width:0}
+.tool-output-meta,.tool-output-message>header{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;font-size:12px;overflow-wrap:anywhere}
+.tool-output-meta>span,.tool-output-message time,.tool-output-note{color:var(--muted);font-size:11px;line-height:1.7}
+.tool-output-note{margin:8px 0 16px}.tool-output-message{padding:16px 0;border-top:1px solid var(--border)}
+.tool-output-message>header{margin-bottom:8px}.tool-output-readable .tool-output-prose{font:13px/2 var(--sans,sans-serif);overflow-wrap:anywhere;white-space:normal}
+.tool-output-readable .tool-output-prose p,.tool-output-readable .tool-output-prose li{line-height:inherit}.tool-output-prose>:first-child{margin-top:0}.tool-output-prose>:last-child{margin-bottom:0}
+.tool-output-raw{border-top:1px solid var(--border);margin-top:12px;padding-top:12px}.tool-output-raw>summary{cursor:pointer;color:var(--muted);font-size:11px;padding:4px 0}.tool-output-raw pre{white-space:pre-wrap;overflow-wrap:anywhere}
 @media(max-width:600px){.gemini-metrics,.edit-columns{grid-template-columns:1fr}.edit-columns section+section{border-left:0}.gemini-controls-dialog{padding:16px}}
 /* Keep dialog rhythm explicit rather than inheriting compact workspace spacing. */
 .gemini-controls-dialog{padding:24px}
