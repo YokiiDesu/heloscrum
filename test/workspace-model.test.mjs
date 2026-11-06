@@ -13,8 +13,8 @@ test('work updates keep notes and IDs in details instead of the collapsed title'
 import {codexItems} from '../lib/transcripts.mjs';
 
 test('workspace defaults fit laptops while preserving explicit layout and chat choices',()=>{
-  assert.equal(workspacePreferences({},true).layout,'focus');assert.equal(workspacePreferences().layout,'grid');
-  assert.deepEqual(workspacePreferences({layout:'split',theme:'block',tab:'changes',selected:'qa',compare:'builder'},true),{layout:'split',theme:'block',tab:'changes',selected:'qa',compare:'builder'});
+  assert.equal(workspacePreferences({},true).layout,'focus');assert.equal(workspacePreferences({},true).railCollapsed,true);assert.equal(workspacePreferences({railCollapsed:false},true).railCollapsed,false);assert.equal(workspacePreferences({railCollapsed:true}).railCollapsed,true);assert.equal(workspacePreferences().layout,'grid');
+  assert.deepEqual(workspacePreferences({layout:'split',theme:'block',tab:'changes',selected:'qa',compare:'builder'},true),{layout:'split',theme:'block',tab:'changes',selected:'qa',compare:'builder',railCollapsed:true});
   assert.equal(workspacePreferences({layout:'bad',theme:'bad'}).theme,'bubble');assert.equal(statusLabel('blocked'),'Needs Review');
 });
 test('tool progress describes observed results in the current turn without inventing completion',()=>{
