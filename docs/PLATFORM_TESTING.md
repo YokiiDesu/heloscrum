@@ -23,8 +23,10 @@ npm ci
 npm run test:platform
 ```
 
-The same command runs on Ubuntu / Node 22, macOS / Node 24, and Windows / Node 24
-in [Checks](../.github/workflows/ci.yml). Windows failures are blocking; the job is
+The same command runs on Ubuntu, macOS, and Windows with Node 26 Active LTS
+in [Checks](../.github/workflows/ci.yml). Separate Ubuntu jobs cover supported
+Node 22 and Node 24 compatibility. Job names explicitly distinguish the operating
+system runner from the Node version. Windows failures are blocking; the job is
 not marked `continue-on-error`. Each job uploads its report and logs even when a
 check fails. Manual workflow dispatch and `ci/platform-validation-*`
 branches can test a candidate before merging it into main.
@@ -56,7 +58,7 @@ npm run test:linux -- --platform linux/amd64
 Docker must already be installed and running. The default architecture matches
 Apple silicon / ARM64 or x86-64. CPU emulation is not a performance benchmark.
 
-[Dockerfile.test](../Dockerfile.test) pins an official Node 24 / Debian image by
+[Dockerfile.test](../Dockerfile.test) pins an official Node 26 / Debian image by
 its multi-architecture digest and installs dependencies from the lockfile. It uses
 a non-root account. The build context allowlist excludes Git history, dependencies,
 workspace data, environment files, PEM/key files, and verification outputs. Only

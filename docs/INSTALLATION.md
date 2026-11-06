@@ -18,7 +18,7 @@ Linux; running it in Git Bash does not make native Windows supported.
 | Dependency | How It's Provided |
 | --- | --- |
 | Git 2.28+ | Install beforehand, or accept the installer's platform-specific offer. |
-| Node.js 22.13+ and npm | Reuse a compatible installation, or install the pinned private Node 24 runtime. |
+| Node.js 22.13+ and npm | Reuse a compatible installation, or install the pinned private Node 26 LTS runtime. |
 | Herdr 0.9.0+ | Required by desktop setup. Reuse a compatible installation, or install the verified 0.9.0 binary. |
 | Application and Electron packages | `npm ci` using the two checked-in lockfiles. |
 | Provider CLI | Reuse one, optionally install Codex/Claude Code, or configure it later. Sign in separately. |

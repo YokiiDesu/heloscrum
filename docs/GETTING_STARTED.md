@@ -22,7 +22,7 @@ without starting agents or submitting tasks.
 
 ## 1. Install the prerequisites
 
-- Node.js **22.13 or newer**, with npm. Node 24 is a good starting point.
+- Node.js **22.13 or newer**, with npm. Node 26 Active LTS is recommended.
 - Git **2.28 or newer**, including your normal `user.name` and `user.email` configuration.
 - One supported provider, installed and signed in separately. Follow its own
   setup instructions: [Codex](https://developers.openai.com/codex/cli/),

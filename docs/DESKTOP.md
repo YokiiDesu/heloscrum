@@ -18,7 +18,7 @@ Bash 3.2 shipped on macOS. `NO_COLOR=1` disables its colors. Questions read the
 terminal, so redirecting standard input cannot accidentally answer them.
 
 Setup checks Git, uses a compatible installed Node (22.13+), or offers a private
-Node 24.21.0 installation. It installs the locked application dependencies and
+Node 26.13.0 LTS installation. It installs the locked application dependencies and
 Electron 44.7.0, then verifies **required Herdr**. Missing/older Herdr is installed
 as version 0.9.0. Node and Herdr downloads are checked against pinned SHA-256
 digests before execution. System Node and shell profiles are left alone.
