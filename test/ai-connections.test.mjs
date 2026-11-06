@@ -154,7 +154,14 @@ test('oversized tool results are durable, paginated and isolated to the original
     assert(value.offloaded);assert(JSON.stringify(value).length<2000);
     const first=await f.p.context.read(task,{reference:value.reference,limit:1000});assert.equal(first.offset,0);assert.equal(first.nextOffset,1000);
     let recovered=first.text;for(let offset=first.nextOffset;offset!==null;){const page=await f.p.context.read({...task,providerSessionId:randomUUID()},{reference:value.reference,offset});recovered+=page.text;offset=page.nextOffset;}
-    assert.deepEqual(JSON.parse(recovered),original);await assert.rejects(f.p.context.read(other,{reference:value.reference}),/not found/);await assert.rejects(f.p.context.read(task,{reference:'../escape'}),/Invalid/);
+    assert.deepEqual(JSON.parse(recovered),original);
+    const recovery=e=>{assert.equal(e.status,404);assert.match(e.message,/not found for this agent/);assert.match(e.message,/task IDs and plan IDs are not context references/);assert.match(e.message,/work_read_brief/);assert.match(e.message,/do not repeat a write/);assert(!e.message.includes(task.id));assert(!e.message.includes(original.audit));return true;};
+    await assert.rejects(f.p.context.read(other,{reference:value.reference}),recovery);
+    await assert.rejects(f.p.context.read(task,{reference:randomUUID()}),recovery);
+    await assert.rejects(f.p.context.search(task,{reference:randomUUID(),query:'missing'}),recovery);
+    await assert.rejects(f.p.context.read(task,{reference:'../escape'}),/Invalid/);
+    const refreshed=await f.p.context.bound(task,'work_get',original);assert.notEqual(refreshed.reference,value.reference);
+    assert.equal((await f.p.context.read(task,{reference:refreshed.reference,limit:1000})).text,first.text);
   }finally{await f.close();}
 });
 test('context assessment falls back to rules on Jev failure and sends only bounded records',async()=>{
