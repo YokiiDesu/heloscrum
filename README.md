@@ -197,6 +197,21 @@ tools. Membership and project boundaries are checked on every call; revisions
 prevent competing claims and stale approval changes. Agents cannot expand their
 selected team or start additional provider sessions through these tools.
 
+Task progress notes hold up to 16,000 characters. Updates replace the previous
+note; they do not append. For larger reports, keep a summary in the task and cite
+an artifact the reviewer can access or distinct shared `memory_write` records
+(up to 16,000 characters each, when available). Read the current memory revision
+before updating an existing key. An oversized task note rejects the whole change,
+including its status update; retry
+with a shorter summary and the current plan revision from `work_brief`.
+
+Copy task IDs from the current `work_brief` response. A task ID (`itemId`), plan ID
+(`planId`), and offloaded-result `reference` are different identifiers. Use
+`work_read_brief` with the returned `retrieve.input` for brief continuations;
+`context_read` accepts only an exact reference returned for your agent. If a
+reference is unavailable, re-read the original read-only source. Do not repeat a
+write just to recover its result.
+
 Full `work_brief` reads include **SMART** guidance: Specific, Measurable,
 Actionable, Relevant and Time-bound. Agents use existing project examples to
 define the expected outcome, choose evidence that demonstrates it, identify
