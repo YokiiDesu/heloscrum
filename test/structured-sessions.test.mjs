@@ -177,6 +177,23 @@ test('an app-server exit takes its sessions offline without losing their saved e
   }finally{await f.close();}
 });
 
+test('closing while notifications are in flight finishes their writes first and writes nothing afterwards',async()=>{
+  const f=await fixture();try{
+    const s=await f.p.structured.start(f.task);await f.p.structured.prompt(f.task.pane,'Initial task');
+    f.server.notify('item/agentMessage/delta',{threadId:f.server.threadId,turnId:f.server.turnId,itemId:'msg-1',delta:'Working on it'});
+    // No settle: the user message and the delta are still queued on the client.
+    await f.p.structured.close();
+    const file=path.join(f.root,'.heloscrum/agents',f.task.id,'structured',f.server.threadId+'.json');
+    const saved=JSON.parse(await readFile(file,'utf8'));
+    assert(saved.events.some(e=>e.role==='user'&&e.text?.includes('Initial task')),'queued user message is persisted before close resolves');
+    assert.equal(saved.events.find(e=>e.id==='msg-1')?.text,'Working on it');
+    assert.equal(s.status,'working');assert.equal(f.p.structured.list().length,0);
+    f.server.notify('item/agentMessage/delta',{threadId:f.server.threadId,turnId:f.server.turnId,itemId:'msg-1',delta:' still'});await f.settle();
+    assert.equal(await readFile(file,'utf8'),JSON.stringify(saved),'nothing is written after close');
+    await rm(f.root,{recursive:true,force:true});
+  }finally{await f.close();}
+});
+
 test('image attachments are passed as localImage files kept private to the task',async()=>{
   const f=await fixture();try{
     await f.p.structured.start(f.task);await f.p.structured.prompt(f.task.pane,'Look',{attachments:[{id:'img-1',kind:'image'},{id:'doc-1',kind:'file'}]});
