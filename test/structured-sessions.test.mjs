@@ -11,6 +11,8 @@ import {CodexAppServer} from '../lib/codex-app-server.mjs';
 import {ManagedAgents,withManagedAgents} from '../lib/managed-agents.mjs';
 import {structuredProvider,hostedProvider,managedProvider} from '../lib/providers.mjs';
 import {nativeSelection} from '../lib/native-setup.mjs';
+import {Collaboration} from '../lib/collaboration.mjs';
+import {HerdrAdapter} from '../lib/adapters.mjs';
 
 // A scripted `codex app-server`: newline JSON-RPC over stdio with the field
 // names of codex-cli 0.163.0. It records requests and lets a test drive the
@@ -38,6 +40,11 @@ function fakeAppServer({threadId='01a14756-5160-7b31-a216-dcc9edf7fd4c',turnId='
     if(method==='thread/turns/list')return server.send({id,result:{data:resumedTurns,nextCursor:null}});
     if(method==='turn/start'){server.send({id,result:{turn:{id:turnId,items:[],status:'inProgress'}}});server.notify('thread/status/changed',{threadId,status:{type:'active',activeFlags:[]}});server.notify('turn/started',{threadId,turn:{id:turnId,items:[],status:'inProgress'}});const text=params.input[0].text;server.notify('item/started',{threadId,turnId,startedAtMs:1,item:{type:'userMessage',id:'user-'+server.requests.length,content:params.input}});server.notify('item/completed',{threadId,turnId,completedAtMs:1,item:{type:'userMessage',id:'user-'+server.requests.length,content:params.input}});server.onTurn?.(text,params);return;}
     if(method==='turn/interrupt'){server.send({id,result:{}});server.notify('turn/completed',{threadId,turn:{id:params.turnId,items:[],status:'interrupted',error:null}});server.notify('thread/status/changed',{threadId,status:{type:'idle'}});return;}
+    if(method==='turn/steer'){
+      if(server.onSteer)return server.onSteer(message);
+      server.send({id,result:{turnId}});
+      server.notify('item/completed',{threadId,turnId,item:{type:'userMessage',id:'steer-'+id,content:params.input}});return;
+    }
     server.send({id,error:{code:-32601,message:'unknown method '+method}});
   };
   server.waitFor=predicate=>new Promise(resolve=>{const check=()=>{const hit=server.requests.find(predicate);if(hit)return resolve(hit);setTimeout(check,5);};check();});
@@ -48,7 +55,7 @@ async function fixture(options){
   const root=await mkdtemp(path.join(os.tmpdir(),'heloscrum-structured-')),worktree=path.join(root,'repo');await mkdir(worktree);
   const task={id:randomUUID(),path:worktree,kind:'codex',model:'gpt-test',effort:'high',role:'Builder',prompt:'Build the approved scope',project:root,name:'test',nativeSetup:{profile:'user:work',files:[],codexEngine:'app-server'}};
   const server=fakeAppServer(options);
-  const p={root,data:{tasks:[task]},save:async()=>{},tools:{codex:'/mock/codex'},transcripts:{cache:new Map()},collaboration:{connections:new Map(),mcpBridge:async()=>({command:'/usr/bin/node',args:['bridge.mjs','/connection.json']})},images:{readFor:async()=>({mimeType:'image/png',base64:Buffer.from('png').toString('base64')})}};
+  const p={root,data:{tasks:[task]},save:async()=>{},tools:{codex:'/mock/codex'},transcripts:{cache:new Map()},collaboration:{connections:new Map(),mcpBridge:async()=>({command:'/usr/bin/node',args:['bridge.mjs','/connection.json']})},images:{validateModel:()=>{},readFor:async()=>({mimeType:'image/png',base64:Buffer.from('png').toString('base64')})}};
   p.structured=new StructuredSessions(p,{spawnProcess:server.spawnProcess});
   const settle=()=>new Promise(r=>setTimeout(r,20));
   return {root,task,p,server,settle,close:async()=>{await p.structured.close();await rm(root,{recursive:true,force:true});}};
@@ -232,4 +239,76 @@ test('control plane: an app-server agent launches without Herdr, delivers queued
     const history=await plane.transcripts.read(task,snapshot.tasks[0].live);assert.equal(history.source,'Codex app-server');assert(history.events.some(e=>e.role==='user'&&/Second message/.test(e.text)));
     await plane.structured.close();await plane.transcripts.close();await plane.managed.close();await plane.scheduler?.stop?.();await plane.history?.close?.();
   }finally{await rm(root,{recursive:true,force:true});}
+});
+
+test('active steering uses turn/steer through collaboration, keeps queue pending, and appears once in history',async()=>{
+  const f=await fixture();try{
+    const s=await f.p.structured.start(f.task);await f.p.structured.prompt(f.task.pane,'Initial task');
+    f.task.phase='launched';f.p.data.project=f.root;
+    f.p.collaboration=new Collaboration(f.p);
+    const native=new HerdrAdapter('/unused',f.root);native.list=async()=>[];
+    native.json=async()=>assert.fail('structured steering must not type into Herdr');
+    f.p.herdr=withManagedAgents(native,{plane:f.p,list:()=>[]},f.p.structured);
+    await f.p.collaboration.queuePrompt(f.task,'Wait until done');
+    await f.p.collaboration.queuePrompt(f.task,'Use the corrected path',{mode:'steer'});
+    await f.p.collaboration.deliver();await f.settle();
+    const request=f.server.requests.find(r=>r.method==='turn/steer');
+    assert.equal(request.params.threadId,s.id);assert.equal(request.params.expectedTurnId,f.server.turnId);
+    assert.match(request.params.input[0].text,/Use the corrected path/);assert.doesNotMatch(request.params.input[0].text,/Wait until done/);
+    assert.deepEqual(f.p.collaboration.data.messages.map(m=>m.delivery),['queued','delivered']);
+    assert.equal(s.events.filter(e=>e.role==='user'&&e.text.includes('Use the corrected path')).length,1);
+    assert.equal(f.server.requests.filter(r=>r.method==='turn/start').length,1);
+    f.server.complete();await until(()=>s.status==='done','initial turn should finish');await f.p.collaboration.deliver();
+    assert.deepEqual(f.p.collaboration.data.messages.map(m=>m.delivery),['delivered','delivered']);
+    assert.equal(f.server.requests.filter(r=>r.method==='turn/start').length,2);
+    assert.equal(f.server.requests.filter(r=>r.method==='turn/steer').length,1);
+    assert.equal(f.server.requests.filter(r=>r.method==='turn/interrupt').length,0);
+  }finally{await f.close();}
+});
+
+test('steering defers blocked or changed turns and accepts only the expected protocol receipt',async()=>{
+  const f=await fixture();try{
+    const s=await f.p.structured.start(f.task);await f.p.structured.prompt(f.task.pane,'Initial task');await f.settle();
+    s.status='blocked';await assert.rejects(f.p.structured.steer(f.task.pane,'Correction'),e=>e.code==='steering_deferred');
+    s.status='working';const images=f.p.structured.attachmentInputs.bind(f.p.structured);
+    f.p.structured.attachmentInputs=async()=>{s.turnId='different-turn';return [];};
+    await assert.rejects(f.p.structured.steer(f.task.pane,'Correction'),e=>e.code==='steering_deferred');
+    assert.equal(f.server.requests.filter(r=>r.method==='turn/steer').length,0);
+    f.p.structured.attachmentInputs=images;s.turnId=f.server.turnId;
+    f.server.onSteer=({id})=>f.server.send({id,error:{code:-32602,message:'No active turn for this thread'}});
+    await assert.rejects(f.p.structured.steer(f.task.pane,'Correction'),e=>e.code==='steering_deferred');
+    f.server.onSteer=({id})=>f.server.send({id,result:{turnId:'unexpected'}});
+    await assert.rejects(f.p.structured.steer(f.task.pane,'Correction'),/expected steering turn/);
+    f.server.onSteer=null;
+    const receipt=await f.p.structured.steer(f.task.pane,'Image direction',{attachments:[{id:'image-1',kind:'image'}]});
+    assert.equal(receipt.turnId,f.server.turnId);
+    const input=f.server.requests.findLast(r=>r.method==='turn/steer').params.input;
+    assert.deepEqual(input[0],{type:'text',text:'Image direction'});assert.equal(input[1].type,'localImage');
+  }finally{await f.close();}
+});
+
+test('unconfirmed app-server steering stays uncertain and is not replayed automatically',async()=>{
+  const f=await fixture();try{
+    await f.p.structured.start(f.task);await f.p.structured.prompt(f.task.pane,'Initial task');await f.settle();
+    f.task.phase='launched';f.p.data.project=f.root;f.p.collaboration=new Collaboration(f.p);
+    f.p.herdr=withManagedAgents({list:async()=>[]},{plane:f.p,list:()=>[]},f.p.structured);
+    f.p.structured.client.timeoutMs=20;f.server.onSteer=()=>{};
+    await f.p.collaboration.queuePrompt(f.task,'Do not duplicate this direction',{mode:'steer'});
+    await f.p.collaboration.deliver();assert.equal(f.p.collaboration.data.messages[0].delivery,'uncertain');
+    await f.p.collaboration.deliver();assert.equal(f.server.requests.filter(r=>r.method==='turn/steer').length,1);
+  }finally{await f.close();}
+});
+
+test('interrupt and turn completion cancel questions without fabricating user answers',async()=>{
+  for(const action of ['interrupt','complete']){
+    const f=await fixture();try{
+      const s=await f.p.structured.start(f.task);await f.p.structured.prompt(f.task.pane,'Initial task');
+      f.server.request(950,'item/tool/requestUserInput',{threadId:s.id,turnId:s.turnId,questions:[{id:'choice',header:'Choose',question:'Which approach?',options:[{label:'A'},{label:'B'}]}]});
+      await until(()=>s.approval,'question should be pending');
+      if(action==='interrupt')await f.p.structured.interrupt(f.task.pane);else f.server.complete();
+      const response=await f.server.waitFor(r=>r.id===950&&r.result);
+      assert.deepEqual(response.result,{answers:{}});assert.equal(s.approval,null);
+      assert(!JSON.stringify(response).includes('undefined'));
+    }finally{await f.close();}
+  }
 });
