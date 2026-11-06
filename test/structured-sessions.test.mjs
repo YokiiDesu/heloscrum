@@ -258,6 +258,24 @@ test('control plane: an app-server agent launches without Herdr, delivers queued
   }finally{await rm(root,{recursive:true,force:true});}
 });
 
+test('shutdown drains queued notifications and their final transcript writes before returning',async()=>{
+  const f=await fixture();let release;try{
+    const s=await f.p.structured.start(f.task);
+    s.sequence=new Promise(resolve=>{release=resolve;});
+    f.server.notify('item/completed',{threadId:s.id,turnId:f.server.turnId,item:{type:'agentMessage',id:'last-message',text:'Saved before shutdown'}});
+    f.server.notify('thread/closed',{threadId:s.id});
+    let closed=false;const closing=f.p.structured.close().then(()=>{closed=true;});
+    await new Promise(resolve=>setImmediate(resolve));
+    assert.equal(f.server.child.killed,true,'stop the provider before waiting for disk writes');
+    assert.equal(closed,false,'queued events must finish before shutdown completes');
+    release();await closing;
+    const saved=await f.p.structured.load(f.task);
+    assert(saved.events.some(e=>e.id==='last-message'&&e.text==='Saved before shutdown'));
+    assert(saved.events.some(e=>/Codex closed this thread/.test(e.text)));
+    assert.equal(f.p.structured.notifications.size,0);
+  }finally{release?.();await f.close();}
+});
+
 test('active steering uses turn/steer through collaboration, keeps queue pending, and appears once in history',async()=>{
   const f=await fixture();try{
     const s=await f.p.structured.start(f.task);await f.p.structured.prompt(f.task.pane,'Initial task');
