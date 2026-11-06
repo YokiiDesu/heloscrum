@@ -10,6 +10,7 @@ import {Collaboration} from '../lib/collaboration.mjs';
 import {WorkManagement} from '../lib/work-management.mjs';
 import {ContextManager} from '../lib/context-manager.mjs';
 import {SMART_TASK_GUIDANCE} from '../lib/work-guidance.mjs';
+import {MAX_NOTEBOOK_NOTE} from '../dist/work-limits.js';
 
 async function fixture(){
   const root=await mkdtemp(path.join(os.tmpdir(),'heloscrum-notebook-'));
@@ -33,6 +34,21 @@ test('notebooks persist across sessions/providers with private identities, archi
     assert.throws(()=>restored.check({...a,project:'/different'}),/another project/);
     await assert.rejects(n.history(b,1),/existing notebook revision/);
     f.plane.save=async()=>{throw Error('Disk unavailable');};await assert.rejects(n.write(a,{...f.note,expectedRevision:2,text:'Must not replace saved data'}),/Disk unavailable/);assert.equal(n.current(a).revision,2);
+  }finally{await f.close();}
+});
+
+test('8000-character notebook notes persist exactly while receipts and briefs stay compact',async()=>{
+  const f=await fixture();try{
+    const a=f.tasks[0],c=f.plane.collaboration,text=('Evidence \\"🚀\\n\r\n'.repeat(600)).slice(0,MAX_NOTEBOOK_NOTE);
+    assert.equal(c.catalog(a).tools.find(t=>t.name==='notebook_write').inputSchema.properties.text.maxLength,8000);
+    const receipt=await c.call(a,'notebook_write',{...f.note,text});assert.equal(receipt.note.totalCharacters,8000);assert.equal(receipt.note.text,undefined);assert(JSON.stringify(receipt).length<1600);
+    await assert.rejects(c.call(a,'notebook_write',{...f.note,text:text+'x',expectedRevision:1}),/8000/);assert.equal(f.plane.notebooks.current(a).revision,1);
+    const list=await c.call(a,'notebook_read',{});assert.equal(list.entries[0].partial,true);assert.equal(list.entries[0].text.length,600);assert(!list.offloaded);
+    const brief=await f.plane.work.focused(a,{planId:f.plan.id});assert.equal(brief.notebook.entries[0].partial,true);assert(!JSON.stringify(brief).includes(text));
+    let offset=0,rebuilt='';do{const page=await c.call(a,'notebook_read',{...receipt.retrieve.input,offset});assert(!page.offloaded);rebuilt+=page.text;offset=page.nextOffset;}while(offset!==null);assert.equal(rebuilt,text);
+    await c.call(a,'notebook_write',{...f.note,id:receipt.note.id,expectedRevision:1,text:'A later correction'});
+    const old=await c.call(a,'notebook_read',receipt.retrieve.input);assert.equal(old.revision,1);assert(text.startsWith(old.text));
+    await assert.rejects(c.call(f.tasks[1],'notebook_read',receipt.retrieve.input),/existing notebook revision/);
   }finally{await f.close();}
 });
 

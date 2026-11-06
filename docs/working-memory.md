@@ -31,7 +31,7 @@ unavailable sources are flagged for rechecking. A change to any referenced plan
 revision conservatively invalidates that reference even when an unrelated task changed.
 The UI can attach a file; the agent tool supports all source types. Do not store secrets.
 
-Notes are bounded to 1,800 characters, four sources, and 120 current entries per agent.
+Notes are bounded to 8,000 characters, four sources, and 120 current entries per agent.
 Read pages contain at most 20 notes. Fresh-session briefs include up to eight active
 notes within a separate character allowance and explicitly indicate omitted notes.
 Models still have to use the notebook tools; this is not a guarantee that every useful
@@ -56,6 +56,23 @@ full plan history. Human board/API operations retain their full detail responses
 `memory_search` ranks exact identifiers/paths ahead of keyword passages across the
 agent's notebook, permitted shared memory, accessible tasks and its archived context.
 Results include source identifiers, revisions, offsets, and retrieval instructions.
+It also searches durable History: shared memory revisions, the requesting agent's
+own transcripts and messages, and currently accessible plan records. It never
+searches another agent's private transcript or notebook. History is marked as
+historical evidence, so an earlier rule is not mistaken for the current contract.
+Use `scope: "history"` and `historyBefore`/`nextHistoryBefore` to page older matches.
+The UI exposes this under **Memory → Search → Durable History**.
+
+`memory_source_read` consumes the exact `source` and `offset` returned by search.
+Current notes and plans reject a mismatched revision; historical entries retain
+their archived version. `memory_read` without a key returns an index instead of all
+note bodies. With a key it returns one bounded text page; `sinceRevision` returns
+a small unchanged receipt when possible. Only reuse that receipt when the earlier
+content is still in the agent's working context.
+
+Registered external chat contacts can read/search shared project Memory and their
+own authorized History. This does not grant shared-memory writes, access to peer
+notebooks/transcripts, plan membership, or native local file access.
 Archive searches inspect 20 records per batch and return a cursor for older records.
 Local search makes no AI call. Enable **Rank memory search with Jev** in the model/context
 settings to evaluate up to 12 authorized passages per search. The candidate batch
@@ -135,3 +152,8 @@ and stopping limits. Account for worker, decision, summary, notebook maintenance
 retrieval, and coordination calls. Separate cached input, uncached input, output,
 and provider credits. Require successful recall and accepted continuations as
 well as measuring prompt size. Missing usage is unknown, never zero.
+
+Long notebook notes remain stored in full. `notebook_write` returns a compact receipt,
+`notebook_read` lists bounded previews, and `notebook_read({id,revision,offset})`
+returns exact text pages. Briefs carry previews and retrieval references; they do
+not automatically insert an 8,000-character note into the prompt.

@@ -837,6 +837,8 @@ Enable **Rank memory search with Jev** in model/context settings to rank bounded
 authorized passages by relevance. Exact references stay first, local-only search is
 available per query, and failures fall back to local results. See
 [Working memory](docs/working-memory.md) for privacy, measured usage and evaluation limits.
+For large code handoffs, see [exact source transfers and review packets](docs/source-transfers.md):
+bounded source pages, workspace copies, hash-pinned diffs, and separate review findings.
 
 ## Team Conversation Style
 

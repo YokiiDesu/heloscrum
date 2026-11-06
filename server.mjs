@@ -64,7 +64,7 @@ const server=http.createServer(async(req,res)=>{
     if(route==='/api/workspace-file'){const {bytes,...file}=await readWorkspaceFile(plane,Object.fromEntries(url.searchParams));return json(res,200,{...file,content:bytes.toString('base64')});}
     if(route==='/api/ai-connections')return json(res,200,plane.ai.list());
     if(route==='/api/notebook'){const task=plane.task(url.searchParams.get('task'));return json(res,200,url.searchParams.has('revision')?await plane.notebooks.history(task,Number(url.searchParams.get('revision'))):await plane.notebooks.read(task,{offset:Number(url.searchParams.get('offset')||0),limit:20,includeClosed:true}));}
-    if(route==='/api/memory/search')return json(res,200,await plane.notebooks.search(plane.task(url.searchParams.get('task')),{query:url.searchParams.get('query'),scope:url.searchParams.get('scope')||'all',ranking:url.searchParams.get('ranking')||undefined,before:url.searchParams.get('before')||undefined}));
+    if(route==='/api/memory/search')return json(res,200,await plane.notebooks.search(plane.task(url.searchParams.get('task')),{query:url.searchParams.get('query'),scope:url.searchParams.get('scope')||'all',ranking:url.searchParams.get('ranking')||undefined,before:url.searchParams.get('before')||undefined,historyBefore:url.searchParams.get('historyBefore')||undefined}));
     if(route==='/api/context')return json(res,200,await plane.context.inspect(url.searchParams.get('task')));
     if(route==='/api/project-settings')return json(res,200,plane.projectSettings.directory(url.searchParams.get('project')||plane.data.project));
     if(route==='/api/projects')return json(res,200,await plane.projects.directory());

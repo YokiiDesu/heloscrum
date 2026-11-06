@@ -3,6 +3,10 @@ import assert from 'node:assert/strict';
 import {toolOutputHTML} from '../dist/message-content.js';
 
 const render=output=>toolOutputHTML({id:'result',output:typeof output==='string'?output:JSON.stringify(output)});
+test('flat source pages keep code literal and expose range and hash without JSON escaping',()=>{
+  const text='<script>never execute</script>\nconst path = "C:\\code";\n',meta={format:'heloscrum-source-page',name:'source.js',sha256:'a'.repeat(64),offset:0,endOffset:text.length,totalCharacters:text.length,nextOffset:null},raw=JSON.stringify(meta)+'\n\n'+text;
+  const body=render(raw).split('<details')[0];assert.match(body,/source\.js/);assert.match(body,/SHA-256/);assert.match(body,/&lt;script&gt;/);assert.doesNotMatch(body,/<script>|\\n|Partial source/);assert.equal(render({content:[{type:'text',text:raw}]}).split('<details')[0],body);
+});
 test('context pages show readable inbox messages with range and exact raw output retained',()=>{
   const message={fromRole:'You',toRole:'Gemini developer',text:'First instruction.\n\nSecond instruction.',at:'2026-11-06T04:32:58Z'};
   const text=JSON.stringify({messages:[message]}),value={reference:'ref',source:'read_inbox',text,offset:0,nextOffset:null,totalCharacters:text.length};

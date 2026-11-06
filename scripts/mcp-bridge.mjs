@@ -2,6 +2,7 @@
 import { readFile } from 'node:fs/promises';
 import { createInterface } from 'node:readline';
 import {localAddress} from '../lib/local-address.mjs';
+import {mcpToolResult} from '../lib/source-pages.mjs';
 const config=JSON.parse(await readFile(process.argv[2],'utf8'));
 const headers={'Authorization':'Bearer '+config.token,'Content-Type':'application/json'};
 // Project/user MCP configuration can be shared by several Codex chats. A
@@ -35,7 +36,7 @@ async function handle(message){
     else if(method==='notifications/initialized'){initialized=true;return;}
     else if(method==='ping')result={};
     else if(method==='tools/list'){const catalog=await request('catalog');revision=catalog.revision;result={tools:catalog.tools};send({jsonrpc:'2.0',id,result});try{await request('listed',{revision});}catch{}return;}
-    else if(method==='tools/call'){try{const value=await request('call',{name:params.name,input:params.arguments||{}});result=Array.isArray(value.mcpResult?.content)?value.mcpResult:{content:[{type:'text',text:JSON.stringify(value)}],isError:typeof value.exitCode==='number'&&value.exitCode!==0};}catch(error){result={content:[{type:'text',text:error.message}],isError:true};}}
+    else if(method==='tools/call'){try{const value=await request('call',{name:params.name,input:params.arguments||{}});result=mcpToolResult(value,{explicitSuccess:true});}catch(error){result={content:[{type:'text',text:error.message}],isError:true};}}
     else if(method?.startsWith('notifications/'))return;
     else {send({jsonrpc:'2.0',id,error:{code:-32601,message:'Method not supported'}});return;}
     if(id!==undefined)send({jsonrpc:'2.0',id,result});

@@ -2,6 +2,7 @@ const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;
 const readingPositions=new Map();
 
 const parseJSON=text=>{try{return JSON.parse(text);}catch{return null;}};
+const parseResult=text=>{const json=parseJSON(text);if(json!==null)return json;const split=String(text).indexOf('\n\n');if(split<0)return null;const meta=parseJSON(text.slice(0,split));return meta?.format==='heloscrum-source-page'?{...meta,text:text.slice(split+2)}:null;};
 const object=value=>value&&typeof value==='object'&&!Array.isArray(value);
 
 // Context pages can start/end inside a JSON string. Show only the text actually
@@ -21,13 +22,13 @@ function inboxExcerpts(text){
 
 export function toolOutputHTML(event,{markdown}={}){
   const raw=String(event.output??''),prose=text=>markdown?markdown(text,{literalHtml:true}):esc(text).replaceAll('\n','<br>');
-  let value=parseJSON(raw);
+  let value=parseResult(raw);
   // MCP text envelopes and JSON-encoded strings occur in both live and saved
   // provider transcripts. Only unwrap a single text block so none are dropped.
   for(let i=0;i<3;i++){
     if(typeof value==='string'){const parsed=parseJSON(value);if(parsed===null)break;value=parsed;continue;}
     if(object(value)&&Array.isArray(value.content)&&value.content.length===1&&value.content[0]?.type==='text'){
-      const parsed=parseJSON(value.content[0].text);if(parsed===null)break;value=parsed;continue;
+      const parsed=parseResult(value.content[0].text);if(parsed===null)break;value=parsed;continue;
     }
     break;
   }
@@ -35,6 +36,9 @@ export function toolOutputHTML(event,{markdown}={}){
   const payload=isPage?parseJSON(value.text):value;
   const messages=object(payload)&&Array.isArray(payload.messages)&&payload.messages.every(m=>object(m)&&typeof m.text==='string')?payload.messages:null;
   const rawDetails=()=>`<details class="tool-output-raw" data-event="${esc(event.id)}:raw"><summary>Raw output</summary><pre>${esc(raw)}</pre></details>`;
+  if(value?.format==='heloscrum-source-page'&&!isPage){
+    return `<div class="tool-output-readable"><div class="tool-output-meta"><strong>${esc(value.name||value.key||'Source excerpt')}</strong><span>Characters ${esc(value.offset)}–${esc(value.endOffset)} of ${esc(value.totalCharacters)}</span></div>${value.sha256?`<p class="tool-output-note">SHA-256 · ${esc(value.sha256)}</p>`:''}${value.nextOffset!==null?'<p class="tool-output-note">Partial source · more content is available.</p>':''}<pre>${esc(value.text)}</pre>${rawDetails()}</div>`;
+  }
   const message=m=>`<article class="tool-output-message"><header><strong>${esc(m.fromRole||'Message')}${m.toRole?' → '+esc(m.toRole):''}</strong>${typeof m.at==='string'?`<time>${esc(m.at)}</time>`:''}</header><div class="markdown tool-output-prose">${prose(m.text)}</div></article>`;
   if(isPage){
     const offset=Number.isInteger(value.offset)&&value.offset>=0?value.offset:0,total=Number.isInteger(value.totalCharacters)&&value.totalCharacters>=0?value.totalCharacters:null;
