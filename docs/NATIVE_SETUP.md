@@ -139,6 +139,36 @@ go offline when the HeloScrum backend restarts, and come back when the task is
 resumed from Projects; queued messages wait until then. Use the native terminal
 engine when you need Codex's own TUI features.
 
+## Claude engine
+
+Claude Code agents also run in one of two engines, chosen per agent under
+**Claude engine**. **Terminal** is the default: Herdr owns the Claude Code TUI in
+a PTY, messages are pasted into the idle terminal, and history is read from the
+session file its SessionStart hook registers. **Stream JSON** runs
+`claude --print --input-format stream-json --output-format stream-json` as one
+long-lived headless process per agent. Messages are written to its input and
+acknowledged when Claude Code replays them, idle state comes from the turn
+result, the reply streams as it is produced, and permission prompts and
+`AskUserQuestion` questions with options arrive as structured requests in the
+agent card; Toolbox approval settings apply to them unchanged. The process takes
+the same arguments as the terminal engine (model, native agent, effort, the
+activity mod, the HeloScrum toolbox and SessionStart hook) and never passes
+`--bare`, so your existing Claude Code login, settings, hooks and plugins stay
+in force. No API key is involved.
+
+Switching an idle Claude Code agent between the two engines resumes the same
+session with `--resume`; no handoff or new session is created, and the history
+stays attached. Switching provider, native agent or files still follows the
+reviewed handoff described above.
+
+Stream JSON limits in this release: there is no native terminal to attach, since
+no PTY exists. Steering waits for the current turn to finish, because headless
+Claude Code starts a new turn for a message sent mid-turn rather than redirecting
+the running one. Free-text and multi-select questions are declined rather than
+answered; Claude Code is told to continue or ask with a list of options. Sessions
+go offline when the HeloScrum backend restarts and come back when the task is
+resumed from Projects; queued messages wait until then.
+
 The setup report distinguishes detected configuration from runtime verification.
 It does not prove login, quota, MCP connectivity, plugin loading, or access to
 desktop-only features. Use the provider's native status/tool/plugin commands to

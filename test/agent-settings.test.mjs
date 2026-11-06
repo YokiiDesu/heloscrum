@@ -303,3 +303,22 @@ test('switching Codex between Terminal and App server resumes the same thread in
   await f.plane.structured.close();
  }finally{await f.cleanup();}
 });
+test('switching Claude Code between Terminal and Stream JSON resumes the same session instead of a fresh handoff',async()=>{
+ const {StructuredSessions}=await import('../lib/structured-sessions.mjs');
+ const f=await fixture('claude');try{
+  const launches=[];const spawnProcess=(executable,args)=>{const {EventEmitter}=process.getBuiltinModule('node:events'),{PassThrough}=process.getBuiltinModule('node:stream');launches.push(args);const child=new EventEmitter();child.stdout=new PassThrough();child.stderr=new PassThrough();child.stdin=new PassThrough();child.exitCode=null;child.kill=()=>{child.exitCode=143;child.emit('close',143);};child.stdin.on('finish',()=>{child.exitCode=0;child.emit('close',0);});return child;};
+  f.plane.tools.claude='/mock/claude';
+  f.plane.structured=new StructuredSessions(f.plane,{spawnProcess});f.plane.managed=new ManagedAgents(f.plane);f.plane.herdr=withManagedAgents(f.plane.herdr,f.plane.managed,f.plane.structured);
+  const preview=await f.plane.agentSettings.preview(f.task.id,{kind:'claude',model:'opus',nativeSetup:{claudeEngine:'stream-json'}});
+  assert.equal(preview.freshSession,false);assert.equal(preview.crossProvider,false);assert.equal(preview.sessionId,session);
+  await f.plane.agentSettings.change(f.task.id,{previewId:preview.previewId});
+  assert.equal(f.calls.filter(c=>c[0]==='exit').length,1);assert(!f.calls.some(c=>c[0]==='start'||c[0]==='workspace'||c[0]==='prompt'));
+  assert.equal(launches.length,1);assert(launches[0].includes('--input-format')&&!launches[0].includes('--bare'));assert.equal(launches[0][launches[0].indexOf('--resume')+1],session);assert.equal(launches[0][launches[0].indexOf('--model')+1],'opus');
+  assert.equal(f.task.phase,'launched');assert.match(f.task.pane,/^structured:/);assert.equal(f.task.providerSessionId,session);assert.equal(f.task.nativeSetup.claudeEngine,'stream-json');assert.equal(f.task.sessionArchives,undefined);
+  // And back to the terminal engine: the same session is resumed in a Herdr pane.
+  const back=await f.plane.agentSettings.preview(f.task.id,{kind:'claude',model:'opus',nativeSetup:{profile:null,files:[]}});assert.equal(back.freshSession,false);
+  await f.plane.agentSettings.change(f.task.id,{previewId:back.previewId});
+  const start=f.calls.find(c=>c[0]==='start');assert.deepEqual(start[4].slice(0,2),['--resume',session]);assert.equal(f.task.nativeSetup.claudeEngine,undefined);assert.equal(f.plane.structured.list().length,0);
+  await f.plane.structured.close();
+ }finally{await f.cleanup();}
+});
