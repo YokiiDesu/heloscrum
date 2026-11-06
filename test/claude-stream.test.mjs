@@ -61,7 +61,9 @@ async function fixture(options){
   const p={root,data:{tasks:[task]},save:async()=>{},tools:{claude:'/mock/claude'},transcripts:{cache:new Map()},images:{validateModel:()=>{},readFor:async()=>({mimeType:'image/png',base64:Buffer.from('png').toString('base64')})},
     collaboration:{connections:new Map(),launchConfig:async(t,{resumeSessionId}={})=>{launches.push({task:t,resumeSessionId});return [...(resumeSessionId?['--resume',resumeSessionId]:['--session-id',sessionId]),'--model',t.model||'default','--effort',t.effort||'high','--mcp-config','{"mcpServers":{"heloscrum":{"command":"node","args":["bridge.mjs"]}}}','--settings','{"hooks":{"SessionStart":[]}}'];}}};
   p.structured=new StructuredSessions(p,{spawnProcess:server.spawnProcess});
-  const settle=()=>new Promise(r=>setTimeout(r,25));
+  // Records arrive over the fake stdout, then run through the session's ordered
+  // queue and persist to disk. Wait for that queue rather than a fixed delay.
+  const settle=async()=>{for(let i=0;i<5;i++){await new Promise(r=>setTimeout(r,20));for(const s of p.structured.sessions.values())await p.structured.drain(s);}};
   return {root,task,p,server,launches,settle,close:async()=>{await p.structured.close();await rm(root,{recursive:true,force:true});}};
 }
 const until=async(check,message)=>{for(let i=0;i<200;i++){if(check())return;await new Promise(r=>setTimeout(r,5));}assert.fail(message);};
