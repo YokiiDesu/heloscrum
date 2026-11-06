@@ -8,7 +8,7 @@ export function workspacePreferences(saved={},narrow=false){
   return {tab:navigationTabs.includes(saved.tab)?saved.tab:'agents',layout:agentLayouts.includes(saved.layout)?saved.layout:narrow?'focus':'grid',theme:chatThemes.includes(saved.theme)?saved.theme:'bubble',selected:saved.selected||null,compare:saved.compare||null};
 }
 export function toolPresentation(event){
-  const rawName=event.name||'Tool call',call=rawName.split('(',1)[0].trim().split(/__|\/|\s/).filter(Boolean).at(-1),workUpdate=call==='work_update_task';
+  const rawName=event.name||'Tool call',call=rawName.split('(',1)[0].trim().split(/__|\/|\s/).filter(Boolean).at(-1),workUpdate=call==='work_update_task',notebookWrite=call==='notebook_write';
   let name=rawName,input=event.input||'';
   const status=event.failed||event.exitCode!=null&&event.exitCode!==0||/fail|error/i.test(event.status||'')?'failed':/complete|success/i.test(event.status||'')||event.exitCode===0?'completed':/running|in.?progress/i.test(event.status||'')?'running':/cancel|interrupt|abort/i.test(event.status||'')?'cancelled':/block|approval|review/i.test(event.status||'')?'blocked':/queue|pending|wait/i.test(event.status||'')?'pending':'recorded';
   if(workUpdate){
@@ -19,7 +19,11 @@ export function toolPresentation(event){
     if(typeof label==='string'&&status==='completed')name+=' · '+label;
     if(!input&&rawName!==call)input=rawName;
   }
-  const kind=workUpdate?'tool':/edit|write|patch|file changes/i.test(name)?'edit':/read|search|find|glob|list|browse/i.test(name)?'read':/command|terminal|exec|bash|shell/i.test(name)?'command':'tool';
+  if(notebookWrite){
+    name={completed:'Notebook updated',running:'Updating notebook',failed:'Notebook update failed',cancelled:'Notebook update cancelled',blocked:'Notebook update needs approval',pending:'Notebook update queued'}[status]||'Notebook update';
+    if(!input&&rawName!==call)input=rawName;
+  }
+  const kind=workUpdate||notebookWrite?'tool':/edit|write|patch|file changes/i.test(name)?'edit':/read|search|find|glob|list|browse/i.test(name)?'read':/command|terminal|exec|bash|shell/i.test(name)?'command':'tool';
   const duration=Number.isFinite(event.durationMs)?event.durationMs:Number.isFinite(event.duration)?event.duration:null;
   return {name,input,kind,status,duration:duration==null?null:duration<1000?Math.round(duration)+' ms':(duration/1000).toFixed(1)+' s'};
 }
