@@ -464,9 +464,15 @@ Agents can create groups themselves with `create_group`; you do not have to crea
 Messages are persisted immediately in DuckDB. Automatic delivery waits until the recipient's
 session is ready and idle/done. Working or blocked agents are not interrupted;
 they can call `read_inbox`. A receipt means queued/delivered input, not that a
-model has read, answered, or completed the request. Ambiguous delivery failures are
-marked uncertain and are not blindly retried. Callers can provide `requestId` to
-avoid duplicate sends.
+model has read, answered, or completed the request. Each delivery records how it
+was confirmed: `protocol` when a structured engine (Codex app-server, Claude Code
+Stream JSON) accepted the envelope and returned its turn ID, `keystrokes` when it
+was typed into a terminal. Ambiguous delivery failures are marked uncertain and
+are not blindly retried. A message caught mid-delivery by a HeloScrum restart is
+settled from the agent's own history: every envelope carries its message ID, so
+one found in the history is marked delivered, one missing from a readable history
+is queued again, and only an unreadable history leaves it uncertain. Callers can
+provide `requestId` to avoid duplicate sends.
 
 Open **Settings** in the top bar, **Projects → Settings**, or an agent's
 **Manage availability** / toolbox menu to manage project resources. The Agents

@@ -191,6 +191,25 @@ References checked for this integration:
 - [Cursor interactive CLI parameters](https://cursor.com/docs/cli/reference/parameters)
 - [Cursor observer hooks](https://cursor.com/docs/hooks)
 
+## Delivery receipts and restarts
+
+Every message sent to an agent records how its delivery was confirmed. A
+structured engine (Codex app-server or Claude Code Stream JSON) accepts the
+envelope over its protocol and returns the turn it started, so the message is
+marked `protocol` with that turn ID as its receipt. A terminal engine types the
+envelope into the CLI, which is marked `keystrokes`: the paste was submitted, but
+nothing reports that the CLI took it. Chat Threads shows "Delivered · confirmed"
+for the first case and "Delivered" for the second.
+
+If the HeloScrum backend restarts while a message is being delivered, the
+message is not guessed to be lost or sent. Every envelope carries its message ID
+(`[HeloScrum direct message <id> …]`), so the delivery loop reads the agent's
+history and looks for it: found means delivered, confirmed by `history`; missing
+from a readable history means the envelope never arrived, and the message goes
+back to the queue to be sent once; a history that cannot be read leaves the
+message unconfirmed, with the reason, until you check the agent yourself. A
+session that is still starting or switching is retried on later passes.
+
 ## Permission requests
 
 Recognized native prompts show the provider, MCP server, tool, supplied arguments,
