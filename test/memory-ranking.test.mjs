@@ -35,15 +35,15 @@ test('invalid model answers, timeouts and disabled connections fall back to loca
     assert.equal(relevanceAnswers({answers:{relevant_0:{type:'score',score:.5}}},1),null);
   }finally{await rm(root,{recursive:true,force:true});}
 });
-test('authorization is applied before reranking, with bounded requests and a per-search local override',async()=>{
+test('legacy Jev memory setting no longer triggers paid reranking through memory_search',async()=>{
   const root=await mkdtemp(path.join(os.tmpdir(),'hs-ranking-private-'));try{
     const {task,plane,calls}=fixture(root),peer=randomUUID();
     plane.data.agentNotebooks[task.id]={project:task.project,revision:1,entries:[{id:randomUUID(),category:'decision',text:'The reservation is returned when a print is cancelled.',status:'active',confidence:'reported',sources:[]}]};
     plane.data.agentNotebooks[peer]={project:task.project,revision:1,entries:[{text:'PRIVATE PEER SECRET'}]};plane.collaboration.data.memory.push({project:'/other',key:'secret',text:'FOREIGN PROJECT SECRET'});
-    const memory=new WorkingMemory(plane),result=await memory.search(task,{query:'How do we give the material back?',scope:'notebook'});
+    const memory=new WorkingMemory(plane),result=await memory.search(task,{query:'reservation',scope:'notebook'});
     assert.equal(result.matches.length,1);assert(!JSON.stringify(calls).includes('SECRET'));
-    await memory.search(task,{query:'reservation',ranking:'local'});assert.equal(calls.length,1);
-    plane.data.contextSettings.memoryRankingEnabled=false;await memory.search(task,{query:'reservation'});assert.equal(calls.length,1);
+    await memory.search(task,{query:'reservation',ranking:'local'});assert.equal(calls.length,0);
+    plane.data.contextSettings.memoryRankingEnabled=false;await memory.search(task,{query:'reservation'});assert.equal(calls.length,0);
     const request=memoryRankingRequest('x'.repeat(200),Array.from({length:12},()=>candidate('x'.repeat(950))));assert(JSON.stringify(request).length<24000);
   }finally{await rm(root,{recursive:true,force:true});}
 });
