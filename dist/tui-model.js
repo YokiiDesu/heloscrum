@@ -122,6 +122,7 @@ export function transcriptRows(events,width,expanded=new Set(),{task}={}){
       add([span(name),...(preview?[span(' '+preview,'blue')]:[]),span('  '+(open?'▾':'▸'),'muted'),...(failed?[span(' failed','error')]:[])],'tool',event.id,{prefix:'● ',continuation:connects||open?'│ ':'',prefixTone:failed?'error':complete?'green':'text',toolHeader:true,status});
       if(open){
         const rail={prefix:'│ ',continuation:'│ ',prefixTone:'rail'};
+        if(tool.titleDetails){add([span('FULL CALL','muted')],'tool-detail',event.id,rail);add([span(tool.titleDetails,'blue')],'tool-detail',event.id,rail);}
         add([span('INPUT','muted')],'tool-detail',event.id,rail);add([span(typeof tool.input==='string'?tool.input:JSON.stringify(tool.input??{}),'blue')],'tool-detail',event.id,rail);
         add([span('OUTPUT · '+status,'muted')],'tool-detail',event.id,rail);
         const output=plainText(event.output|| (complete?'No output recorded.':'Waiting for output…'));

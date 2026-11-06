@@ -11,6 +11,30 @@ test('work updates keep notes and IDs in details instead of the collapsed title'
   assert.equal(toolPresentation({name:'Read README',input:'README.md'}).name,'Read README');
 });
 import {codexItems} from '../lib/transcripts.mjs';
+import {transcriptRows} from '../dist/tui-model.js';
+
+test('large legacy commands stay compact without losing the script or misclassifying its contents',()=>{
+  const name="cat << 'EOF' > /tmp/preset.rs\n"+'println!("write read edit patch shell");\n'.repeat(100)+'EOF\nrustc /tmp/preset.rs';
+  const event={id:'script',type:'tool',name,input:'',output:'finished',status:'completed'},saved=structuredClone(event),tool=toolPresentation(event);
+  assert.equal(tool.kind,'command');assert.equal(tool.name,"cat << 'EOF' > /tmp/preset.rs …");assert.equal(tool.input,name);assert.deepEqual(event,saved);
+  const collapsed=transcriptRows([event],100,new Set());assert(collapsed.length<5);assert(!collapsed.some(row=>row.text.includes('println!')));
+  const expanded=transcriptRows([event],100,new Set([event.id]));assert(expanded.some(row=>row.text.includes('println!')));assert(expanded.some(row=>row.text.includes('finished')));
+  assert.equal(toolPresentation({name:'python3 -c \'\n'+name}).kind,'command');
+});
+
+test('all tool titles are bounded, with provider kinds and distinct input preserved',()=>{
+  const name='mcp__example__record_note(text: '+'read write edit '.repeat(200)+')',input=JSON.stringify({id:'note-1'});
+  const event={id:'note',type:'tool',name,input,toolKind:'other'},tool=toolPresentation(event);
+  assert.equal(tool.name,'record_note');assert.equal(tool.kind,'tool');assert.equal(tool.input,input);assert.equal(tool.titleDetails,name);
+  const expanded=transcriptRows([event],100,new Set([event.id]));assert(expanded.some(row=>row.text.includes('FULL CALL')));assert(expanded.some(row=>row.text.includes('note-1')));
+  for(const name of ['Unrecognized operation '+ 'x'.repeat(500),'x'.repeat(500)+'(value: 1)', 'Long description\n'+ 'read write '.repeat(500)]){
+    const result=toolPresentation({name});assert(result.name.length<=110);assert(!result.name.includes('\n'));assert.equal(result.input,name);assert.equal(result.kind,'tool');
+  }
+  assert.equal(toolPresentation({name:'Some path contains write_file',toolKind:'execute'}).kind,'command');
+  assert.equal(toolPresentation({name:'Write a notebook entry',toolKind:'other'}).kind,'tool');
+  assert.equal(toolPresentation({name:'Read README.md'}).kind,'read');
+  assert.equal(toolPresentation({name:'mcp__server__write_file'}).kind,'edit');
+});
 
 test('workspace defaults fit laptops while preserving explicit layout and chat choices',()=>{
   assert.equal(workspacePreferences({},true).layout,'focus');assert.equal(workspacePreferences().layout,'grid');
