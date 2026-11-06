@@ -157,7 +157,7 @@ export class PackBoard {
   }
   toolBodyHTML(event,tool,{block=false}={}){
     const output=event.edits?.length?editDiffHTML(event.edits):tool.kind==='edit'?diffHTML(event.output,{diff:true}):toolOutputHTML(event,{markdown});
-    return `${tool.input?`<div class="tool-section"><span>INPUT</span><pre>${esc(tool.input)}</pre></div>`:''}${event.output?`<div class="tool-section"><span>OUTPUT${block&&event.exitCode!=null?' · EXIT '+event.exitCode:''}</span>${output}</div>`:block?'<p class="tool-empty">No output reported yet.</p>':''}`;
+    return `${tool.titleDetails?`<div class="tool-section"><span>FULL CALL</span><pre>${esc(tool.titleDetails)}</pre></div>`:''}${tool.input?`<div class="tool-section"><span>INPUT</span><pre>${esc(tool.input)}</pre></div>`:''}${event.output?`<div class="tool-section"><span>OUTPUT${block&&event.exitCode!=null?' · EXIT '+event.exitCode:''}</span>${output}</div>`:block?'<p class="tool-empty">No output reported yet.</p>':''}`;
   }
   hydrateTool(slot,detail){
     if(!detail.open||!detail.hasAttribute('data-lazy-tool'))return;

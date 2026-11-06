@@ -55,6 +55,12 @@ test('Gemini mode updates are status events and reasoning sections do not run to
   const thought=events.update({sessionUpdate:'agent_thought_chunk',content:{type:'text',text:'**Next section**\nAnother summary.'}});
   assert.match(thought.text,/summary\.\n\n\*\*Next section/);
 });
+test('Gemini keeps the provider tool kind across partial updates without rewriting the command',()=>{
+  const reducer=new GeminiEvents(),title='cat << EOF\nwrite edit read\nEOF';
+  const started=reducer.update({sessionUpdate:'tool_call',toolCallId:'script',title,kind:'execute',rawInput:{command:title}});
+  const completed=reducer.update({sessionUpdate:'tool_call_update',toolCallId:'script',status:'completed',rawOutput:'done'});
+  assert.equal(started.toolKind,'execute');assert.equal(completed.toolKind,'execute');assert.equal(completed.name,title);assert.equal(JSON.parse(completed.input).command,title);assert.equal(completed.output,'done');
+});
 async function fixture(t,mock=mockGemini()){
   const root=await mkdtemp(path.join(os.tmpdir(),'heloscrum-gemini-')),repo=path.join(root,'repo');await mkdir(repo);
   const task={id:randomUUID(),kind:'gemini',path:repo,project:repo,model:'chosen-model',name:'gemini-test',role:'Tester',prompt:'Check the fixture'};
