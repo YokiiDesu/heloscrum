@@ -199,7 +199,8 @@ test('an unacknowledged message is reported as unconfirmed and the session retur
 test('a Claude Code exit takes the session offline without losing its saved events; exit() ends the process on purpose',async()=>{
   const f=await fixture();try{
     const s=await f.p.structured.start(f.task);await f.p.structured.prompt(f.task.pane,'Initial task');await until(()=>s.status==='done','turn completes');
-    f.server.child.exitCode=1;f.server.child.emit('close',1);await f.settle();
+    // The exit removes the session from the registry, so wait on it directly.
+    f.server.child.exitCode=1;f.server.child.emit('close',1);await f.settle();await f.p.structured.drain(s);
     assert.equal(f.p.structured.list().length,0);assert.equal(s.status,'idle');
     const saved=JSON.parse(await readFile(path.join(f.root,'.heloscrum/agents',f.task.id,'structured',f.server.sessionId+'.json'),'utf8'));
     assert.match(saved.events.at(-1).text,/Claude Code exited with code 1/);assert(saved.events.some(e=>e.text==='Hello there'));
