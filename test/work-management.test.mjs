@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {mkdtemp,mkdir,writeFile,readFile,rm,symlink,stat} from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import {WorkManagement,MAX_WORK_FILE} from '../lib/work-management.mjs';
+import {WorkManagement,MAX_WORK_FILE,MAX_TASK_NOTE,WORK_TOOLS} from '../lib/work-management.mjs';
 import {Collaboration} from '../lib/collaboration.mjs';
 import {HistoryStore} from '../lib/history-store.mjs';
 import {workRoute,workUpload} from '../lib/work-routes.mjs';
@@ -58,6 +58,57 @@ test('task claims, dependencies and agent boundaries are enforced, including con
     p=await f.work.change(f.tasks[1],{planId:p.id,itemId:second,expectedRevision:p.revision,status:'needs_review',note:'Ready for acceptance'},'update');
     assert.equal(f.work.list(f.human)[0].review,1);assert.equal(p.audit.at(-1).actorId,f.tasks[1].id);
     f.tasks[1].archivedAt=new Date().toISOString();assert.throws(()=>f.work.detail(f.tasks[1],p.id),/not available/);
+  }finally{await f.close();}
+});
+
+test('oversized task notes explain recovery and reject the entire change without changing saved state',async()=>{
+  const f=await fixture();try{
+    for(const changePolicy of ['autonomous','review']){
+      let p=await f.start(await f.draft({changePolicy,items:[{title:'Implement API',ownerId:f.tasks[0].id,note:'Previous evidence'}]}));
+      const itemId=p.items[0].id,before=structuredClone(f.work.available(f.tasks[0],p.id)),saved=await readFile(p.files.json,'utf8');
+      const tooLong='E'.repeat(MAX_TASK_NOTE+1),input={planId:p.id,itemId,expectedRevision:p.revision,note:tooLong,status:'needs_review'};
+      const recovery=e=>{assert.equal(e.status,400);assert.match(e.message,/16001 characters; maximum is 16000/);assert.match(e.message,/not saved/);assert.match(e.message,/memory_write/);assert.match(e.message,/replaces.*does not append/);assert.match(e.message,/expectedRevision from work_brief/);assert(!e.message.includes(tooLong));return true;};
+      await assert.rejects(f.plane.collaboration.call(f.tasks[0],'work_update_task',input),recovery);
+      await assert.rejects(f.work.change(f.tasks[0],{...input,title:'Proposed new scope'},'update'),recovery);
+      await assert.rejects(f.work.change(f.tasks[0],{...input,requestId:'oversized-create',title:'New task'},'create'),recovery);
+      assert.deepEqual(f.work.available(f.tasks[0],p.id),before);assert.equal(await readFile(p.files.json,'utf8'),saved);
+      const schema=WORK_TOOLS.find(t=>t.name==='work_update_task').inputSchema.properties.note;
+      assert.equal(schema.maxLength,MAX_TASK_NOTE);assert.match(schema.description,/memory_write/);assert.match(schema.description,/replaces/);
+      const note='E'.repeat(MAX_TASK_NOTE),brief=await f.work.call(f.tasks[0],'work_brief',{planId:p.id});
+      await f.plane.collaboration.call(f.tasks[0],'work_update_task',{...input,expectedRevision:brief.revision,note});
+      p=f.work.detail(f.tasks[0],p.id);assert.equal(p.items[0].note,note);assert.equal(p.items[0].status,'needs_review');assert.equal(p.revision,before.revision+1);
+      assert.equal(JSON.parse(await readFile(p.files.json,'utf8')).items[0].note,note);
+    }
+  }finally{await f.close();}
+});
+
+test('task notes above the former limit remain fully retrievable without inflating receipts and brief previews',async()=>{
+  const f=await fixture();try{
+    const p=await f.start(await f.draft({items:[{title:'Implement API',ownerId:f.tasks[0].id}]})),c=f.plane.collaboration;
+    const report='Observed result and limitations.\n'.repeat(450).trim();
+    assert(report.length>4000&&report.length<MAX_TASK_NOTE);
+    const brief=await c.call(f.tasks[0],'work_brief',{planId:p.id});
+    const receipt=await c.call(f.tasks[0],'work_update_task',{planId:p.id,itemId:brief.items[0].id,expectedRevision:brief.revision,status:'needs_review',note:report});
+    assert(!JSON.stringify(receipt).includes(report));assert.equal(receipt.item.status,'needs_review');
+    const detail=await c.call(f.tasks[1],'work_brief',{planId:p.id,itemId:brief.items[0].id}),note=detail.items[0].note;
+    assert.equal(note.preview.length,500);assert.equal(note.totalCharacters,report.length);
+    let recovered=note.preview,offset=note.retrieve.input.offset;
+    do{const page=await c.call(f.tasks[1],note.retrieve.tool,{...note.retrieve.input,offset});recovered+=page.text;offset=page.nextOffset;}while(offset!==null);
+    assert.equal(recovered,report);
+  }finally{await f.close();}
+});
+
+test('unknown task IDs direct agents back to the canonical brief without mutating the plan',async()=>{
+  const f=await fixture();try{
+    const p=await f.start(await f.draft({items:[{title:'Implement API',ownerId:f.tasks[0].id}]})),c=f.plane.collaboration;
+    const input={planId:p.id,itemId:crypto.randomUUID(),expectedRevision:p.revision},before=structuredClone(f.work.available(f.tasks[0],p.id));
+    for(const [name,extra] of [['work_update_task',{status:'in_progress'}],['work_brief',{}],['work_read_brief',{section:'description'}]]){
+      await assert.rejects(c.call(f.tasks[0],name,{...input,...extra}),e=>{assert.equal(e.status,404);assert.match(e.message,/work_brief.*omit itemId/);assert.match(e.message,/items\[\]\.id/);return true;});
+    }
+    assert.deepEqual(f.work.available(f.tasks[0],p.id),before);
+    const brief=await c.call(f.tasks[0],'work_brief',{planId:p.id});
+    const receipt=await c.call(f.tasks[0],'work_update_task',{planId:p.id,itemId:brief.items[0].id,expectedRevision:brief.revision,status:'in_progress'});
+    assert.equal(receipt.item.id,p.items[0].id);assert.equal(receipt.item.status,'in_progress');
   }finally{await f.close();}
 });
 

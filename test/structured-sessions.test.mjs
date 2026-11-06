@@ -245,7 +245,7 @@ test('control plane: an app-server agent launches without Herdr, delivers queued
     // Queued while the first turn runs; delivered only after Codex reports the turn complete.
     const queued=await plane.collaboration.queuePrompt(task,'Second message');await plane.collaboration.deliverReady();assert.equal(queued.delivery,'queued');
     server.complete();await until(()=>plane.structured.list()[0]?.agent_status==='done','turn should complete');await plane.collaboration.deliverReady();
-    assert.equal(queued.delivery,'delivered');const second=server.requests.filter(r=>r.method==='turn/start')[1];assert.match(second.params.input[0].text,/Second message/);
+    assert.equal(queued.delivery,'delivered');assert.equal(queued.deliveryConfirmation,'protocol');assert.equal(queued.deliveryReceipt,server.turnId);const second=server.requests.filter(r=>r.method==='turn/start')[1];assert.match(second.params.input[0].text,/Second message/);
     // Approval routed through the plane's request API without any screen parsing.
     server.request(950,'item/commandExecution/requestApproval',{threadId:server.threadId,turnId:server.turnId,itemId:'c',startedAtMs:1,command:'npm test',cwd:task.path});
     for(let i=0;i<100&&plane.structured.list()[0].agent_status!=='blocked';i++)await new Promise(r=>setTimeout(r,5));
