@@ -1,7 +1,7 @@
 /* Structured group conversations: proposals, debates and decision records. */
 .thread-bubble.has-structure{width:calc(100% - 18px)}
-.structure-card{display:grid;gap:8px;margin:2px 0 4px;padding:16px;border:1px solid var(--border);border-radius:10px;background:var(--panel)}
-.structure-card>header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.structure-card{display:grid;gap:8px;min-width:0;margin:2px 0 4px;padding:16px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text)}
+.structure-card>header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0}
 .structure-card h4{margin:0;font-size:14px;line-height:1.35}
 .structure-card h5{margin:6px 0 0;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
 .structure-card ul{margin:0;padding-left:18px}
@@ -16,7 +16,7 @@
 .structure-meta,.proposal-others,.structure-outcome{margin:0;font-size:11.5px;color:var(--muted)}
 .structure-outcome{color:var(--text)}
 .proposal-options{display:grid;gap:8px;margin:0;padding:0;list-style:none}
-.proposal-option{display:grid;gap:4px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--surface)}
+.proposal-option{display:grid;gap:4px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg)}
 .proposal-option.winner{border-color:var(--green)}
 .option-head{display:flex;align-items:baseline;gap:8px;font-size:12.5px}
 .option-head b{font-family:var(--mono)}
@@ -29,9 +29,9 @@
 .ballot-list,.mind-changes{display:grid;gap:6px;margin-top:6px;font-size:12px}
 .stance{font:10.5px var(--mono);padding:0 6px;border-radius:10px;border:1px solid var(--border);margin-left:4px}
 .stance-support{color:var(--green)}.stance-object{color:var(--red)}.stance-abstain{color:var(--muted)}
-.debate-positions{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
-.debate-position{display:grid;gap:4px;align-content:start;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--surface);font-size:12px}
-.debate-position>header{display:flex;align-items:center;gap:6px}
+.debate-positions{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:8px}
+.debate-position{display:grid;gap:4px;align-content:start;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);font-size:12px}
+.debate-position>header{display:flex;align-items:center;gap:6px;margin:0}
 .debate-position>header b{font-family:var(--mono)}
 .position-holders{margin-left:auto;font:10.5px var(--mono);padding:0 6px;border-radius:10px;background:var(--border)}
 .position-claim{margin:0;font-weight:600}
@@ -53,7 +53,7 @@
 span.structure-influence{color:var(--muted);text-decoration:none;cursor:default}
 .structure-tag{margin-bottom:6px;font:10.5px/1.5 var(--mono);color:var(--orange);overflow-wrap:anywhere}
 .structure-tag-name{color:var(--muted)}
-.structure-summary{display:grid;gap:6px;margin:0 0 12px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--panel)}
+.structure-summary{display:grid;gap:6px;margin:0 0 12px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text)}
 .structure-summary-row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted)}
 .structure-summary-row button{font-size:11.5px;padding:3px 8px}
 .structure-chips{display:flex;flex-wrap:wrap;gap:6px}
