@@ -111,6 +111,34 @@ a reviewed handoff into a new chat, preserving the previous history. Queue still
 waits for native readiness; Steer still uses HeloScrum's next-inbox-check behavior.
 Direct terminal input uses the provider's own keyboard semantics.
 
+## Codex engine
+
+Codex agents run in one of two engines, chosen per agent under **Codex engine**
+in Agents or Task details. **Terminal** is the default: Herdr owns the Codex TUI
+in a PTY, messages are pasted into the idle terminal, and history is read from
+Codex's own session files. **App server** connects HeloScrum to
+`codex app-server` over stdio instead. Each task becomes one Codex thread,
+messages are delivered with `turn/start` and acknowledged by the protocol, idle
+state comes from `turn/completed`, and the transcript streams from the server's
+item notifications. Command, file-change, and permission approvals arrive as
+protocol requests and appear in the agent card like any other permission request;
+Toolbox approval settings apply to them unchanged. The same Codex profile, model,
+reasoning effort, and HeloScrum toolbox are passed through the thread
+configuration, so the agent's MCP tools and `AGENTS.md` behave as before.
+
+Switching an idle Codex agent between the two engines resumes the same Codex
+thread with `thread/resume`; no handoff or new session is created, and the
+history stays attached. Switching provider or profile still follows the reviewed
+handoff described above.
+
+App server limits in this release: there is no native terminal to attach, since
+no PTY exists. Free-text questions Codex asks through `requestUserInput` are
+declined rather than answered, because HeloScrum has no form for them yet; Codex
+reports this in the transcript and continues or ends the turn. Structured sessions
+go offline when the HeloScrum backend restarts, and come back when the task is
+resumed from Projects; queued messages wait until then. Use the native terminal
+engine when you need Codex's own TUI features.
+
 The setup report distinguishes detected configuration from runtime verification.
 It does not prove login, quota, MCP connectivity, plugin loading, or access to
 desktop-only features. Use the provider's native status/tool/plugin commands to

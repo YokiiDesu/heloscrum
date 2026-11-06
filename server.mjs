@@ -217,7 +217,7 @@ async function stopServing(){
  while(!stopped&&Date.now()<deadline){server.closeIdleConnections();await new Promise(resolve=>setTimeout(resolve,25));}
  server.closeAllConnections();await closed;
 }
-async function close(){if(closing)return;closing=true;eventRelays?.close();clearInterval(delivery);clearInterval(historyTimer);await plane.scheduler.stop();await apiV1.close();terminals.close();await stopServing();await plane.managed.close();await plane.mcp.close();await deliveryPending;await plane.historyCollector.pending?.catch(()=>{});await plane.saveQueue.catch(()=>{});plane.transcripts.close();await plane.history.close();
+async function close(){if(closing)return;closing=true;eventRelays?.close();clearInterval(delivery);clearInterval(historyTimer);await plane.scheduler.stop();await apiV1.close();terminals.close();await stopServing();await plane.managed.close();await plane.structured.close();await plane.mcp.close();await deliveryPending;await plane.historyCollector.pending?.catch(()=>{});await plane.saveQueue.catch(()=>{});plane.transcripts.close();await plane.history.close();
  await desktopEngineStart?.catch(()=>{});
  if(desktopOwnsEngine)try{if(!(await plane.herdr.list()).length)await plane.herdr.command(['server','stop']);else console.log('Native agent sessions remain in Herdr; its engine was left running.');}catch(error){console.error('Herdr cleanup:',error.message);}
 }
