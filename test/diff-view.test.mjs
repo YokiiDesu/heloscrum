@@ -13,6 +13,15 @@ test('before/after colors distinguish separate changed blocks and keep unchanged
   assert.deepEqual(editLineKinds([],['added']).after,['add']);assert.deepEqual(editLineKinds(['removed'],[]).before,['remove']);
 });
 
+test('large edits omit unchanged DOM rows while preserving changed lines and source numbers',()=>{
+  const lines=Array.from({length:10000},(_,i)=>`actual source line ${i+1}`),after=[...lines];after[5000]='changed source';
+  const edits=[{path:'large.rs',oldText:lines.join('\n'),newText:after.join('\n')}],original=structuredClone(edits);
+  const html=editDiffHTML(edits);
+  assert.equal((html.match(/class="edit-line /g)||[]).length,14,'only the changed line and three neighboring lines per side are mounted');
+  assert.doesNotMatch(html,/actual source line 100\b/);assert.match(html,/actual source line 5001/);assert.match(html,/changed source/);assert.match(html,/>5001<\/span>/);
+  assert.deepEqual(edits,original,'presentation never truncates the provider payload');
+});
+
 test('Gemini mode notifications render as compact status for new and saved history',()=>{
   const raw={id:'mode',type:'message',role:'assistant',text:'[MODE_UPDATE] autoEdit'};
   assert.equal(providerStatus(raw,'gemini').label,'Auto edit');assert.equal(providerStatus(raw,'claude'),null);
