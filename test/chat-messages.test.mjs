@@ -1,12 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {messageEnvelope,messageEvents,directThreadId,chatThreads} from '../lib/chat-messages.mjs';
+import {messageEnvelope,messageEvents,hookSteeringEvents,directThreadId,chatThreads} from '../lib/chat-messages.mjs';
 import {Collaboration} from '../lib/collaboration.mjs';
 
 const qa={id:'11111111-1111-4111-a111-111111111111',role:'QA',prompt:'Verify the changes',project:'pack',phase:'launched',pane:'qa'};
 const reviewer={...qa,id:'22222222-2222-4222-a222-222222222222',role:'Reviewer',pane:'review'};
 const builder={...qa,id:'33333333-3333-4333-a333-333333333333',role:'Builder',pane:'build'};
 function setup(){const prompts=[],plane={root:'/tmp',data:{tasks:[qa,reviewer,builder]},save:async()=>{},herdr:{list:async()=>[qa,reviewer,builder].map(t=>({pane_id:t.pane,interactive_ready:true,agent_status:'idle'})),prompt:async(...args)=>prompts.push(args)}};return {registry:new Collaboration(plane),prompts,plane};}
+
+test('confirmed hook steering appears once in the receiving session between native events',()=>{
+  const task={...qa,kind:'gemini',providerSessionId:'current'},at=n=>`2026-11-06T04:00:0${n}Z`;
+  const receipt={id:'44444444-4444-4444-a444-444444444444',from:'human',fromRole:'You',to:task.id,toRole:'QA',project:task.project,toSessionKey:`${task.id}:gemini:current`,sessionPrompt:true,promptMode:'steer',deliveryChannel:'native-hook',delivery:'delivered',at:at(1),deliveredAt:at(2),text:'Change direction'};
+  const events=[{id:'tool',type:'tool',at:at(0)},{id:'answer',type:'message',role:'assistant',text:'Corrected answer',at:at(3)}],original=structuredClone(events);
+  const result=hookSteeringEvents(events,task,[receipt]);assert.deepEqual(events,original);assert.equal(result.length,3);assert.equal(result[1].text,receipt.text);assert.match(result[1].label,/Steer/);assert.equal(result[1].at,at(2));assert.equal(result[1].steering.source,'heloscrum-hook-delivery');
+  assert.deepEqual(hookSteeringEvents(result,task,[receipt]),result);
+  const native=[{id:'native',type:'message',role:'user',text:messageEnvelope(receipt)}];assert.deepEqual(hookSteeringEvents(native,task,[receipt]),native);
+  for(const change of [{project:'other'},{to:'other'},{toSessionKey:`${task.id}:gemini:previous`},{delivery:'uncertain'},{delivery:'queued'},{delivery:'cancelled'},{promptMode:'queue'},{deliveryChannel:'prompt'}])assert.deepEqual(hookSteeringEvents(events,task,[{...receipt,...change}]),events);
+});
 
 test('core tools support Kiro schemas while messages still require a recipient',async()=>{
   const {registry}=setup();

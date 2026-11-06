@@ -22,3 +22,10 @@ test('endpoint providers do not require Herdr and do not claim connection succes
   assert.equal(result.checks.find(c=>c.name==='ollama').status,'warn');
   await assert.rejects(diagnose({provider:'unknown'}),/Unknown provider/);
 });
+
+test('Gemini detection requires its CLI but not Herdr',async()=>{
+  const result=await diagnose({root:os.tmpdir(),provider:'gemini',env:{PATH:''}});
+  assert.equal(result.checks.find(c=>c.name==='herdr').status,'warn');
+  assert.equal(result.checks.find(c=>c.name==='gemini').status,'fail');
+  assert.equal(result.checks.find(c=>c.name==='Provider authentication').status,'warn');
+});

@@ -3,8 +3,10 @@ import {thinkingPresentation} from './workspace-model.js';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const icon='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6m-5 3h4M8 15a7 7 0 1 1 8 0l-1 3H9Z"/></svg>';
 
-export function thinkingBlock(event,{markdown,scope=''}){
+export function thinkingBlock(event,{markdown,scope='',provider}={}){
   const meta=thinkingPresentation(event),{available,kind}=meta;
   const head=`<span class="tool-glyph">${icon}</span><strong>Thinking</strong>${available?`<span class="thinking-toggle"><span class="thinking-show">Show ${kind}</span><span class="thinking-hide">Hide ${kind}</span></span>`:`<span class="thinking-unavailable" title="${esc(meta.explanation)}">${esc(meta.unavailable)}</span>`}<span class="tool-status">${esc(meta.status)}</span>${meta.duration?`<time>${esc(meta.duration)}</time>`:''}`;
-  return available?`<details class="chat-tool thinking-block tool-${meta.status}" data-event="${esc(event.id)}"><summary>${head}</summary><div class="thinking-content">${messageContent(markdown(event.text),`${scope}:thinking:${event.id}`)}</div></details>`:`<div class="chat-tool thinking-block tool-${meta.status}" data-event="${esc(event.id)}"><div class="thinking-heading">${head}</div></div>`;
+  const text=provider==='gemini'?event.text?.replace(/([^\n])(\*\*[^*\n]{1,120}\*\*\r?\n)/g,'$1\n\n$2').replace(/(^|\n\n)(\*\*[^*\n]{1,120}\*\*)\r?\n(?!\n)/g,'$1$2\n\n'):event.text;
+  const body=available?markdown(text).replace(/<p>(<strong>[^<]+<\/strong>)<\/p>/g,'<p class="thinking-section-title">$1</p>'):'';
+  return available?`<details class="chat-tool thinking-block tool-${meta.status}" data-event="${esc(event.id)}"><summary>${head}</summary><div class="thinking-content">${messageContent(body,`${scope}:thinking:${event.id}`)}</div></details>`:`<div class="chat-tool thinking-block tool-${meta.status}" data-event="${esc(event.id)}"><div class="thinking-heading">${head}</div></div>`;
 }

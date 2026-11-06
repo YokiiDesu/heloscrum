@@ -1,6 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {workspacePreferences,statusLabel,modelActivityLabel,toolPresentation,turnActivity} from '../dist/workspace-model.js';
+test('work updates keep notes and IDs in details instead of the collapsed title',()=>{
+  const name='work_update_task(planId: plan-id, itemId: task-id, status: in_progress, note: Applied solver edits and checked files. '+ 'More detail. '.repeat(60)+'expectedRevision: 6)';
+  const event={name,status:'completed'},model=toolPresentation(event);
+  assert.equal(model.name,'Task updated · In progress');assert.equal(model.kind,'tool');assert.equal(model.input,name);assert.equal(event.name,name);
+  assert.equal(toolPresentation({...event,status:'failed'}).name,'Task update failed');assert.equal(toolPresentation({...event,status:'running'}).name,'Updating task');
+  const input=JSON.stringify({status:'needs_review',note:'Detailed result'}),structured=toolPresentation({name:'mcp__heloscrum__work_update_task',input,status:'completed'});
+  assert.equal(structured.name,'Task updated · Needs review');assert.equal(structured.input,input);
+  assert.equal(toolPresentation({name:'Read README',input:'README.md'}).name,'Read README');
+});
 import {codexItems} from '../lib/transcripts.mjs';
 
 test('workspace defaults fit laptops while preserving explicit layout and chat choices',()=>{

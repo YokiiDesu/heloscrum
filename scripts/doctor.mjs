@@ -4,7 +4,7 @@ import {constants} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
-import {providerIds, providerBinary, nativeProviderIds} from '../lib/providers.mjs';
+import {providerIds, providerBinary, nativeProviderIds, cliProviderIds} from '../lib/providers.mjs';
 
 const codeRoot = fileURLToPath(new URL('../', import.meta.url));
 
@@ -56,7 +56,7 @@ export async function diagnose({root = codeRoot, provider, env = process.env} = 
   }
   const native = nativeProviderIds.includes(provider);
   await executable('herdr', native, 'Required for Codex, Claude Code, and Kiro CLI. Install Herdr 0.9.0: https://github.com/herdrdev/herdr/releases/tag/v0.9.0');
-  for (const name of provider ? [provider] : [...nativeProviderIds,'cursor']) {
+  for (const name of provider ? [provider] : cliProviderIds) {
     if (['ollama','llamacpp','lmstudio','bedrock','sagemaker'].includes(name)) {
       add(name, 'warn', 'Configure and Test connection in Project settings → AI & context. This diagnostic does not read credentials or call model endpoints.');
       if (['bedrock','sagemaker'].includes(name)) await executable('aws', true, 'Install AWS CLI v2 and authenticate your selected profile.');

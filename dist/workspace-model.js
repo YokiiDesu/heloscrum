@@ -8,11 +8,20 @@ export function workspacePreferences(saved={},narrow=false){
   return {tab:navigationTabs.includes(saved.tab)?saved.tab:'agents',layout:agentLayouts.includes(saved.layout)?saved.layout:narrow?'focus':'grid',theme:chatThemes.includes(saved.theme)?saved.theme:'bubble',selected:saved.selected||null,compare:saved.compare||null};
 }
 export function toolPresentation(event){
-  const name=event.name||'Tool call';
-  const kind=/edit|write|patch|file changes/i.test(name)?'edit':/read|search|find|glob|list|browse/i.test(name)?'read':/command|terminal|exec|bash|shell/i.test(name)?'command':'tool';
+  const rawName=event.name||'Tool call',call=rawName.split('(',1)[0].trim().split(/__|\/|\s/).filter(Boolean).at(-1),workUpdate=call==='work_update_task';
+  let name=rawName,input=event.input||'';
   const status=event.failed||event.exitCode!=null&&event.exitCode!==0||/fail|error/i.test(event.status||'')?'failed':/complete|success/i.test(event.status||'')||event.exitCode===0?'completed':/running|in.?progress/i.test(event.status||'')?'running':/cancel|interrupt|abort/i.test(event.status||'')?'cancelled':/block|approval|review/i.test(event.status||'')?'blocked':/queue|pending|wait/i.test(event.status||'')?'pending':'recorded';
+  if(workUpdate){
+    let args;try{args=JSON.parse(input);}catch{}
+    const state=args?.status||rawName.match(/(?:\(|,\s*)status:\s*(todo|in_progress|needs_review|done|blocked)(?=\s*[,)]|$)/)?.[1];
+    const label={todo:'To do',in_progress:'In progress',needs_review:'Needs review',done:'Done',blocked:'Blocked'}[state];
+    name=status==='completed'?'Task updated':status==='failed'?'Task update failed':status==='cancelled'?'Task update cancelled':'Updating task';
+    if(typeof label==='string'&&status==='completed')name+=' · '+label;
+    if(!input&&rawName!==call)input=rawName;
+  }
+  const kind=workUpdate?'tool':/edit|write|patch|file changes/i.test(name)?'edit':/read|search|find|glob|list|browse/i.test(name)?'read':/command|terminal|exec|bash|shell/i.test(name)?'command':'tool';
   const duration=Number.isFinite(event.durationMs)?event.durationMs:Number.isFinite(event.duration)?event.duration:null;
-  return {name,kind,status,duration:duration==null?null:duration<1000?Math.round(duration)+' ms':(duration/1000).toFixed(1)+' s'};
+  return {name,input,kind,status,duration:duration==null?null:duration<1000?Math.round(duration)+' ms':(duration/1000).toFixed(1)+' s'};
 }
 export function thinkingPresentation(event){
   const available=typeof event.text==='string'&&!!event.text.trim(),kind=event.textKind==='summary'?'summary':'text';

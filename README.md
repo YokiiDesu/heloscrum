@@ -96,7 +96,7 @@ Docker, Jev, and a summary model are optional. Keep the backend on localhost.
 
 Open http://127.0.0.1:4173. Node.js 22.13+ and Git 2.28+ are required. HeloScrum binds to
 loopback and runs on your machine. Install and authenticate Codex, Claude
-Code, Kiro CLI, or Cursor CLI, or configure a local/AWS model connection under
+Code, Kiro CLI, Cursor CLI, or Gemini CLI, or configure a local/AWS model connection under
 **Project settings → AI & context**. Agent turns use the selected account or model
 server. Multiple Ollama, llama.cpp, LM Studio, Bedrock, and compatible SageMaker
 connections are supported. See [AI connections and context management](docs/AI_CONNECTIONS.md)
@@ -105,6 +105,12 @@ The [local LLM walkthrough](https://yokiidesu.github.io/heloscrum/blog/local-llm
 includes our llama.cpp and Muse Glimmer settings, measured build times, and the
 original playable red-ball example. Saved model connections show **Connected**
 when their catalog is reachable; manage them in **AI & Context**.
+
+Gemini CLI uses its signed-in account through ACP, with streamed Chat/Block
+transcripts, tool approvals, image input, and saved-session resume. It does not
+require Herdr. **Gemini controls** adds Plan-to-board drafts, session modes,
+reported context/token usage, and advertised native commands. File approvals
+include side-by-side before/after previews. See [Gemini setup](docs/GEMINI.md).
 
 The **Refresh** control in the header updates the workspace in place, keeping open
 drafts and selections. HeloScrum also catches up when you return to the tab and
@@ -772,7 +778,9 @@ Effort-only changes use the existing review/apply flow and resume the same provi
 
 Agent-card messages default to **Queue**. HeloScrum saves them before delivery, displays pending messages beside the composer in Chat and TUI, and sends them when the provider is ready. **Edit** cancels an unsent message and restores its text to the composer; sending the edited draft creates a new queued message. A delivery already claimed by the backend cannot be edited. Unknown delivery outcomes remain visible and are never automatically repeated.
 
-**Steer** makes the direction available through HeloScrum's `read_inbox` tool while the agent works. It does not interrupt an active command or guarantee a particular provider's thought boundary. If the agent does not check its inbox, the message waits until it is free. After sending, the composer returns to the default queue mode.
+**Steer** sends direction into the active turn automatically, without an inbox check or interrupting an active command. Codex, Claude, and Kiro receive native input while working; Kiro must be in its native Steer mode (Ctrl+S switches modes). Gemini ACP uses its synchronous before-model hook; Cursor uses tool-completion hooks. HeloScrum-managed model endpoints receive it after the current tool batch, before the next model request. Queue stays separate until the whole turn finishes. If the turn finishes before a safe point, a pending steer starts the next turn. After sending, the composer returns to Queue.
+
+Gemini and Cursor install narrowly scoped workspace hooks alongside existing settings and hooks; global settings, workspace trust and native permissions remain in force. Restart or resume an existing CLI session to load newly installed hooks. Gemini keeps steering in each model request for the active turn; its ACP transcript does not store hook-added user messages. HeloScrum retains them in Conversations and shows confirmed hook deliveries as **Steer · delivered to active turn** in Chat, Block, and saved History, scoped to the receiving session and without duplicating native entries. Disabled native hooks prevent mid-turn injection; pending messages remain visible and deliver when idle. Delivery receipts confirm submission, not that the model followed the direction.
 
 The versioned agent-message API accepts `mode: "queue"` (default) or `"steer"` and an optional `requestId`. Operators can cancel unsent directions with `POST /api/v1/projects/{projectId}/agents/{agentId}/messages/{messageId}/cancel`. Cancellation and delivery are serialized so edits cannot race into a duplicate send.
 

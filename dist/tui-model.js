@@ -1,4 +1,5 @@
 import {diffLines} from './diff-view.js';
+import {providerStatus} from './gemini-controls.js';
 import {toolPresentation,thinkingPresentation} from './workspace-model.js';
 import {agentColor} from './agent-appearance.js';
 // The TUI consumes exactly the same normalized events as the Chat renderer.
@@ -83,7 +84,9 @@ export function transcriptRows(events,width,expanded=new Set(),{task}={}){
   // Connect adjacent calls in the same turn; never suggest a link across user turns.
   const linked=(a,b)=>a&&b?.type==='tool'&&(!a.turnId||!b.turnId||a.turnId===b.turnId);
   for(const [index,event] of (events||[]).entries()){
-    if(event.type==='session'){
+    const status=providerStatus(event,task?.kind);
+    if(status){gap(event.id);add([span(status.text,'muted')],'session',event.id);gap(event.id);
+    }else if(event.type==='session'){
       gap(event.id);add([span('─'.repeat(width),'divider')],'divider',event.id);add([span(event.text,'muted')],'session',event.id);gap(event.id);
     }else if(event.type==='message'&&event.communication){
       const message=event.communication;
@@ -115,11 +118,11 @@ export function transcriptRows(events,width,expanded=new Set(),{task}={}){
       gap(event.id);
     }else if(event.type==='tool'){
       const open=expanded.has(event.id),failed=event.failed||event.status==='failed',complete=['completed','success'].includes(event.status),status=failed?'failed':event.status||'pending',connects=linked(event,events[index+1]);
-      const name=event.name.replace(/^heloscrum\s*\/\s*/,''),preview=toolPreview(event.input);
+      const tool=toolPresentation(event),name=tool.name.replace(/^heloscrum\s*\/\s*/,''),preview=tool.name===event.name?toolPreview(tool.input):'';
       add([span(name),...(preview?[span(' '+preview,'blue')]:[]),span('  '+(open?'▾':'▸'),'muted'),...(failed?[span(' failed','error')]:[])],'tool',event.id,{prefix:'● ',continuation:connects||open?'│ ':'',prefixTone:failed?'error':complete?'green':'text',toolHeader:true,status});
       if(open){
         const rail={prefix:'│ ',continuation:'│ ',prefixTone:'rail'};
-        add([span('INPUT','muted')],'tool-detail',event.id,rail);add([span(typeof event.input==='string'?event.input:JSON.stringify(event.input??{}),'blue')],'tool-detail',event.id,rail);
+        add([span('INPUT','muted')],'tool-detail',event.id,rail);add([span(typeof tool.input==='string'?tool.input:JSON.stringify(tool.input??{}),'blue')],'tool-detail',event.id,rail);
         add([span('OUTPUT · '+status,'muted')],'tool-detail',event.id,rail);
         const output=plainText(event.output|| (complete?'No output recorded.':'Waiting for output…'));
         if(toolPresentation(event).kind==='edit'){

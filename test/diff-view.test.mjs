@@ -1,8 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {diffLines,diffHTML,fileStatus,changedFileHTML} from '../dist/diff-view.js';
+import {diffLines,diffHTML,fileStatus,changedFileHTML,editDiffHTML,editLineKinds} from '../dist/diff-view.js';
 import {transcriptRows,screenFrame,TUI_COLORS} from '../dist/tui-model.js';
 import {parseStatus} from '../lib/adapters.mjs';
+import {providerStatus,providerStatusHTML} from '../dist/gemini-controls.js';
+
+test('before/after colors distinguish separate changed blocks and keep unchanged lines neutral',()=>{
+  assert.deepEqual(editLineKinds(['old','same','old again'],['new','same','new again']),{before:['remove','context','remove'],after:['add','context','add'],region:false});
+  const context=Array.from({length:30},(_,i)=>'unchanged '+i).join('\n');
+  const html=editDiffHTML([{path:'file.rs',oldText:context+'\nold\n',newText:context+'\n<script>new</script>\n'}]);
+  assert.match(html,/Unchanged lines not shown <span>\(27\)<\/span>/);assert.match(html,/edit-line edit-remove/);assert.match(html,/edit-line edit-add/);assert.match(html,/edit-marker/);assert(!html.includes('<script>'));assert.match(html,/&lt;script&gt;new/);
+  assert.deepEqual(editLineKinds([],['added']).after,['add']);assert.deepEqual(editLineKinds(['removed'],[]).before,['remove']);
+});
+
+test('Gemini mode notifications render as compact status for new and saved history',()=>{
+  const raw={id:'mode',type:'message',role:'assistant',text:'[MODE_UPDATE] autoEdit'};
+  assert.equal(providerStatus(raw,'gemini').label,'Auto edit');assert.equal(providerStatus(raw,'claude'),null);
+  assert.equal(providerStatus({...raw,text:'Example: [MODE_UPDATE] autoEdit'},'gemini'),null);
+  assert.equal(providerStatus({...raw,role:'user'},'gemini'),null);
+  const html=providerStatusHTML(raw,'gemini','8:27 PM');assert.match(html,/Mode changed to/);assert.match(html,/Auto edit/);assert.doesNotMatch(html,/MODE_UPDATE|message-author/);
+  const rows=transcriptRows([raw],80,new Set(),{task:{kind:'gemini'}});assert(rows.some(r=>r.text.includes('Mode changed to Auto edit')));assert(!rows.some(r=>r.text.includes('MODE_UPDATE')));
+});
 
 test('shared diff rendering handles complete additions, removals, and unified patches',()=>{
   for(const [marker,kind] of [['+','add'],['-','remove']]){
