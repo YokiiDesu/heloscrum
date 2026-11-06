@@ -289,7 +289,7 @@ test('active steering uses turn/steer through collaboration, keeps queue pending
     f.p.herdr=withManagedAgents(native,{plane:f.p,list:()=>[]},f.p.structured);
     await f.p.collaboration.queuePrompt(f.task,'Wait until done');
     await f.p.collaboration.queuePrompt(f.task,'Use the corrected path',{mode:'steer'});
-    await f.p.collaboration.deliver();await f.settle();
+    await f.p.collaboration.deliver();await s.sequence;
     const request=f.server.requests.find(r=>r.method==='turn/steer');
     assert.equal(request.params.threadId,s.id);assert.equal(request.params.expectedTurnId,f.server.turnId);
     assert.match(request.params.input[0].text,/Use the corrected path/);assert.doesNotMatch(request.params.input[0].text,/Wait until done/);
