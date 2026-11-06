@@ -1,0 +1,23 @@
+const $=id=>document.getElementById(id),names={keyword:'Previous keyword baseline',semantic:'Previous embedding baseline',jev:'Jev',voyage:'Voyage rerank-3'};
+let token='',current=null,shown=null,timer=null;
+async function api(route,body){const r=await fetch('/api/'+route,body?{method:'POST',headers:{'Content-Type':'application/json','X-Trial-Token':token},body:JSON.stringify(body)}:{});const value=await r.json();if(!r.ok)throw Error(value.error||'Request failed');return value;}
+function element(tag,text,className){const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;}
+function showCase(item){
+  $('case-note').textContent=item.exactLookupBypass?'Exact reference: both model calls were skipped.':item.expected.kind==='unanswerable'?'No answer exists in this corpus. These are ranked candidates, not an answer.':`Expected source: ${item.expected.path}. Candidate pool contains the labeled evidence: ${item.candidates.some(c=>c.path===item.expected.path&&c.text.includes(item.expected.anchor))?'yes':'no'}.`;
+  $('results').replaceChildren();for(const arm of ['jev','voyage']){const column=element('div');column.append(element('h3',names[arm]));for(const row of item.results[arm]){const card=element('article',undefined,'result');card.append(element('strong',row.path),element('div',`Characters ${row.offset}–${row.end} · SHA ${row.sha256.slice(0,12)}`,'meta'),element('p',row.text),element('div',`${arm==='jev'?'Noul relevance probability':'Relevance score'}: ${row.score.toFixed(4)}`,'meta'));column.append(card);}$('results').append(column);}
+}
+function render(state){
+  token=state.token;current=state;$('status').textContent=state.progress+(state.error?'\n'+state.error:'');if(state.retryAt>Date.now())$('status').textContent+='\nContinue after '+new Date(state.retryAt).toLocaleTimeString()+'.';
+  $('snapshot').textContent='Corpus '+state.corpusSha256+' · source report '+state.sourceReportSha256;$('run').disabled=state.busy;$('forget').disabled=state.busy||!state.hasKeys;$('resume').hidden=!state.canResume;$('resume').disabled=Date.now()<state.retryAt;$('download').hidden=!state.report;
+  if(state.report){const r=state.report,s=r.summary;$('summary').hidden=false;$('explore').hidden=false;$('ceiling').textContent=`Candidate pool contains labeled evidence for ${s.candidateEvidenceCeiling}/${s.evidenceCases} questions. ${s.answerable} answerable cases and ${s.unanswerable} no-answer diagnostics.`;
+    $('metrics').replaceChildren();for(const arm of ['keyword','semantic','jev','voyage']){const v=s[arm],row=element('tr');for(const text of [names[arm],`${v.documentTop1}/${s.answerable}`,`${v.documentTop3}/${s.answerable}`,`${v.evidenceTop3}/${s.evidenceCases}`,v.exposedBytes.toLocaleString()])row.append(element('td',text));$('metrics').append(row);}
+    $('usage').replaceChildren();for(const provider of ['jev','voyage']){const u=r.usage[provider],times=u.calls.filter(c=>c.status==='complete').map(c=>c.elapsedMs).sort((a,b)=>a-b),percentile=p=>times[Math.max(0,Math.ceil(times.length*p)-1)]??0,models=[...new Set(u.calls.map(c=>c.reportedModel||c.model))],row=element('tr');for(const text of [models.join(', '),String(u.calls.length),u.knownInputTokens.toLocaleString()+(u.unknownUsageCalls?' + unknown':''),u.knownOutputTokens===null?'Not reported':u.knownOutputTokens.toLocaleString(),`${percentile(.5)} / ${percentile(.95)} ms`])row.append(element('td',text));$('usage').append(row);}
+    if(shown!==r.at){shown=r.at;$('cases').replaceChildren();r.cases.forEach((c,i)=>{const option=element('option',c.query+(c.expected.kind==='unanswerable'?' — no answer':''));option.value=i;$('cases').append(option);});showCase(r.cases[0]);}
+  }
+  clearTimeout(timer);if(state.busy||state.retryAt>Date.now())timer=setTimeout(refresh,1000);
+}
+async function refresh(){try{render(await api('state'));}catch(e){$('status').textContent=e.message;}}
+$('connect').addEventListener('submit',async e=>{e.preventDefault();const keys={jevKey:$('jev-key').value,voyageKey:$('voyage-key').value};$('jev-key').value='';$('voyage-key').value='';$('run').disabled=true;try{await api('run',keys);await refresh();}catch(error){$('status').textContent=error.message;$('run').disabled=false;}finally{keys.jevKey='';keys.voyageKey='';}});
+$('resume').addEventListener('click',async()=>{try{await api('resume',{});await refresh();}catch(e){$('status').textContent=e.message;}});
+$('forget').addEventListener('click',async()=>{try{await api('forget',{});await refresh();}catch(e){$('status').textContent=e.message;}});
+$('cases').addEventListener('change',()=>showCase(current.report.cases[Number($('cases').value)]));refresh();
