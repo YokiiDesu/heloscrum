@@ -23,6 +23,7 @@ async function fixture(t){
       const messages=f.messages.slice(index,index+2);return {messages,hasMore:index+2<f.messages.length,nextCursor:messages.at(-1)?.id};
     }
     if(name==='ack_inbox')return {acknowledged:input.ids};
+    if(name==='context_search')return {matches:[{reference:'authorized-reference',offset:42}]};
     if(name==='attachment_read')return {mcpResult:{content:[{type:'image',data:'AA==',mimeType:'image/png'}]}};
     return {};
   };
@@ -31,7 +32,7 @@ async function fixture(t){
     if(body.type==='verification')return {status:200,ok:true,json:async()=>({challenge:f.verification?body.challenge:'wrong'})};
     return {status:f.status,ok:f.status>=200&&f.status<300,json:async()=>({})};
   };
-  const config={file:path.join(dir,'events.json'),contact,projectId:'p',call,catalog:async()=>({tools:[{name:'read_inbox'},{name:'send_message'},{name:'attachment_read'}]}),now:()=>f.now,fetcher};
+  const config={file:path.join(dir,'events.json'),contact,projectId:'p',call,catalog:async()=>({tools:[{name:'read_inbox'},{name:'send_message'},{name:'attachment_read'},{name:'context_search'},{name:'review_packet_read'},{name:'review_finding_write'}]}),now:()=>f.now,fetcher};
   f.make=async()=>new McpEvents(config).init();f.events=await f.make();
   f.message=(id,extra={})=>({id,at:new Date(f.now+1).toISOString(),from:'sender',text:'hello',kind:'request',...extra});
   return f;
@@ -41,7 +42,8 @@ test('MCP 2.0 discovery, safe tools, scoped identity and attachment content',asy
   const f=await fixture(t);
   const discover=await f.events.rpc('owner',{id:1,method:'server/discover'});
   assert.deepEqual(discover.result.supportedVersions,['2026-07-28']);assert.deepEqual(discover.result.capabilities.events,{});
-  const tools=await f.events.rpc('owner',{id:2,method:'tools/list'});assert.deepEqual(tools.result.tools.map(t=>t.name),['read_inbox','attachment_read']);
+  const tools=await f.events.rpc('owner',{id:2,method:'tools/list'});assert.deepEqual(tools.result.tools.map(t=>t.name),['read_inbox','attachment_read','context_search','review_packet_read']);
+  const search=await f.events.rpc('owner',{id:6,method:'tools/call',params:{name:'context_search',arguments:{query:'solver'}}});assert.equal(JSON.parse(search.result.content[0].text).matches[0].offset,42);
   const denied=await f.events.rpc('owner',{id:3,method:'tools/call',params:{name:'send_message'}});assert.equal(denied.error.code,-32602);
   const media=await f.events.rpc('owner',{id:4,method:'tools/call',params:{name:'attachment_read',arguments:{id:'image'}}});assert.equal(media.result.content[0].type,'image');assert.equal(media.result.resultType,'complete');
 });
