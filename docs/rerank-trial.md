@@ -68,3 +68,62 @@ workload validation are necessary before choosing production thresholds.
 Primary references: [Voyage reranking](https://docs.voyageai.com/docs/reranker),
 [TypeSafe reranking cookbook](https://docs.typesafe.ai/cookbooks/rerank_typesafe),
 [TypeSafe Noul](https://docs.typesafe.ai/primitives/noul).
+
+## Live comparison, November 6, 2026
+
+Implementation commit: `1867178`. Both providers completed all 17 requests with
+no retries or missing usage measurements. Jev returned model `jev-1.14.0` for
+the `jev-latest` alias; Voyage returned `rerank-3`. The paired run took 2,789 ms.
+
+| Metric | Jev 1.14.0 | Voyage rerank-3 |
+| --- | ---: | ---: |
+| Expected document first, modeled answerable queries | 14/15 | 14/15 |
+| Expected document first, including exact-path bypass | 15/16 | 15/16 |
+| Labeled evidence passage in top three | 13/15 | 12/15 |
+| Selected passage bytes, answerable queries | 37,408 | 39,468 |
+| Provider-reported input tokens | 50,823 | 30,680 |
+| Provider-reported output tokens | 2,088 | Not reported |
+| Median request time | 83 ms | 127 ms |
+| p95 request time | 413 ms | 361 ms |
+| Total request bytes | 181,930 | 124,052 |
+
+Jev has a one-case evidence advantage on this small author-labeled set. Both
+rerankers place the expected document first more often than the previous
+embedding baseline (14/16 including the bypass). Embeddings alone already
+returned labeled evidence in 13/15 cases and exposed 35,583 passage bytes, so
+neither reranker improves its total evidence score. Jev has the lower median
+latency while Voyage has the lower p95 in this single run. These provider token
+counts do not establish relative dollar costs.
+
+Three cases explain the evidence misses:
+
+- **Download without filling the prompt:** both selected a relevant source-transfer
+  passage at offset 2100 instead of the labeled passage at offset 3192 containing
+  “Only the receipt reaches the model.” The strict anchor metric counts this as
+  a miss even though the selected passage discusses materialization.
+- **Missing cached-input count:** the labeled Gemini passage was absent from the
+  frozen candidate pool. Both failed; this is a candidate-retrieval limitation.
+  The pool's evidence ceiling is 14/15.
+- **Uncommitted provider settings in new worktrees:** Jev selected the
+  `NATIVE_SETUP.md` passage at offset 1385 containing “Tracked configuration comes
+  from Git.” Voyage selected the later passage at offset 2100 and missed that
+  anchor, although another selected Gemini passage contains relevant explanation.
+
+The two no-answer diagnostics retain all raw scores. No threshold was fitted
+and the scores are not comparable across providers. This run does not establish
+a general winner or justify adding reranking to every retrieval; a held-out
+evaluation should test whether its incremental benefit exceeds its extra calls.
+
+Evidence identifiers:
+
+- Source embedding report SHA-256:
+  `542a764114acff5a743dfb3a6e3dc30af526a2d99367bf768506855508bf9b6b`
+- Full reranking report SHA-256:
+  `0d7102774385d43d56bd7980ec330a61dce07dbf1efbadc184fe1d4c61a5a400`
+- Full report: ignored local `output/rerank-trial/report.json`; available from
+  **Download report** in the trial page. It retains per-query candidates,
+  source hashes, raw judgments, usage and timings.
+
+Validation: 14 focused trial tests passed, JavaScript checks passed for 267
+files, and the completed page was checked in light and dark mode with no browser
+console errors. Production retrieval and running agents were not changed.
