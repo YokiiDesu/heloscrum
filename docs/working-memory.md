@@ -110,13 +110,23 @@ scopes, including `all`, keep embedding ranking. No probabilistic admission
 threshold is applied. Similarity ranks passages; even the first result
 may not answer the question. Status, freshness and author confidence remain separate.
 
-History reranking considers up to 16 source records and 24 exact passages, with at
-most two passages per source. It gives sources an initial passage before filling
-remaining space with alternatives. The best passage for each record is selected
-after reranking, then the requested result count is applied. The serialized request
-must fit 24,000 UTF-8 bytes; no source text is silently truncated. This remains a
+History reranking considers up to 16 source versions and 24 passages, with at
+most two passages per source. It alternates record kinds and logical records before
+spending more space on versions of the same record. Each selected source gets an
+initial passage before alternatives. After reranking, each source keeps its best
+passage and identical winning text is collapsed across versions before applying
+the result count. Exact version retrieval remains available. The serialized request
+must fit 24,000 UTF-8 bytes; passage ends are not silently truncated. This remains a
 bounded shortlist, not a guarantee of finding every relevant historical record.
 IDs, paths and hashes bypass both embedding and reranking calls.
+
+For semantic History retrieval, explicit quoted query fields in retrieval requests
+and reports are masked in the ranking representation. Search-tool text echoes are
+also masked, so copied questions and retrieved snippets do not rank as independent
+evidence. Search reports retain their explanatory text and remain searchable.
+Masking preserves offsets; returned passages, source hashes, archived versions,
+exact source reads and local keyword searches retain the original text. This is a
+bounded syntax-based treatment of retrieval echoes, not a factual classifier.
 
 The extra stage makes at most one request per History search, with a five-second
 deadline, a 128 KiB response ceiling and ten attempts per minute per backend. Scores
@@ -124,7 +134,9 @@ are cached for 60 seconds in a bounded in-memory cache, keyed by agent/project,
 connection revision, query, source versions, hashes and exact ranges. Authorization
 is checked again before constructing every shortlist, including cache hits.
 `ranking.reranking` reports model, status, shortlist coverage, usage, call count and
-cache reuse separately from embedding coverage. `rerankScore` is a relevance score,
+cache reuse separately from embedding coverage. `queryEchoesMasked` counts changed
+ranking passages; `duplicatePassages` counts identical winning passages collapsed.
+`rerankScore` is a relevance score,
 not a probability or proof that the passage is accurate or current.
 
 Authorization is applied before collecting text or using cached vectors. The search
@@ -136,7 +148,7 @@ an older keyword shortlist; use its continuation cursor for older semantic candi
 It does not claim to index all history at once.
 
 Document vectors are cached privately per agent/project, source hash, window,
-chunking policy and model/dimension. Edits use a new cache key; deleted or newly
+chunking policy, ranking representation hash and model/dimension. Edits use a new cache key; deleted or newly
 inaccessible sources are never returned from cache. Completed windows persist across
 restart, even when a later window fails. Query vectors use a bounded in-memory cache.
 At most 128 source windows are cached per agent, four agent caches remain in memory,
@@ -144,6 +156,9 @@ and at most 1,024 chunks are considered in one search. Each search issues at mos
 document requests and one query request, with a 15-second embedding inference deadline,
 an eight-second request deadline, 28,000-byte request ceiling and 2 MiB response ceiling.
 There are at most two active searches and 30 embedding requests per minute per backend.
+Explicit History searches use smaller 4,000-byte source windows and alternate record
+kinds and logical records while indexing. This gives more sources a chance within
+the same four-request budget; it does not make partial indexing complete.
 
 Results report indexed/total chunks, partial coverage, pending indexing, cache reuse,
 call counts and provider-reported usage. Search again to continue pending batches;
@@ -152,7 +167,7 @@ retrieval receipts, not proof of review. Missing usage remains unknown. Each att
 call records its input hash, byte/chunk counts, model, policy, outcome and measured
 usage in the private `context-usage` directory. Vectors are retained in the private
 index; credentials and full source prompts are not copied into usage records.
-History reranking receipts retain the query, candidate identities/ranges, request
+History reranking receipts retain the query, candidate identities/ranges and ranking-text hashes, request
 hash, requested/reported models and raw indexed scores. A malformed response keeps
 its reported token usage separate from whether its scores passed validation.
 
