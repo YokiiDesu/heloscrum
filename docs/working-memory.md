@@ -104,9 +104,28 @@ It embeds paragraph/line-aware, non-overlapping chunks of up to 950 characters,
 with exact UTF-16 offsets and full-source SHA-256. Chunks from the same source are
 contextualized together in windows bounded to 20,000 serialized UTF-8 bytes; a large
 source can span several windows. This preserves exact text and Unicode, while
-avoiding the old keyword-first passage bottleneck. No reranker or probabilistic
-admission threshold is applied. Similarity ranks passages; even the first result
+avoiding the old keyword-first passage bottleneck. Explicit `scope: "history"`
+searches then use Voyage `rerank-3` through the same saved Voyage connection. Other
+scopes, including `all`, keep embedding ranking. No probabilistic admission
+threshold is applied. Similarity ranks passages; even the first result
 may not answer the question. Status, freshness and author confidence remain separate.
+
+History reranking considers up to 16 source records and 24 exact passages, with at
+most two passages per source. It gives sources an initial passage before filling
+remaining space with alternatives. The best passage for each record is selected
+after reranking, then the requested result count is applied. The serialized request
+must fit 24,000 UTF-8 bytes; no source text is silently truncated. This remains a
+bounded shortlist, not a guarantee of finding every relevant historical record.
+IDs, paths and hashes bypass both embedding and reranking calls.
+
+The extra stage makes at most one request per History search, with a five-second
+deadline, a 128 KiB response ceiling and ten attempts per minute per backend. Scores
+are cached for 60 seconds in a bounded in-memory cache, keyed by agent/project,
+connection revision, query, source versions, hashes and exact ranges. Authorization
+is checked again before constructing every shortlist, including cache hits.
+`ranking.reranking` reports model, status, shortlist coverage, usage, call count and
+cache reuse separately from embedding coverage. `rerankScore` is a relevance score,
+not a probability or proof that the passage is accurate or current.
 
 Authorization is applied before collecting text or using cached vectors. The search
 service receives only this agent's allowed source text and query. It does not scan
@@ -122,7 +141,7 @@ inaccessible sources are never returned from cache. Completed windows persist ac
 restart, even when a later window fails. Query vectors use a bounded in-memory cache.
 At most 128 source windows are cached per agent, four agent caches remain in memory,
 and at most 1,024 chunks are considered in one search. Each search issues at most four
-document requests and one query request, with a 15-second total inference deadline,
+document requests and one query request, with a 15-second embedding inference deadline,
 an eight-second request deadline, 28,000-byte request ceiling and 2 MiB response ceiling.
 There are at most two active searches and 30 embedding requests per minute per backend.
 
@@ -132,16 +151,21 @@ if the index limit is reached, narrow the scope or page older History. These are
 retrieval receipts, not proof of review. Missing usage remains unknown. Each attempted
 call records its input hash, byte/chunk counts, model, policy, outcome and measured
 usage in the private `context-usage` directory. Vectors are retained in the private
-index; credentials and full prompts are not copied into usage records.
+index; credentials and full source prompts are not copied into usage records.
+History reranking receipts retain the query, candidate identities/ranges, request
+hash, requested/reported models and raw indexed scores. A malformed response keeps
+its reported token usage separate from whether its scores passed validation.
 
-Missing/disabled connections, service or validation failures, storage failures,
-timeouts and exhausted budgets fall back to keyword results. Calls are not retried
+Embedding failures fall back to keyword results. Reranking service, timeout, audit,
+validation or budget failures retain the existing embedding results and report the
+reason; they do not discard otherwise successful retrieval. Calls are not retried
 automatically; a service failure applies a 60-second cooldown. Use
 `memory_search({query, ranking: "local"})` or **Memory → Search → Local only** to
 bypass cloud calls. Search results retain source links and make no board, permission
 or completion changes.
 
-The integration follows [Voyage's contextual embedding guide](https://docs.voyageai.com/docs/contextualized-chunk-embeddings).
+The integration follows [Voyage's contextual embedding guide](https://docs.voyageai.com/docs/contextualized-chunk-embeddings)
+and [reranking guide](https://docs.voyageai.com/docs/reranker).
 
 ## Sharing contracts across worktrees
 

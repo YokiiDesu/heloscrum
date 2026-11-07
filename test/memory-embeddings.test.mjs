@@ -18,7 +18,7 @@ const reply=inputs=>({model:EMBEDDING_MODEL,data:inputs.map((doc,index)=>({index
 async function fixture(t){
   const root=await mkdtemp(path.join(os.tmpdir(),'hs-embeddings-')),calls=[],task={id:randomUUID(),project:'/test-project'};
   const plane={root,data:{tasks:[],contextSettings:{revision:0,memoryEmbeddingConnectionId:'voyage',toolResultChars:12000,budgetTokens:32000},agentNotebooks:{}},save:async()=>{},work:{list:()=>[]},collaboration:{allowed:()=>true,data:{memory:[]}}};
-  plane.ai=new AIConnections(plane,{client:new ModelClient({fetcher:async(url,init)=>{const body=JSON.parse(init.body);calls.push({url,body});return Response.json(reply(body.inputs));}})});
+  plane.ai=new AIConnections(plane,{client:new ModelClient({fetcher:async(url,init)=>{const body=JSON.parse(init.body);calls.push({url,body});if(url.endsWith('/rerank'))return Response.json({model:'rerank-3',data:body.documents.map((text,index)=>({index,relevance_score:/reservation/i.test(text)?.9:.1})),usage:{total_tokens:123}});return Response.json(reply(body.inputs));}})});
   plane.data.aiConnections=[{id:'voyage',kind:'voyage',model:EMBEDDING_MODEL,enabled:true}];plane.ai.secrets.voyage='test-key';plane.context=new ContextManager(plane);plane.notebooks=new WorkingMemory(plane);
   t.after(async()=>{await plane.history?.close();await rm(root,{recursive:true,force:true});});return {root,plane,task,calls};
 }
