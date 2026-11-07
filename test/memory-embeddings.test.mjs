@@ -122,3 +122,25 @@ test('Voyage configuration keeps keys private and cannot be used as an agent, su
   const settings=await plane.ai.configureContext({expectedRevision:0,memoryEmbeddingConnectionId:c.id});assert.equal(settings.memoryEmbeddingConnectionId,c.id);
   assert.equal((await plane.ai.test(c.id)).model,EMBEDDING_MODEL);
 });
+
+test('cold History indexing reaches an older message despite large keyword-heavy transcripts within the same call budget',async t=>{
+  const {plane,task,calls,root}=await fixture(t);plane.history=await new HistoryStore(path.join(root,'history.duckdb')).init();
+  const text='Correction: the reservation is returned when cancelled.';
+  await plane.history.captureRecords([{project:task.project,kind:'message',id:'correction',body:{from:'reviewer',to:task.id,text}},...Array.from({length:14},(_,i)=>({project:task.project,kind:'transcript',id:'trace-'+i,taskId:task.id,body:{event:{text:('give the material back; a repeated tool trace '+i+'\n').repeat(800)}}}))]);
+  const result=await plane.notebooks.search(task,{query:'How do we give the material back?',scope:'history',limit:3});
+  assert(result.ranking.partial);assert.equal(result.matches[0].source.recordId,'correction');
+  assert.equal(calls.filter(c=>c.body.input_type==='document').length,4);assert.equal(calls.filter(c=>c.url.endsWith('/rerank')).length,1);
+  assert(calls.find(c=>c.url.endsWith('/rerank')).body.documents.includes(text));
+});
+
+test('query echo masking is private to ranking; exact reads, local search and returned passage offsets retain original text',async t=>{
+  const {plane,task,calls,root}=await fixture(t);plane.history=await new HistoryStore(path.join(root,'history.duckdb')).init();
+  const text='Use memory_search with query "reservation returned". Report whether the search found evidence.';
+  await plane.history.captureRecords([{project:task.project,kind:'message',id:'request',body:{from:'human',to:task.id,text}},{project:task.project,kind:'message',id:'answer',body:{from:'reviewer',to:task.id,text:'The reservation is returned on cancellation.'}}]);
+  const result=await plane.notebooks.search(task,{query:'reservation returned',scope:'history',limit:3});
+  const sent=calls.filter(c=>c.body.input_type==='document').flatMap(c=>c.body.inputs.flat());assert(!sent.find(t=>t.startsWith('Use memory_search')).includes('reservation returned'));
+  const request=result.matches.find(r=>r.source.recordId==='request');assert.equal(request.text,text.slice(request.offset,request.end));assert.equal(request.sha256,memoryHash(text));assert(!('rankingText' in request));assert(!('rankingBody' in request));
+  assert.equal((await plane.notebooks.readSource(task,request.source.retrieve.input)).text,text);
+  const count=calls.length,local=await plane.notebooks.search(task,{query:'reservation returned',scope:'history',ranking:'local',limit:3});assert(local.matches.some(r=>r.text===text));assert.equal(calls.length,count);
+  const exact=await plane.notebooks.search(task,{query:'request',scope:'history'});assert.equal(exact.matches[0].text,text);assert.equal(calls.length,count);
+});
