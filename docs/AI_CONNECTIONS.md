@@ -259,6 +259,8 @@ Enter the API key in the masked field and save. The connection becomes the defau
 Memory search service; **Test connection** sends a small embedding request.
 Use **Memory search → Keywords only** to disable it. Existing exact ID/path/hash
 lookups stay local; ordinary searches use cached contextual embeddings with keyword
-fallback. No reranker is called. The query and accessible source text go to Voyage;
+fallback. Explicit History searches (`scope: "history"`) add a bounded `rerank-3`
+pass through the same Voyage key; other scopes keep embedding ranking. Reranker
+failures retain the embedding results. The query and accessible source text go to Voyage;
 keys stay in the private backend credential store. See [working memory](working-memory.md)
 for authorization, cache invalidation, measured usage and partial-index limits.
