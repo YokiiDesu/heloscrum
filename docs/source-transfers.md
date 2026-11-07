@@ -48,8 +48,11 @@ node scripts/contact-mcp.mjs CONNECTION_FILE receive-resource PLAN_ID RESOURCE_I
 
 Text downloads use the same hash-pinned `source_read` path. Task resources retain
 their plan-membership checks; this does not grant external contacts plan access.
-The helper stores a private adjacent `.heloscrum-partial.json` checkpoint after
-each complete page. Retry the identical command to resume after a connection
+The helper batches private adjacent `.heloscrum-partial.json` checkpoints after
+roughly 64 KiB of new text, and flushes all validated progress on ordinary transport
+errors. This avoids rewriting the growing checkpoint and starting Windows ACL
+setup for every tiny page. An abrupt process termination may replay that batch
+plus one transport page. Retry the identical command to resume after a connection
 failure: the server checks access again and the final file must match SHA-256.
 The destination is created exclusively and never overwritten. A concurrent helper
 is blocked by a lock file; after an abrupt process kill, remove that lock only

@@ -13,6 +13,7 @@ import {HistoryStore} from '../lib/history-store.mjs';
 import {sourcePage,sourceHash,toolText,mcpToolResult,parseToolText} from '../lib/source-pages.mjs';
 import {downloadSource} from '../lib/source-download.mjs';
 import {contactCommand} from '../scripts/contact-mcp.mjs';
+import {assertPrivate} from './private-file-assert.mjs';
 
 async function fixture({history=false}={}){
   const root=await mkdtemp(path.join(os.tmpdir(),'helo-transfer-')),p=new ControlPlane(root);
@@ -111,6 +112,30 @@ test('attachments and task resources fit one escaped response and resume exact l
     await assert.rejects(f.p.collaboration.call(a,'source_diff',{before:{...source,sha256:'0'.repeat(64)},after:{kind:'attachment',id:attachment.id,sha256:attachment.sha256}}),/hash changed/);
     await assert.rejects(f.p.collaboration.call(a,'source_diff',{before:{kind:'resource',planId,resourceId:resource.id},after:source}),/requires both/);
   }finally{await f.close();}
+});
+
+test('small-page downloads batch protected checkpoints, flush interruptions and reject invalid pages before saving them',async()=>{
+  const root=await mkdtemp(path.join(os.tmpdir(),'helo-checkpoint-'));
+  try{
+    const text='雪🧵\n'.repeat(40000),sha256=sourceHash(text),source={kind:'attachment',id:'fixture',sha256},output=path.join(root,'download.txt'),file=output+'.heloscrum-partial.json';
+    let calls=0,lastEnd=0;const savedOffsets=new Set();
+    await assert.rejects(downloadSource(async(name,input)=>{
+      assert.equal(name,'source_read');
+      const saved=await readFile(file,'utf8').catch(e=>{if(e.code!=='ENOENT')throw e;return null;});if(saved)savedOffsets.add(JSON.parse(saved).offset);
+      if(++calls===80)throw Error('Transfer interrupted');
+      const page=sourcePage(text,{source,sha256,offset:input.offset,limit:800,budget:2000});lastEnd=page.endOffset;return page;
+    },source,output),/Transfer interrupted/);
+    assert(savedOffsets.size<5,'many small pages share a few protected checkpoint writes');
+    const checkpoint=JSON.parse(await readFile(file,'utf8'));assert.equal(checkpoint.offset,lastEnd);assert.equal(checkpoint.text,text.slice(0,lastEnd));assert.equal(checkpoint.partialHash,sourceHash(checkpoint.text));
+    await assertPrivate(file);
+    await assert.rejects(downloadSource(async(name,input)=>({...sourcePage(text,{source,sha256,offset:input.offset,limit:800,budget:2000}),nextOffset:input.offset}),source,output),/non-progressing/);
+    assert.deepEqual(JSON.parse(await readFile(file,'utf8')),checkpoint,'an invalid continuation cannot taint the saved prefix');
+    let first;
+    const result=await downloadSource(async(name,input)=>{first??=input.offset;return sourcePage(text,{source,sha256,offset:input.offset,limit:800,budget:2000});},source,output);
+    assert.equal(first,lastEnd);assert(result.resumed);assert.equal(await readFile(output,'utf8'),text);assert.equal(result.sha256,sha256);
+    await assertPrivate(output);
+    await assert.rejects(readFile(file),{code:'ENOENT'});
+  }finally{await rm(root,{recursive:true,force:true});}
 });
 
 test('packet continuation rejects changed findings and History search pages unique transcript events',async()=>{
