@@ -14,7 +14,7 @@ import {voyageEmbed,EMBEDDING_MODEL} from '../lib/voyage-embeddings.mjs';
 import {assertPrivate} from './private-file-assert.mjs';
 
 const vector=(hit=false)=>[hit?1:0,hit?0:1,...Array(510).fill(0)];
-const reply=inputs=>({model:EMBEDDING_MODEL,data:inputs.map((doc,index)=>({index,data:doc.map((text,index)=>({index,embedding:vector(/reservation|give the material back/.test(text))}))})),usage:{total_tokens:123}});
+const reply=inputs=>({model:EMBEDDING_MODEL,data:inputs.map((doc,index)=>({index,data:doc.map((text,index)=>({index,embedding:vector(/reservation|give the material back/i.test(text))}))})),usage:{total_tokens:123}});
 async function fixture(t){
   const root=await mkdtemp(path.join(os.tmpdir(),'hs-embeddings-')),calls=[],task={id:randomUUID(),project:'/test-project'};
   const plane={root,data:{tasks:[],contextSettings:{revision:0,memoryEmbeddingConnectionId:'voyage',toolResultChars:12000,budgetTokens:32000},agentNotebooks:{}},save:async()=>{},work:{list:()=>[]},collaboration:{allowed:()=>true,data:{memory:[]}}};
@@ -79,6 +79,32 @@ test('History fallback finds older keyword matches and exact archived IDs withou
   await plane.notebooks.search(task,{query:'docs/missing-file.md',scope:'history'});assert.equal(calls.length,0);
   plane.ai.client.fetcher=async()=>new Response('',{status:503});
   const fallback=await plane.notebooks.search(task,{query:'reservation',scope:'history'});assert.equal(fallback.ranking.status,'fallback');assert.equal(fallback.matches[0].source.recordId,id);
+});
+test('three History results rank a larger deduplicated pool and recover an older correction without shared keywords',async t=>{
+  const {plane,task,calls,root}=await fixture(t);plane.history=await new HistoryStore(path.join(root,'history.duckdb')).init();
+  const at='2026-10-01T12:30:00.000Z',message=(id,text,extra={})=>({project:task.project,kind:'message',id,at,body:{from:'human',to:task.id,text,...extra}});
+  await plane.history.captureRecords([message('older-correction','Correction: the reservation is returned when cancelled.'),...Array.from({length:12},(_,i)=>message('later-'+i,'Unrelated discussion '+i)),...Array.from({length:30},(_,i)=>message('delivery-noise','A repeated recent status update',{deliveryAttempt:i}))]);
+  const input={query:'How do we give the material back?',scope:'history',limit:3};
+  const result=await plane.notebooks.search(task,input);
+  assert.equal(result.ranking.status,'embedded');assert.equal(result.matches.length,3);assert.equal(result.matches[0].source.recordId,'older-correction');
+  assert.equal(result.historyCoverage.candidates,14);assert.equal(result.historyCoverage.keywordCandidates,0);assert.equal(result.ranking.totalChunks,14);
+  assert.equal(result.matches[0].occurredAt,at);assert.match(result.matches[0].capturedAt,/Z$/);assert.match(result.matches[0].source.version,/^[a-f0-9]{64}$/);
+  const text=calls.filter(c=>c.body.input_type==='document').flatMap(c=>c.body.inputs.flat());assert.equal(text.filter(t=>t==='A repeated recent status update').length,1);
+  const one=await plane.notebooks.search(task,{...input,limit:1});assert.equal(one.matches.length,1);assert.equal(one.historyCoverage.candidates,14);assert(one.ranking.cacheHit);
+  assert.match((await plane.notebooks.readSource(task,result.matches[0].source.retrieve.input)).text,/Correction/);
+  const archived=(await plane.history.rows(task.project,'message')).find(r=>r.record_id==='delivery-noise'),callCount=calls.length;
+  const exact=await plane.notebooks.search(task,{query:archived.version,scope:'history',limit:3});
+  assert.equal(exact.matches.length,1);assert.equal(exact.matches[0].source.entryId,archived.seq);assert.equal(calls.length,callCount,'explicit versions never call Voyage');
+});
+test('History supplements recent semantic candidates with old keyword evidence without uploading inaccessible matches',async t=>{
+  const {plane,task,calls,root}=await fixture(t);plane.history=await new HistoryStore(path.join(root,'history.duckdb')).init();
+  const record=(id,text,owner=task.id,project=task.project)=>({project,kind:'transcript',id,taskId:owner,body:{event:{text}}});
+  await plane.history.captureRecords([record('old-correction','Reservation correction: return the material on cancellation.'),record('peer-private','SECRET reservation correction','peer'),record('foreign','SECRET reservation correction',task.id,'/foreign'),...Array.from({length:150},(_,i)=>record('noise-'+i,'Unrelated recent event '+i))]);
+  const result=await plane.notebooks.search(task,{query:'reservation correction',scope:'history',limit:3});
+  assert.equal(result.matches[0].source.recordId,'old-correction');assert.equal(result.historyCoverage.recentCandidates,80);assert.equal(result.historyCoverage.keywordCandidates,1);assert.equal(result.historyCoverage.candidates,81);assert(result.historyCoverage.hasOlder);assert(result.nextHistoryBefore);
+  assert(!JSON.stringify(calls).includes('SECRET'));assert(!JSON.stringify(result).includes('SECRET'));
+  const older=await plane.notebooks.search(task,{query:'reservation correction',scope:'history',limit:3,historyBefore:result.nextHistoryBefore});
+  assert.equal(older.historyCoverage.recentCandidates,71);assert.equal(older.nextHistoryBefore,null);assert.equal(older.matches[0].source.recordId,'old-correction');
 });
 test('Voyage transport rejects incomplete, duplicated and invalid vectors; bounds requests and cancels redirects',async()=>{
   const c={kind:'voyage',model:EMBEDDING_MODEL},inputs=[['hello','world']];let n=0;

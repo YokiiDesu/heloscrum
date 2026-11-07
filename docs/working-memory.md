@@ -60,8 +60,25 @@ It also searches durable History: shared memory revisions, the requesting agent'
 own transcripts and messages, and currently accessible plan records. It never
 searches another agent's private transcript or notebook. History is marked as
 historical evidence, so an earlier rule is not mistaken for the current contract.
-Use `scope: "history"` and `historyBefore`/`nextHistoryBefore` to page older matches.
+Use `scope: "history"` and `historyBefore`/`nextHistoryBefore` to search older batches.
 The UI exposes this under **Memory → Search → Durable History**.
+
+The requested `limit` controls returned passages, not the semantic candidate pool.
+History supplies up to 80 recent candidates plus 40 keyword candidates selected
+across the authorized archive range. The latter can recover an older correction
+outside the recent batch. Duplicate captures of the same record's unchanged
+searchable content collapse before either budget is applied; actual text revisions
+remain searchable. Streaming transcript captures use the latest version of each
+event. Exact archive sequence/version lookups can still retrieve earlier captures.
+No archived records are deleted by search deduplication.
+
+`historyCoverage` reports candidate counts, keyword truncation and whether older
+batches remain. `nextHistoryBefore` advances the recent candidate window; older
+keyword evidence can recur across windows. This is not exhaustive semantic search
+of the entire archive, nor pagination of every ranked passage. Search results carry
+the immutable History version, a revision number when present, `occurredAt` and
+`capturedAt`. Capture time is not substituted for an unknown event time. Shared
+Memory search also returns the note's update time alongside its revision.
 
 `memory_source_read` consumes the exact `source` and `offset` returned by search.
 Current notes and plans reject a mismatched revision; historical entries retain
@@ -95,8 +112,9 @@ Authorization is applied before collecting text or using cached vectors. The sea
 service receives only this agent's allowed source text and query. It does not scan
 workspace files or upload downloaded attachments automatically. Source tools remain
 the way to read exact files and task resources; local availability is not a read receipt.
-History retrieval includes non-keyword records in a bounded authorized batch; use its
-continuation cursor for older records. It does not claim to index all history at once.
+History retrieval includes non-keyword records in a bounded authorized batch and
+an older keyword shortlist; use its continuation cursor for older semantic candidates.
+It does not claim to index all history at once.
 
 Document vectors are cached privately per agent/project, source hash, window,
 chunking policy and model/dimension. Edits use a new cache key; deleted or newly

@@ -86,3 +86,45 @@ test('re-reading self-report pills preserves original time and stable history ve
   const a=rolloutEvents(records);await new Promise(r=>setTimeout(r,5));const b=rolloutEvents(records);assert.deepEqual(a,b);assert.equal(a[0].report.at,'2026-09-11T12:00:00Z');
   for(const events of [a,b])await db.captureTranscript(task,{sessionId:task.providerSessionId,source:'fixture',events});assert.equal((await db.rows('pack','transcript')).length,2);
 });
+
+test('History collapses metadata-only versions before paging while retaining changed evidence and exact old captures',async t=>{
+  const {db}=await fixture(t),access={project:'pack',taskId:task.id,shared:true,planIds:['plan']};
+  const captures=[];
+  for(let i=0;i<12;i++)captures.push(
+    {project:'pack',kind:'message',id:'message',body:{from:'human',to:task.id,text:'Collision message',deliveryAttempt:i}},
+    {project:'pack',kind:'task',id:task.id,taskId:task.id,body:{title:'Collision task',phase:'phase-'+i}},
+    {project:'pack',kind:'work-plan',id:'plan',body:{title:'Collision plan',revision:i,items:[{title:'Item',note:'Fixed evidence',status:'phase-'+i}]}},
+    {project:'pack',kind:'memory',id:JSON.stringify(['policy',i]),body:{key:'policy',revision:i,text:'Collision policy',at:'capture-'+i}}
+  );
+  await db.captureRecords(captures);
+  const original=(await db.rows('pack','message'))[0];
+  await db.captureRecords([{project:'pack',kind:'memory',id:JSON.stringify(['policy',12]),body:{key:'policy',revision:12,text:'Collision correction: earlier policy was wrong.'}}]);
+  const found=[];let before;
+  do{const page=await db.agentSearch(access,{query:'collision',limit:3,before});found.push(...page.rows);before=page.nextBefore||undefined;}while(before);
+  assert.equal(found.length,5);assert.equal(found.filter(r=>r.kind==='memory').length,2,'different text revisions remain searchable');assert.equal(found.filter(r=>Number(r.collapsedVersions)===12).length,4);
+  const exact=await db.agentSearch(access,{query:original.version,limit:3});assert.equal(exact.rows.length,1);assert.equal(exact.rows[0].seq,original.seq);assert.equal(exact.rows[0].body.deliveryAttempt,0);
+  assert.equal((await db.agentRead(access,original.seq)).body.deliveryAttempt,0,'collapse never removes archived evidence');
+  await assert.rejects(db.agentSearch(access,{query:'collision',limit:0}),/bounded/);
+  await assert.rejects(db.agentSearch(access,{query:'collision',before:'invalid'}),/cursor/);
+  await assert.rejects(db.agentRead({...access,taskId:'outsider',shared:false,planIds:[]},original.seq),/not available/);
+});
+
+test('the recorded cloth-review query includes older evidence beyond duplicated probe and reviewer records',async t=>{
+  const {db}=await fixture(t),access={project:'pack',taskId:task.id};
+  const query='Why was the explanation for early cloth stretching revised after measurements?';
+  const message=(id,text,delivery)=>({project:'pack',kind:'message',id,body:{from:task.id,to:'coordinator',text,delivery}});
+  // Reduced reproduction of the user-supplied live-memory-verification receipt.
+  // This verifies candidate admission, not a fabricated live provider ranking.
+  await db.captureRecords([
+    message('superseded','The later peaks come from fold/gather dynamics.','delivered'),
+    message('correction',"Cap saturation alone does not explain the later peaks. The mechanism is unknown; fold/gather dynamics is a hypothesis, not a finding.",'queued'),
+    message('correction',"Cap saturation alone does not explain the later peaks. The mechanism is unknown; fold/gather dynamics is a hypothesis, not a finding.",'delivered'),
+    ...Array.from({length:8},(_,i)=>({project:'pack',kind:'task',id:task.id,taskId:task.id,body:{title:'Reviewer',prompt:'Read-only independent review; distinguish source review and measured tests.',phase:'phase-'+i}})),
+    ...Array.from({length:5},(_,i)=>message('probe',query,'receipt-'+i))
+  ]);
+  const candidates=await db.agentSearch(access,{query,semantic:true,limit:80});
+  assert.deepEqual(new Set(candidates.rows.map(r=>r.record_id)),new Set(['probe','correction','superseded',task.id]));
+  assert.equal(candidates.rows.length,4);assert.equal(candidates.nextBefore,null);
+  assert.equal(Number(candidates.rows.find(r=>r.record_id==='probe').collapsedVersions),5);
+  assert.equal(Number(candidates.rows.find(r=>r.record_id==='correction').collapsedVersions),2);
+});
