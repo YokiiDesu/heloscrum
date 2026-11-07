@@ -163,14 +163,18 @@ test('Gemini discovers only supported configuration and preserves settings while
   f.task.path=path.join(f.root,'worktree');await mkdir(f.task.path);await run('git',['init','-q'],{cwd:f.task.path});f.task.nativeSetup={files:['.gemini/settings.json','GEMINI.md']};await native.prepare(f.task);assert.equal(await readFile(path.join(f.task.path,'GEMINI.md'),'utf8'),'Project guidance');
   const settings=new AgentSettings(f.plane);assert.equal((await settings.provider('gemini',{quick:true})).label,'Gemini CLI');await assert.rejects(settings.validateEffort('gemini','exact','high'),/not supported/);
 });
-test('Gemini task creation, model switching and restart resume use the managed lifecycle without Herdr',async t=>{
+test('Gemini task creation, model switching and restart resume use the managed lifecycle without Herdr',{timeout:60000},async t=>{
   const root=await mkdtemp(path.join(os.tmpdir(),'heloscrum-gemini-lifecycle-')),plane=await new ControlPlane(root).init(),mock=mockGemini();
   t.after(async()=>{await plane.managed.close();plane.transcripts.close();await plane.mcp.close();await plane.saveQueue;await rm(root,{recursive:true,force:true});});
   for(const args of [['init','-q'],['config','user.name','Test'],['config','user.email','test@example.invalid']])await plane.git.command(root,args);
   await writeFile(path.join(root,'.gitignore'),'.heloscrum/\n');await writeFile(path.join(root,'README.md'),'Gemini fixture');await plane.git.command(root,['add','.']);await plane.git.command(root,['commit','-qm','fixture']);
   plane.projects.remember(root);plane.tools.gemini='/mock/gemini';plane.tools.herdr=null;plane.managed=new ManagedAgents(plane,{spawnProcess:mock.spawnProcess});plane.herdr=withManagedAgents({list:async()=>{throw Error('Herdr offline');}},plane.managed);
   plane.agentSettings.providerCache.set('gemini',{at:Date.now(),value:{id:'gemini',label:'Gemini CLI',installed:true,models:[]}});
-  const task=await plane.createTask({kind:'gemini',title:'Gemini fixture',prompt:'Check this repository',branch:'test/gemini',model:'first-model'});await until(()=>task.phase==='launched');const first=plane.managed.get(task.pane);await first.running;
+  // createTask dispatches startup in the background. Await that operation, not
+  // a 500 ms phase-poll deadline: Windows must also finish private-file ACLs.
+  const launch=plane.launch.bind(plane);let startup;
+  t.mock.method(plane,'launch',(...args)=>(startup=launch(...args)));
+  const task=await plane.createTask({kind:'gemini',title:'Gemini fixture',prompt:'Check this repository',branch:'test/gemini',model:'first-model'});assert(startup instanceof Promise,'Task creation must dispatch startup');await startup;assert.equal(task.phase,'launched');const first=plane.managed.get(task.pane);await first.running;
   assert.notEqual(task.path,root);assert.equal(task.workspace,null);assert.equal(first.status,'done');assert.equal(mock.calls.filter(r=>r.method==='session/prompt').length,1);assert.match(first.events[0].text,/Check this repository/);
   const preview=await plane.agentSettings.preview(task.id,{kind:'gemini',model:'second-model'});assert.equal(preview.freshSession,false);await plane.agentSettings.change(task.id,{previewId:preview.previewId});
   assert.equal(task.providerSessionId,mock.sessionId);assert.equal(task.model,'second-model');assert.equal(mock.calls.filter(r=>r.method==='session/prompt').length,1);assert(mock.calls.some(r=>r.method==='session/set_model'&&r.params.modelId==='second-model'));
